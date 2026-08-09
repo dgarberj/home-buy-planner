@@ -1,7 +1,13 @@
 import { useRef, useState } from "react";
 import { downloadText } from "../lib/csv";
+import { encodeShareHash, isShareSupported } from "../lib/share";
 import { useStore } from "../store/useStore";
-import { Button } from "./ui";
+import { Button, Callout, Modal } from "./ui";
+
+// A share link is a plaintext-decodable (gzip+base64, not encrypted) copy of
+// everything in exportData() -- income, balances, budget labels. Past this
+// length it risks being truncated by some messaging apps/clients.
+const LONG_LINK_WARNING_LENGTH = 6000;
 
 /**
  * Save, load and reset. The app starts from /data/household.json when that
@@ -16,10 +22,26 @@ export default function DataToolbar() {
     text: string;
     isError: boolean;
   } | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
 
   const flash = (text: string, isError = false) => {
     setMessage({ text, isError });
     setTimeout(() => setMessage(null), 4000);
+  };
+
+  const handleShare = async () => {
+    const hash = await encodeShareHash(exportData());
+    setShareLink(`${location.origin}${location.pathname}#${hash}`);
+  };
+
+  const copyShareLink = async () => {
+    if (!shareLink) return;
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      flash("Link copied.");
+    } catch {
+      flash("Couldn't copy automatically -- select and copy the link below.", true);
+    }
   };
 
   return (
@@ -47,6 +69,18 @@ export default function DataToolbar() {
         onClick={() => fileReference.current?.click()}
       >
         Import
+      </Button>
+      <Button
+        size="sm"
+        title={
+          isShareSupported()
+            ? "Generate a link that loads your current numbers in another browser"
+            : "Share links aren't supported in this browser"
+        }
+        disabled={!isShareSupported()}
+        onClick={handleShare}
+      >
+        Share link
       </Button>
       <input
         ref={fileReference}
@@ -80,6 +114,36 @@ export default function DataToolbar() {
       >
         Clear local storage
       </Button>
+      <Modal
+        open={shareLink !== null}
+        onClose={() => setShareLink(null)}
+        title="Share link"
+        subtitle="Anyone with this link can see everything below, in plain text -- income, balances, budget labels. Only send it somewhere you trust."
+        footer={
+          <>
+            <Button onClick={() => setShareLink(null)}>Close</Button>
+            <Button variant="primary" onClick={copyShareLink}>
+              Copy link
+            </Button>
+          </>
+        }
+      >
+        <input
+          readOnly
+          value={shareLink ?? ""}
+          onFocus={(event_) => event_.target.select()}
+          className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-700"
+        />
+        {shareLink && shareLink.length > LONG_LINK_WARNING_LENGTH && (
+          <div className="mt-2">
+            <Callout tone="warn">
+              This link is unusually long and may get truncated by some
+              messaging apps. If it doesn't work, try trimming old balance
+              snapshots first.
+            </Callout>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

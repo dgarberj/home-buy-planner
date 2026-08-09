@@ -197,11 +197,13 @@ export const useStore = create<Store>()(
         set((s) => ({ scenarios: s.scenarios.filter((s2) => s2.id !== id) })),
 
       exportData: () => {
-        const { assumptions, budget, balances, scenarios, settings } = get();
+        const { seedVersion, assumptions, budget, balances, scenarios, settings } =
+          get();
         return JSON.stringify(
           {
             version: 1,
             exportedAt: new Date().toISOString(),
+            seedVersion,
             assumptions,
             budget,
             balances,

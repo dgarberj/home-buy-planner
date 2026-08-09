@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AssumptionsPanel from "./components/AssumptionsPanel";
 import BalancesPanel from "./components/BalancesPanel";
 import BudgetPanel from "./components/BudgetPanel";
@@ -15,7 +15,13 @@ import RetirementMilestones from "./components/RetirementMilestones";
 import ScenarioBuilder from "./components/ScenarioBuilder";
 import SourcesPanel from "./components/SourcesPanel";
 import Section from "./components/Section";
+import { Button, Modal } from "./components/ui";
+import { SEED_VERSION } from "./data/seed";
+import { decodeShareHash, isShareHash } from "./lib/share";
+import { useStore } from "./store/useStore";
 
+// "share" is a reserved hash key (see ShareImportHandler / src/lib/share.ts)
+// -- no Section id below may ever be "share".
 const NAV = [
   { id: "budget", label: "Budget" },
   { id: "assumptions", label: "Assumptions" },
@@ -111,9 +117,110 @@ function HowToRead() {
   );
 }
 
+function parseSeedVersion(json: string): unknown {
+  try {
+    return (JSON.parse(json) as { seedVersion?: unknown }).seedVersion;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+Loads a #share=... link on landing. Strips the hash immediately after
+decoding either way, so the payload never lingers in the address bar and a
+reload can't re-trigger the import.
+*/
+type ShareImportState =
+  | { kind: "confirm"; json: string }
+  | { kind: "error"; message: string };
+
+function ShareImportHandler() {
+  const importData = useStore((s) => s.importData);
+  const [state, setState] = useState<ShareImportState | null>(null);
+
+  useEffect(() => {
+    const hash = location.hash;
+    if (!isShareHash(hash)) return;
+    void (async () => {
+      const json = await decodeShareHash(hash);
+      const seedVersion = json ? parseSeedVersion(json) : undefined;
+      if (!json) {
+        setState({
+          kind: "error",
+          message: "That share link is broken or incomplete.",
+        });
+      } else if (seedVersion === SEED_VERSION) {
+        setState({ kind: "confirm", json });
+      } else {
+        // Not a decode failure -- a real payload built against a different
+        // app version. Loading it anyway would hit migrateSaved's own
+        // version check and silently discard everything, so catch it here
+        // with a message instead of a false "Load shared data" success.
+        setState({
+          kind: "error",
+          message:
+            "This link was made with a different version of the app and can't be loaded here.",
+        });
+      }
+      history.replaceState(null, "", location.pathname + location.search);
+    })();
+  }, []);
+
+  if (state === null) return null;
+
+  if (state.kind === "error") {
+    return (
+      <Modal
+        open
+        onClose={() => setState(null)}
+        title="Couldn't load share link"
+        footer={
+          <Button variant="primary" onClick={() => setState(null)}>
+            Close
+          </Button>
+        }
+      >
+        <p className="text-sm text-slate-600">{state.message}</p>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      open
+      onClose={() => setState(null)}
+      title="Load shared scenario?"
+      subtitle="This replaces all budget, balance, and scenario data currently saved in this browser."
+      footer={
+        <>
+          <Button onClick={() => setState(null)}>Cancel</Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              const importError = importData(state.json);
+              setState(
+                importError ? { kind: "error", message: importError } : null,
+              );
+            }}
+          >
+            Load shared data
+          </Button>
+        </>
+      }
+    >
+      <p className="text-sm text-slate-600">
+        Someone shared a link with their full numbers baked in. Loading it
+        overwrites what's currently saved in this browser — export a backup
+        first if you want to keep it.
+      </p>
+    </Modal>
+  );
+}
+
 export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      <ShareImportHandler />
       <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
           <div className="mr-auto">
