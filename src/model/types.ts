@@ -186,13 +186,15 @@ export interface SavingsAssumptions {
 
 /**
  * A fixed commitment that runs for a defined window and then stops -- a
- * lease, a loan, a court-ordered or contractual payment with a known end date.
+ * lease, a loan, a court-ordered or contractual payment with a known end
+ * date.
  *
  * Obligations are modelled apart from ordinary expenses for two reasons, and
  * both of them matter:
  *
  *  1. They do NOT inflate. A fixed order is a set dollar amount until a
- *     court or contract changes it, so inflating it would overstate the cost every year.
+ *     court or contract changes it, so inflating it would overstate the cost
+ *     every year.
  *  2. They are NOT cut during a job loss. You can stop eating out; you cannot
  *     unilaterally stop paying a court-ordered obligation. Treating them as
  *     discretionary would make every job-loss scenario look survivable when it
@@ -220,7 +222,8 @@ export interface TimedObligation {
 
 /**
  * A household member who contributes income, but only once you own a home with
- * space for them -- extra square footage, a finished basement, a first-floor bedroom.
+ * space for them -- extra square footage, a finished basement, a first-floor
+ * bedroom.
  *
  * Modelled on its own because it has three properties nothing else in this
  * model has:
@@ -231,8 +234,8 @@ export interface TimedObligation {
  *     more than one without, and the whole question is whether the income
  *     justifies the extra mortgage.
  *  3. It CAN be independent of your employment, and when it is, it does NOT
- *     stop during a job loss, which makes this money far more valuable
- *     as a buffer than the same amount of salary.
+ *     stop during a job loss -- which makes this money far more valuable as a
+ *     buffer than the same amount of salary.
  */
 export interface CoResidentIncome {
   enabled: boolean;

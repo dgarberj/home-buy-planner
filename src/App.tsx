@@ -91,9 +91,9 @@ function HowToRead() {
               <strong className="text-slate-900">
                 Commitments are different from expenses.
               </strong>{" "}
-              A fixed obligation with a known end date never inflates and
-              never gets cut in a crisis — and the month it ends, money frees
-              up for good.
+              A fixed obligation with a known end date never inflates and never
+              gets cut in a crisis — and the month it ends, money frees up for
+              good.
             </li>
             <li>
               <strong className="text-slate-900">

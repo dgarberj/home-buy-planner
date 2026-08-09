@@ -2,18 +2,16 @@ import type { Assumptions, BalanceSnapshot, BudgetItem, ScenarioConfig } from '.
 
 /**
  * ============================================================================
- *  TEMPLATE -- copy to seed.ts and replace with your own figures.
+ *  TEMPLATE -- documents the shape `seed.ts` expects.
  * ============================================================================
  *
- * `seed.ts` is gitignored because it holds real household numbers. This file is
- * the committed template so a fresh clone still builds:
- *
- *     cp src/data/seed.example.ts src/data/seed.ts
+ * Both this file and `seed.ts` are tracked in git and must stay generic --
+ * see CLAUDE.md's "Personal reports" section. Real household numbers go
+ * through the app's own forms (saved to localStorage) or a gitignored file,
+ * never into either of these.
  *
  *  PLACEHOLDER DATA -- THESE ARE NOT REAL NUMBERS.
  * Deliberately round, obviously-invented figures so this file is safe to commit.
- * Real household numbers live in localStorage and in the gitignored /data folder.
- * Never edit this file with actual balances -- use the app's forms instead.
  */
 
 /**
@@ -25,7 +23,7 @@ export const SEED_ASSUMPTIONS: Assumptions = {
   household: {
     // PLACEHOLDER AGES -- set these to your real ones; every retirement
     // milestone on the dashboard is measured from primaryAge.
-    primaryAge: 30,
+    primaryAge: 32,
     partnerAge: 30,
   },
   // Fixed commitments with an end date. These are DERIVED from any budget line
@@ -159,7 +157,7 @@ export const SEED_BUDGET: BudgetItem[] = [
   {
     id: 'b27',
     label: 'Fixed-term obligation A',
-    category: 'Family',
+    category: 'Debt',
     type: 'fixed',
     amount: 1000,
     endsOn: '2028-01',
@@ -167,7 +165,7 @@ export const SEED_BUDGET: BudgetItem[] = [
   {
     id: 'b28',
     label: 'Fixed-term obligation B',
-    category: 'Family',
+    category: 'Debt',
     type: 'fixed',
     amount: 800,
     startsOn: '2028-02',

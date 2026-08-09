@@ -22,7 +22,7 @@ import type {
 /**
 Bump when the figures below change; see the store's migration logic.
 */
-export const SEED_VERSION = 'generic-1';
+export const SEED_VERSION = 'generic-2';
 
 export const SEED_ASSUMPTIONS: Assumptions = {
   household: {
