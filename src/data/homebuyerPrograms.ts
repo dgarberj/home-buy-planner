@@ -171,11 +171,7 @@ export interface EligibilityCheck {
   caveats: string[];
 }
 
-/**
- * Work out, from the household's own figures, which programmes are actually in
- * reach. Pure, so it can be tested rather than eyeballed.
- */
-export function checkEligibility(input: {
+interface EligibilityInput {
   purchasePrice: number;
   householdGrossIncome: number;
   householdSize: number;
@@ -183,56 +179,80 @@ export function checkEligibility(input: {
   liquidAssetsAfterClosing: number;
   isFirstTimeBuyer: boolean;
   county: string;
-}): EligibilityCheck[] {
-  return ASSISTANCE_PROGRAMS.map((program) => {
-    const blockers: string[] = [];
-    const caveats: string[] = [];
+}
 
-    if (program.minCreditScore !== null && input.creditScore < program.minCreditScore) {
-      blockers.push(`Needs a credit score of ${program.minCreditScore}; yours is ${input.creditScore}.`);
-    }
-    if (program.requiresFirstTimeBuyer && !input.isFirstTimeBuyer) {
-      blockers.push('Requires a first-time buyer — no principal residence owned in three years.');
-    }
-    if (program.incomeLimit3Plus !== null) {
-      // The published tables split at three household members.
-      const limit =
-        input.householdSize >= 3 ? program.incomeLimit3Plus : PHFA_LIMITS.region1.income1to2;
-      if (input.householdGrossIncome > limit) {
-        blockers.push(
-          `Household income of $${Math.round(input.householdGrossIncome).toLocaleString()} exceeds the $${limit.toLocaleString()} limit.`,
-        );
-      }
-    }
-    if (program.purchasePriceLimit !== null && input.purchasePrice > program.purchasePriceLimit) {
+function programBlockers(program: AssistanceProgram, input: EligibilityInput): string[] {
+  const blockers: string[] = [];
+
+  if (program.minCreditScore !== null && input.creditScore < program.minCreditScore) {
+    blockers.push(`Needs a credit score of ${program.minCreditScore}; yours is ${input.creditScore}.`);
+  }
+  if (program.requiresFirstTimeBuyer && !input.isFirstTimeBuyer) {
+    blockers.push('Requires a first-time buyer — no principal residence owned in three years.');
+  }
+  if (program.incomeLimit3Plus !== null) {
+    // The published tables split at three household members.
+    const limit =
+      input.householdSize >= 3 ? program.incomeLimit3Plus : PHFA_LIMITS.region1.income1to2;
+    if (input.householdGrossIncome > limit) {
       blockers.push(
-        `Purchase price above the $${program.purchasePriceLimit.toLocaleString()} ceiling.`,
+        `Household income of $${Math.round(input.householdGrossIncome).toLocaleString()} exceeds the $${limit.toLocaleString()} limit.`,
       );
     }
-    if (
-      program.maxLiquidAssetsAfterClosing !== null &&
-      input.liquidAssetsAfterClosing > program.maxLiquidAssetsAfterClosing
-    ) {
-      blockers.push(
-        `More than $${program.maxLiquidAssetsAfterClosing.toLocaleString()} of liquid assets left after closing.`,
-      );
-    }
-    if (program.key === 'delco-first') {
-      caveats.push('Aimed at low-to-moderate incomes; the published limits are not the PHFA ones. Confirm directly.', 'Funding is limited and completing the counselling does not guarantee an award.');
-    } else if (program.key === 'kfit' || program.key === 'kdate') {
-      caveats.push('Requires a PHFA first mortgage, so compare its rate against a Conventional 97.');
-    }
+  }
+  if (program.purchasePriceLimit !== null && input.purchasePrice > program.purchasePriceLimit) {
+    blockers.push(
+      `Purchase price above the $${program.purchasePriceLimit.toLocaleString()} ceiling.`,
+    );
+  }
+  if (
+    program.maxLiquidAssetsAfterClosing !== null &&
+    input.liquidAssetsAfterClosing > program.maxLiquidAssetsAfterClosing
+  ) {
+    blockers.push(
+      `More than $${program.maxLiquidAssetsAfterClosing.toLocaleString()} of liquid assets left after closing.`,
+    );
+  }
 
-    const byPct = program.pctOfPrice === null ? Infinity : input.purchasePrice * program.pctOfPrice;
-    const byCap = program.maxAmount ?? Infinity;
-    const estimated = Math.min(byPct, byCap);
+  return blockers;
+}
 
-    return {
-      program,
-      eligible: blockers.length === 0,
-      estimatedBenefit: Number.isFinite(estimated) ? estimated : 0,
-      blockers,
-      caveats,
-    };
-  });
+function programCaveats(program: AssistanceProgram): string[] {
+  if (program.key === 'delco-first') {
+    return [
+      'Aimed at low-to-moderate incomes; the published limits are not the PHFA ones. Confirm directly.',
+      'Funding is limited and completing the counselling does not guarantee an award.',
+    ];
+  }
+  if (program.key === 'kfit' || program.key === 'kdate') {
+    return ['Requires a PHFA first mortgage, so compare its rate against a Conventional 97.'];
+  }
+  return [];
+}
+
+function estimateProgramBenefit(program: AssistanceProgram, purchasePrice: number): number {
+  const byPct = program.pctOfPrice === null ? Infinity : purchasePrice * program.pctOfPrice;
+  const byCap = program.maxAmount ?? Infinity;
+  const estimated = Math.min(byPct, byCap);
+  return Number.isFinite(estimated) ? estimated : 0;
+}
+
+function evaluateProgram(program: AssistanceProgram, input: EligibilityInput): EligibilityCheck {
+  const blockers = programBlockers(program, input);
+
+  return {
+    program,
+    eligible: blockers.length === 0,
+    estimatedBenefit: estimateProgramBenefit(program, input.purchasePrice),
+    blockers,
+    caveats: programCaveats(program),
+  };
+}
+
+/**
+ * Work out, from the household's own figures, which programmes are actually in
+ * reach. Pure, so it can be tested rather than eyeballed.
+ */
+export function checkEligibility(input: EligibilityInput): EligibilityCheck[] {
+  return ASSISTANCE_PROGRAMS.map((program) => evaluateProgram(program, input));
 }

@@ -74,13 +74,6 @@ export default tseslint.config(
       "unicorn/prevent-abbreviations": "off",
       "unicorn/no-null": "off",
       "unicorn/numeric-separators-style": "off",
-
-      // The engine's core month-by-month projection function is
-      // irreducibly branchy (job loss, second income, HSA, PMI, mortgage
-      // payoff, etc. all interact in one pass). Satisfying this would mean
-      // a large, risky rewrite of financial calculation code well beyond a
-      // lint-tooling change; flagged separately rather than done blind.
-      "sonarjs/cognitive-complexity": "off",
     },
   },
   {
