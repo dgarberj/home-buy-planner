@@ -11,9 +11,9 @@ dist-ssr
 !/data/README.md
 *.household.json
 
-# Personal financial notes with real figures -- never commit.
-/STRATEGY.md
-/HSA-REIMBURSEMENT.md
+# Personal financial reports and notes with real figures -- never commit.
+# See CLAUDE.md: "Personal reports" for the rule.
+/reports/
 
 
 # local editor/agent settings
