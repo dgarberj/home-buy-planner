@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 import {
   CartesianGrid,
   Legend,
@@ -9,12 +9,12 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
-import type { MonthlyResult, ScenarioSummary } from '../model/types';
-import { money, moneyShort, monthLabel, monthPhrase } from '../lib/format';
-import { useProjections } from '../store/useProjections';
-import { useStore } from '../store/useStore';
-import { Callout, Card, Stat, Toggle } from './ui';
+} from "recharts";
+import type { MonthlyResult, ScenarioSummary } from "../model/types";
+import { money, moneyShort, monthLabel, monthPhrase } from "../lib/format";
+import { useProjections } from "../store/useProjections";
+import { useStore } from "../store/useStore";
+import { Callout, Card, Stat, Toggle } from "./ui";
 
 /**
  * The answer screen. Someone should be able to land here, read two sentences,
@@ -23,44 +23,59 @@ import { Callout, Card, Stat, Toggle } from './ui';
 
 const METRICS = [
   {
-    key: 'netWorth' as const,
-    label: 'Net worth',
-    hint: 'Cash + investments + retirement + home equity. The big picture.',
+    key: "netWorth" as const,
+    label: "Net worth",
+    hint: "Cash + investments + retirement + home equity. The big picture.",
   },
   {
-    key: 'liquidSavings' as const,
-    label: 'Savings & investments',
-    hint: 'Everything outside retirement that you could get your hands on. This is the line that shows the risk.',
+    key: "liquidSavings" as const,
+    label: "Savings & investments",
+    hint: "Everything outside retirement that you could get your hands on. This is the line that shows the risk.",
   },
   {
-    key: 'cashBalance' as const,
-    label: 'Cash buffer',
-    hint: 'The emergency fund on its own. Investments get sold before this is allowed to go negative, so a dip here is the first warning sign.',
+    key: "cashBalance" as const,
+    label: "Cash buffer",
+    hint: "The emergency fund on its own. Investments get sold before this is allowed to go negative, so a dip here is the first warning sign.",
   },
   {
-    key: 'retirementBalance' as const,
-    label: 'Retirement',
-    hint: 'All retirement accounts combined. Buying a house does not change this — only a job loss that pauses contributions does.',
+    key: "retirementBalance" as const,
+    label: "Retirement",
+    hint: "All retirement accounts combined. Buying a house does not change this — only a job loss that pauses contributions does.",
   },
   {
-    key: 'homeEquity' as const,
-    label: 'Home equity',
-    hint: 'What the house is worth minus what you still owe.',
+    key: "homeEquity" as const,
+    label: "Home equity",
+    hint: "What the house is worth minus what you still owe.",
   },
 ];
 
-/** Plain-English verdict for one scenario. */
-function verdict(s: ScenarioSummary, startDate: string): { tone: 'good' | 'warn' | 'bad'; text: string } {
+/**
+Plain-English verdict for one scenario.
+*/
+function thinnestCashTone(
+  isGoingNegative: boolean,
+  minCashBuffer: number,
+): "bad" | "neutral" | "good" {
+  if (isGoingNegative) return "bad";
+  if (minCashBuffer < 10_000) return "neutral";
+  return "good";
+}
+
+function verdict(
+  s: ScenarioSummary,
+  startDate: string,
+): { tone: "good" | "warn" | "bad"; text: string } {
   const buyRow = s.months.find((m) => m.purchaseOutflow > 0);
   const hadJobLoss = s.months.some((m) => m.jobLossActive);
 
   if (s.goesNegative) {
+    const bottomOut = `Cash bottoms out at ${money(s.minCashBuffer)} in ${monthPhrase(startDate, s.minCashBufferMonth)}`;
+    const buyingClause = buyRow
+      ? `, after buying in ${monthLabel(startDate, buyRow.month)}`
+      : "";
     return {
-      tone: 'bad',
-      text: `This plan runs out of money. Cash bottoms out at ${money(s.minCashBuffer)} in ${monthPhrase(
-        startDate,
-        s.minCashBufferMonth,
-      )}${buyRow ? `, after buying in ${monthLabel(startDate, buyRow.month)}` : ''}.`,
+      tone: "bad",
+      text: `This plan runs out of money. ${bottomOut}${buyingClause}.`,
     };
   }
 
@@ -84,10 +99,10 @@ function verdict(s: ScenarioSummary, startDate: string): { tone: 'good' | 'warn'
     );
   }
 
-  const thin = s.minCashBuffer < 10_000;
+  const isThin = s.minCashBuffer < 10_000;
   return {
-    tone: thin ? 'warn' : 'good',
-    text: `${parts.join(', ')}.${thin ? ' That is a thin cushion — worth a closer look.' : ''}`,
+    tone: isThin ? "warn" : "good",
+    text: `${parts.join(", ")}.${isThin ? " That is a thin cushion — worth a closer look." : ""}`,
   };
 }
 
@@ -95,19 +110,24 @@ export default function Dashboard() {
   const { summaries, assumptions } = useProjections();
   const settings = useStore((s) => s.settings);
   const setAssumptions = useStore((s) => s.setAssumptions);
-  const [metric, setMetric] = useState<(typeof METRICS)[number]['key']>('netWorth');
-  const [xAxis, setXAxis] = useState<'date' | 'age'>('date');
+  const [metric, setMetric] =
+    useState<(typeof METRICS)[number]["key"]>("netWorth");
+  const [xAxis, setXAxis] = useState<"date" | "age">("date");
 
   const active = METRICS.find((m) => m.key === metric)!;
   const primaryAge = assumptions.household.primaryAge;
 
-  /** Label a month as either a calendar date or the primary person's age. */
+  /**
+  Label a month as either a calendar date or the primary person's age.
+  */
   const xLabel = (m: number) =>
-    xAxis === 'age'
+    xAxis === "age"
       ? `age ${Math.floor(primaryAge + (m - 1) / 12)}`
       : monthLabel(settings.startDate, m);
 
-  /** Merge every scenario into one row per month for the chart. */
+  /**
+  Merge every scenario into one row per month for the chart.
+  */
   const chartData = useMemo(() => {
     const rows: Record<string, number | string>[] = [];
     for (let m = 1; m <= settings.horizonMonths; m++) {
@@ -131,7 +151,12 @@ export default function Dashboard() {
   const yearTicks = useMemo(() => {
     const stepYears = settings.horizonMonths > 144 ? 5 : 1;
     const ticks: number[] = [1];
-    for (let m = stepYears * 12; m <= settings.horizonMonths; m += stepYears * 12) ticks.push(m);
+    for (
+      let m = stepYears * 12;
+      m <= settings.horizonMonths;
+      m += stepYears * 12
+    )
+      ticks.push(m);
     return ticks;
   }, [settings.horizonMonths]);
 
@@ -139,7 +164,9 @@ export default function Dashboard() {
     () =>
       summaries
         .map((s) => ({ s, row: s.months.find((m) => m.purchaseOutflow > 0) }))
-        .filter((x): x is { s: ScenarioSummary; row: MonthlyResult } => !!x.row),
+        .filter(
+          (x): x is { s: ScenarioSummary; row: MonthlyResult } => !!x.row,
+        ),
     [summaries],
   );
 
@@ -166,16 +193,23 @@ export default function Dashboard() {
               onChange={(v) => setAssumptions({ secondIncome: { enabled: v } })}
               label={
                 <>
-                  <strong>{assumptions.secondIncome.label}</strong> — every figure below assumes
-                  this {assumptions.secondIncome.enabled ? 'happens' : 'does not happen'}
+                  <strong>{assumptions.secondIncome.label}</strong> — every
+                  figure below assumes this{" "}
+                  {assumptions.secondIncome.enabled
+                    ? "happens"
+                    : "does not happen"}
                 </>
               }
               hint="Flip it to see the whole plan recalculate. Off is the safer baseline; on is what you are planning for."
             />
             <span className="text-xs text-slate-500">
-              {money(assumptions.secondIncome.monthlyTakeHome)}/mo from{' '}
-              {monthLabel(settings.startDate, assumptions.secondIncome.startMonth)}, less{' '}
-              {money(assumptions.secondIncome.additionalCostsMonthly)} of childcare
+              {money(assumptions.secondIncome.monthlyTakeHome)}/mo from{" "}
+              {monthLabel(
+                settings.startDate,
+                assumptions.secondIncome.startMonth,
+              )}
+              , less {money(assumptions.secondIncome.additionalCostsMonthly)} of
+              childcare
             </span>
           </div>
         </Card>
@@ -204,20 +238,20 @@ export default function Dashboard() {
 
       {/* ---- The chart ------------------------------------------------ */}
       <Card
-        title={active.label + ' over time'}
+        title={active.label + " over time"}
         subtitle={active.hint}
         right={
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
-              {(['date', 'age'] as const).map((mode) => (
+              {(["date", "age"] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
                   onClick={() => setXAxis(mode)}
                   className={`rounded-md px-2.5 py-1.5 text-xs font-medium capitalize transition ${
                     xAxis === mode
-                      ? 'bg-white text-slate-900 shadow-sm'
-                      : 'text-slate-500 hover:text-slate-900'
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-900"
                   }`}
                 >
                   {mode}
@@ -225,55 +259,62 @@ export default function Dashboard() {
               ))}
             </div>
             <div className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
-            {METRICS.map((m) => (
-              <button
-                key={m.key}
-                type="button"
-                onClick={() => setMetric(m.key)}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
-                  metric === m.key
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                {m.label}
-              </button>
-            ))}
+              {METRICS.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => setMetric(m.key)}
+                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                    metric === m.key
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
             </div>
           </div>
         }
       >
         <div className="h-[380px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-              <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+            <LineChart
+              data={chartData}
+              margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+            >
+              <CartesianGrid
+                stroke="#e2e8f0"
+                strokeDasharray="3 3"
+                vertical={false}
+              />
               <XAxis
                 dataKey="month"
                 ticks={yearTicks}
                 tickFormatter={xLabel}
-                tick={{ fill: '#64748b', fontSize: 12 }}
-                axisLine={{ stroke: '#cbd5e1' }}
+                tick={{ fill: "#64748b", fontSize: 12 }}
+                axisLine={{ stroke: "#cbd5e1" }}
                 tickLine={false}
               />
               <YAxis
                 tickFormatter={moneyShort}
-                tick={{ fill: '#64748b', fontSize: 12 }}
+                tick={{ fill: "#64748b", fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
                 width={64}
               />
               <Tooltip
-                formatter={(value: number) => money(value)}
-                labelFormatter={(m: number) =>
-                  `${monthLabel(settings.startDate, m)} · age ${Math.floor(
-                    primaryAge + (m - 1) / 12,
+                formatter={(value) => money(Number(value))}
+                labelFormatter={(m) =>
+                  `${monthLabel(settings.startDate, Number(m))} · age ${Math.floor(
+                    primaryAge + (Number(m) - 1) / 12,
                   )} · month ${m}`
                 }
                 contentStyle={{
                   borderRadius: 12,
-                  border: '1px solid #e2e8f0',
+                  border: "1px solid #e2e8f0",
                   fontSize: 13,
-                  boxShadow: '0 4px 16px rgba(15,23,42,0.08)',
+                  boxShadow: "0 4px 16px rgba(15,23,42,0.08)",
                 }}
               />
               <Legend
@@ -283,7 +324,7 @@ export default function Dashboard() {
               />
               {/* Zero line matters when cash goes negative. */}
               <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1} />
-              {(metric === 'liquidSavings' || metric === 'cashBalance') &&
+              {(metric === "liquidSavings" || metric === "cashBalance") &&
                 buyMarkers.map(({ s, row }) => (
                   <ReferenceLine
                     key={s.scenarioId}
@@ -291,7 +332,7 @@ export default function Dashboard() {
                     stroke={s.color}
                     strokeDasharray="4 4"
                     strokeOpacity={0.5}
-                    label={{ value: '🏠', position: 'top', fontSize: 14 }}
+                    label={{ value: "🏠", position: "top", fontSize: 14 }}
                   />
                 ))}
               {summaries.map((s) => (
@@ -309,12 +350,13 @@ export default function Dashboard() {
             </LineChart>
           </ResponsiveContainer>
         </div>
-        {(metric === 'liquidSavings' || metric === 'cashBalance') && buyMarkers.length > 0 && (
-          <p className="mt-2 text-xs text-slate-500">
-            Dashed lines mark the month each scenario buys. The drop is the down payment and closing
-            costs leaving the account.
-          </p>
-        )}
+        {(metric === "liquidSavings" || metric === "cashBalance") &&
+          buyMarkers.length > 0 && (
+            <p className="mt-2 text-xs text-slate-500">
+              Dashed lines mark the month each scenario buys. The drop is the
+              down payment and closing costs leaving the account.
+            </p>
+          )}
       </Card>
 
       {/* ---- Readiness + buffer, per scenario -------------------------- */}
@@ -322,21 +364,33 @@ export default function Dashboard() {
         {summaries.map((s) => {
           const buyRow = s.months.find((m) => m.purchaseOutflow > 0);
           return (
-            <div key={s.scenarioId} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div
+              key={s.scenarioId}
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            >
               <div className="flex items-center gap-2">
                 <span
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: s.color }}
                 />
-                <h3 className="min-w-0 truncate text-sm font-semibold text-slate-900" title={s.scenarioName}>{s.scenarioName}</h3>
+                <h3
+                  className="min-w-0 truncate text-sm font-semibold text-slate-900"
+                  title={s.scenarioName}
+                >
+                  {s.scenarioName}
+                </h3>
               </div>
 
               <div className="mt-4 space-y-4">
                 <Stat
                   label="House ready"
                   hint="The first month your savings would cover the down payment plus closing costs on the target house, which is itself getting more expensive while you save."
-                  value={s.readinessMonth ? monthLabel(settings.startDate, s.readinessMonth) : 'Not on track'}
-                  tone={s.readinessMonth ? 'good' : 'bad'}
+                  value={
+                    s.readinessMonth
+                      ? monthLabel(settings.startDate, s.readinessMonth)
+                      : "Not on track"
+                  }
+                  tone={s.readinessMonth ? "good" : "bad"}
                   sub={
                     s.readinessMonth
                       ? `month ${s.readinessMonth} · needs ${money(s.readinessCashRequired)}`
@@ -347,30 +401,35 @@ export default function Dashboard() {
                   label="Thinnest cash"
                   hint="The lowest your spendable savings ever get across the whole projection. This is the resilience number — if it goes below zero, the plan does not fund itself."
                   value={money(s.minCashBuffer)}
-                  tone={s.goesNegative ? 'bad' : s.minCashBuffer < 10_000 ? 'neutral' : 'good'}
+                  tone={thinnestCashTone(s.goesNegative, s.minCashBuffer)}
                   sub={`lowest point: ${monthLabel(settings.startDate, s.minCashBufferMonth)}`}
                 />
                 <div className="border-t border-slate-100 pt-3 text-xs text-slate-500">
                   {buyRow ? (
                     <>
-                      Buys {monthLabel(settings.startDate, buyRow.month)} ·{' '}
-                      {money(buyRow.purchaseOutflow)} up front ·{' '}
+                      Buys {monthLabel(settings.startDate, buyRow.month)} ·{" "}
+                      {money(buyRow.purchaseOutflow)} up front ·{" "}
                       {money(buyRow.housingPayment)}/mo housing
                       {s.mortgagePaidOffMonth && (
                         <span className="mt-1 block">
-                          Mortgage clear {monthLabel(settings.startDate, s.mortgagePaidOffMonth)} ·{' '}
-                          {money(s.totalInterestPaid)} interest
+                          Mortgage clear{" "}
+                          {monthLabel(
+                            settings.startDate,
+                            s.mortgagePaidOffMonth,
+                          )}{" "}
+                          · {money(s.totalInterestPaid)} interest
                         </span>
                       )}
                       {s.totalMaintenancePaid > 0 && (
                         <span className="mt-1 block">
                           {money(s.totalMaintenancePaid)} upkeep over the window
-                          {s.totalPmiPaid > 0 && ` · ${money(s.totalPmiPaid)} mortgage insurance`}
+                          {s.totalPmiPaid > 0 &&
+                            ` · ${money(s.totalPmiPaid)} mortgage insurance`}
                         </span>
                       )}
                       {s.totalPmiPaid > 0 && s.pmiEndsMonth && (
                         <span className="mt-1 block">
-                          Mortgage insurance ends{' '}
+                          Mortgage insurance ends{" "}
                           {monthLabel(settings.startDate, s.pmiEndsMonth)}
                         </span>
                       )}
@@ -381,7 +440,7 @@ export default function Dashboard() {
                       )}
                     </>
                   ) : (
-                    'Keeps renting for the whole window.'
+                    "Keeps renting for the whole window."
                   )}
                 </div>
               </div>
@@ -420,30 +479,40 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {summaries.map((s) => (
-                <tr key={s.scenarioId} className="border-b border-slate-100 last:border-0">
+                <tr
+                  key={s.scenarioId}
+                  className="border-b border-slate-100 last:border-0"
+                >
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-2">
                       <span
                         className="h-2.5 w-2.5 shrink-0 rounded-full"
                         style={{ backgroundColor: s.color }}
                       />
-                      <span className="font-medium text-slate-900">{s.scenarioName}</span>
+                      <span className="font-medium text-slate-900">
+                        {s.scenarioName}
+                      </span>
                     </div>
                   </td>
                   {years.map((y) => (
-                    <td key={y} className="py-3 pr-4 text-right tabular-nums text-slate-900">
+                    <td
+                      key={y}
+                      className="py-3 pr-4 text-right tabular-nums text-slate-900"
+                    >
                       {money(s.netWorthAtYear[y] ?? 0)}
                     </td>
                   ))}
                   <td
                     className={`py-3 pr-4 text-right font-medium tabular-nums ${
-                      s.goesNegative ? 'text-red-600' : 'text-slate-900'
+                      s.goesNegative ? "text-red-600" : "text-slate-900"
                     }`}
                   >
                     {money(s.minCashBuffer)}
                   </td>
                   <td className="py-3 text-right tabular-nums text-slate-600">
-                    {s.readinessMonth ? monthLabel(settings.startDate, s.readinessMonth) : '—'}
+                    {s.readinessMonth
+                      ? monthLabel(settings.startDate, s.readinessMonth)
+                      : "—"}
                   </td>
                 </tr>
               ))}

@@ -16,10 +16,14 @@
  * lender before treating any of this as the number.
  */
 
-/** PA state realty transfer tax. Same everywhere. */
+/**
+PA state realty transfer tax. Same everywhere.
+*/
 export const PA_STATE_TRANSFER_TAX = 0.01;
 
-/** The usual local rate. Municipalities below deviate from it. */
+/**
+The usual local rate. Municipalities below deviate from it.
+*/
 export const DEFAULT_LOCAL_TRANSFER_TAX = 0.01;
 
 /**
@@ -42,16 +46,24 @@ export const BUYER_TRANSFER_TAX_SHARE = 0.5;
 export interface ClosingCostLine {
   key: string;
   label: string;
-  /** As a share of purchase price, where it scales. */
+  /**
+  As a share of purchase price, where it scales.
+  */
   pctOfPrice?: number;
-  /** Flat dollar amount, where it does not. */
+  /**
+  Flat dollar amount, where it does not.
+  */
   flat?: number;
   note: string;
-  /** Can you shop for this, or is it fixed? */
+  /**
+  Can you shop for this, or is it fixed?
+  */
   negotiable: boolean;
 }
 
-/** Everything other than transfer tax, which is computed per municipality. */
+/**
+Everything other than transfer tax, which is computed per municipality.
+*/
 export const STANDARD_CLOSING_LINES: ClosingCostLine[] = [
   {
     key: 'title',
@@ -109,9 +121,13 @@ export interface ClosingCostBreakdown {
   transferTaxBuyerShare: number;
   localRate: number;
   lines: { label: string; amount: number; note: string; negotiable: boolean }[];
-  /** Everything the buyer pays at closing, excluding the deposit itself. */
+  /**
+  Everything the buyer pays at closing, excluding the deposit itself.
+  */
   total: number;
-  /** As a share of purchase price, for comparison against the flat assumption. */
+  /**
+  As a share of purchase price, for comparison against the flat assumption.
+  */
   pctOfPrice: number;
 }
 

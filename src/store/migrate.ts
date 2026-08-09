@@ -3,7 +3,7 @@ import type {
   BalanceSnapshot,
   BudgetItem,
   ScenarioConfig,
-} from '../model/types';
+} from "../model/types";
 import {
   DEFAULT_HORIZON_MONTHS,
   DEFAULT_MILESTONE_AGES,
@@ -13,7 +13,8 @@ import {
   SEED_SCENARIOS,
   SEED_SETTINGS,
   SEED_VERSION,
-} from '../data/seed';
+} from "../data/seed";
+import { LOCAL_HOUSEHOLD_DATA } from "../data/localOverride";
 
 /**
  * Saved-state handling, kept apart from the store so it can be tested as a
@@ -27,22 +28,38 @@ import {
  * deserves tests, so it lives here.
  */
 
-/** How the model is framed on screen, not what it computes. */
+/**
+How the model is framed on screen, not what it computes.
+*/
 export interface Settings {
   horizonMonths: number;
-  /** ISO year-month the projection starts from, e.g. "2026-08". Month 1 = this. */
+  /**
+  ISO year-month the projection starts from, e.g. "2026-08". Month 1 = this.
+  */
   startDate: string;
-  /** Let the Budget tab drive income / fixed / variable / rent. */
+  /**
+  Let the Budget tab drive income / fixed / variable / rent.
+  */
   useBudgetTotals: boolean;
-  /** Let the newest Balances snapshot drive the starting balances. */
+  /**
+  Let the newest Balances snapshot drive the starting balances.
+  */
   useLatestBalances: boolean;
-  /** Ages the dashboard reports net worth at. */
+  /**
+  Ages the dashboard reports net worth at.
+  */
   milestoneAges: number[];
-  /** Base salary before bonus. The 401(k) contribution target is a share of this. */
+  /**
+  Base salary before bonus. The 401(k) contribution target is a share of this.
+  */
   grossAnnualSalary: number;
-  /** Credit score, which sets the mortgage-insurance rate on a low deposit. */
+  /**
+  Credit score, which sets the mortgage-insurance rate on a low deposit.
+  */
   creditScore: number;
-  /** Municipalities under active consideration; ringed on the map. */
+  /**
+  Municipalities under active consideration; ringed on the map.
+  */
   shortlist: string[];
   /**
    * Paychecks per year. 26 (biweekly) means two months a year carry three
@@ -53,7 +70,9 @@ export interface Settings {
 }
 
 export interface HouseholdData {
-  /** Which build of seed.ts this state came from. See SEED_VERSION. */
+  /**
+  Which build of seed.ts this state came from. See SEED_VERSION.
+  */
   seedVersion: string;
   assumptions: Assumptions;
   budget: BudgetItem[];
@@ -63,17 +82,17 @@ export interface HouseholdData {
 }
 
 export const PALETTE = [
-  '#2563eb',
-  '#f97316',
-  '#16a34a',
-  '#dc2626',
-  '#7c3aed',
-  '#0891b2',
-  '#ca8a04',
-  '#db2777',
+  "#2563eb",
+  "#f97316",
+  "#16a34a",
+  "#dc2626",
+  "#7c3aed",
+  "#0891b2",
+  "#ca8a04",
+  "#db2777",
 ];
 
-export const uid = () => Math.random().toString(36).slice(2, 10);
+export const uid = () => crypto.randomUUID();
 
 const thisMonth = () => new Date().toISOString().slice(0, 7);
 
@@ -98,7 +117,7 @@ export function seedData(): HouseholdData {
 type Plain = Record<string, unknown>;
 
 const isPlainObject = (v: unknown): v is Plain =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
+  typeof v === "object" && v !== null && !Array.isArray(v);
 
 /**
  * Deep-merge saved data over the current defaults.
@@ -126,7 +145,9 @@ export function deepMerge<T>(defaults: T, saved: unknown): T {
       // Only an object may replace an object. A null or a primitive here means
       // the save is corrupt, and taking it would hand the UI something it
       // dereferences straight into a crash.
-      out[key] = isPlainObject(savedValue) ? deepMerge(defaultValue, savedValue) : defaultValue;
+      out[key] = isPlainObject(savedValue)
+        ? deepMerge(defaultValue, savedValue)
+        : defaultValue;
     } else if (Array.isArray(defaultValue) && !Array.isArray(savedValue)) {
       // Likewise: a list has to stay a list.
       out[key] = defaultValue;
@@ -138,6 +159,51 @@ export function deepMerge<T>(defaults: T, saved: unknown): T {
 }
 
 /**
+ * The generic seed, deep-merged with the local `/data/household.json`
+ * override when one is present. This -- not the bare seed -- is the
+ * foundation the app starts from and the thing saved overrides are measured
+ * against, so real numbers on disk take priority over the placeholder
+ * figures without needing to touch seed.ts.
+ */
+export function baseData(): HouseholdData {
+  const seed = seedData();
+  return LOCAL_HOUSEHOLD_DATA === undefined
+    ? seed
+    : deepMerge(seed, LOCAL_HOUSEHOLD_DATA);
+}
+
+/**
+ * Diff `state` against `defaults`, keeping only the leaves that differ.
+ *
+ * This is what lets localStorage hold *overrides* instead of a full
+ * snapshot: as long as a value matches the current base data (seed +
+ * local override file), it is left out, so editing `/data/household.json`
+ * keeps flowing into the app for every field the user never touched by hand.
+ * Arrays are compared and kept whole, mirroring how deepMerge replaces them
+ * wholesale rather than merging index by index.
+ */
+export function diffFromBase<T>(defaults: T, state: T): Partial<T> {
+  if (Array.isArray(defaults) || Array.isArray(state)) {
+    return (
+      JSON.stringify(defaults) === JSON.stringify(state) ? undefined : state
+    ) as Partial<T>;
+  }
+  if (!isPlainObject(defaults) || !isPlainObject(state)) {
+    return (Object.is(defaults, state) ? undefined : state) as Partial<T>;
+  }
+  const out: Plain = {};
+  const keys = new Set([...Object.keys(defaults), ...Object.keys(state)]);
+  for (const key of keys) {
+    const sub = diffFromBase((defaults as Plain)[key], (state as Plain)[key]);
+    if (sub !== undefined) out[key] = sub;
+  }
+  // An object every one of whose keys matched the base is itself "no diff" --
+  // without this, every unchanged nested object would bubble up as `{}` and
+  // the override would never shrink back down to nothing.
+  return (Object.keys(out).length > 0 ? out : undefined) as Partial<T>;
+}
+
+/**
  * Bring a saved payload up to the current shape.
  *
  * Version 1 held a single `savings.currentBalance` with one blended return.
@@ -145,7 +211,7 @@ export function deepMerge<T>(defaults: T, saved: unknown): T {
  * balance is carried into cash and the old return into both pools.
  */
 export function migrateSaved(saved: unknown): HouseholdData {
-  const base = seedData();
+  const base = baseData();
 
   // The seed file has changed since this state was saved, so the file wins.
   // Without this, editing seed.ts would silently do nothing on any machine
@@ -155,21 +221,23 @@ export function migrateSaved(saved: unknown): HouseholdData {
 
   const merged = deepMerge(base, saved);
 
-  const legacy = isPlainObject(saved) && isPlainObject(saved.assumptions)
-    ? (saved.assumptions.savings as Plain | undefined)
-    : undefined;
+  const legacy =
+    isPlainObject(saved) && isPlainObject(saved.assumptions)
+      ? (saved.assumptions.savings as Plain | undefined)
+      : undefined;
 
-  if (legacy && typeof legacy.currentBalance === 'number') {
+  if (legacy && typeof legacy.currentBalance === "number") {
     merged.assumptions.savings.cashBalance = legacy.currentBalance;
     merged.assumptions.savings.investmentBalance = 0;
-    if (typeof legacy.returnAnnual === 'number') {
+    if (typeof legacy.returnAnnual === "number") {
       merged.assumptions.savings.cashReturnAnnual = legacy.returnAnnual;
       merged.assumptions.savings.investmentReturnAnnual = legacy.returnAnnual;
     }
   }
 
   // Anything that must be an array, whatever the save said.
-  if (!Array.isArray(merged.assumptions.obligations)) merged.assumptions.obligations = [];
+  if (!Array.isArray(merged.assumptions.obligations))
+    merged.assumptions.obligations = [];
   if (!Array.isArray(merged.budget)) merged.budget = [];
   if (!Array.isArray(merged.balances)) merged.balances = [];
   if (!Array.isArray(merged.scenarios)) merged.scenarios = [];
@@ -180,4 +248,3 @@ export function migrateSaved(saved: unknown): HouseholdData {
 
   return merged;
 }
-

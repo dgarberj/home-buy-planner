@@ -5,8 +5,8 @@ import {
   SOURCE_TOPICS,
   sourcesFor,
   type Reliability,
-} from '../data/sources';
-import { Callout, Card, InfoTip } from './ui';
+} from "../data/sources";
+import { Callout, Card, InfoTip } from "./ui";
 
 /**
  * Every external number in this app, and where it came from.
@@ -18,9 +18,9 @@ import { Callout, Card, InfoTip } from './ui';
  */
 
 const BADGE: Record<Reliability, string> = {
-  official: 'bg-emerald-100 text-emerald-800',
-  commercial: 'bg-amber-100 text-amber-800',
-  secondary: 'bg-slate-200 text-slate-700',
+  official: "bg-emerald-100 text-emerald-800",
+  commercial: "bg-amber-100 text-amber-800",
+  secondary: "bg-slate-200 text-slate-700",
 };
 
 function SourceCard({ id }: { id: string }) {
@@ -45,11 +45,16 @@ function SourceCard({ id }: { id: string }) {
           className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${BADGE[source.reliability]}`}
         >
           {RELIABILITY_LABEL[source.reliability]}
-          <InfoTip placement="bottom" text={RELIABILITY_NOTE[source.reliability]} />
+          <InfoTip
+            placement="bottom"
+            text={RELIABILITY_NOTE[source.reliability]}
+          />
         </span>
       </div>
 
-      <p className="mt-3 text-sm leading-relaxed text-slate-700">{source.covers}</p>
+      <p className="mt-3 text-sm leading-relaxed text-slate-700">
+        {source.covers}
+      </p>
 
       {source.note && (
         <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
@@ -60,7 +65,9 @@ function SourceCard({ id }: { id: string }) {
       <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 border-t border-slate-100 pt-3 text-xs text-slate-500">
         <div className="flex gap-1.5">
           <dt>Retrieved</dt>
-          <dd className="font-medium tabular-nums text-slate-700">{source.retrieved}</dd>
+          <dd className="font-medium tabular-nums text-slate-700">
+            {source.retrieved}
+          </dd>
         </div>
         <div className="flex gap-1.5">
           <dt>Goes stale</dt>
@@ -72,21 +79,27 @@ function SourceCard({ id }: { id: string }) {
 }
 
 export default function SourcesPanel() {
-  const officialCount = SOURCES.filter((s) => s.reliability === 'official').length;
+  const officialCount = SOURCES.filter(
+    (s) => s.reliability === "official",
+  ).length;
 
   return (
     <div className="space-y-5">
       <Callout tone="neutral">
-        <strong>{SOURCES.length} sources, {officialCount} of them official.</strong> Everything the
-        model did not get from your own numbers is listed here with a link, what it covers, when I
-        fetched it and how often it goes stale. Where only a commercial estimate exists, it says so
-        — an official millage table and a Zillow figure are not the same kind of fact.
+        <strong>
+          {SOURCES.length} sources, {officialCount} of them official.
+        </strong>{" "}
+        Everything the model did not get from your own numbers is listed here
+        with a link, what it covers, when I fetched it and how often it goes
+        stale. Where only a commercial estimate exists, it says so — an official
+        millage table and a Zillow figure are not the same kind of fact.
       </Callout>
 
       {SOURCE_TOPICS.map((topic) => (
         <Card key={topic.key} title={topic.label} subtitle={topic.description}>
           <p className="mb-4 text-xs text-slate-500">
-            <span className="font-medium text-slate-600">Used by:</span> {topic.usedBy}
+            <span className="font-medium text-slate-600">Used by:</span>{" "}
+            {topic.usedBy}
           </p>
           <div className="grid gap-3 lg:grid-cols-2">
             {sourcesFor(topic.key).map((s) => (
@@ -97,11 +110,12 @@ export default function SourcesPanel() {
       ))}
 
       <Callout tone="warn">
-        <strong>What is not sourced.</strong> Your own figures — pay, spending, balances, child
-        support — come from you, and the ones still marked ESTIMATE in the data file are guesses I
-        made. House prices exist for only 18 of 112 municipalities, and school performance for
-        roughly half the districts. Those gaps are shown as blanks throughout rather than filled in
-        with plausible-looking numbers.
+        <strong>What is not sourced.</strong> Your own figures — pay, spending,
+        balances, fixed obligations — come from you, and the ones still marked
+        ESTIMATE in the data file are guesses I made. House prices exist for
+        only 18 of 112 municipalities, and school performance for roughly half
+        the districts. Those gaps are shown as blanks throughout rather than
+        filled in with plausible-looking numbers.
       </Callout>
     </div>
   );

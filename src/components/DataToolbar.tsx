@@ -1,26 +1,33 @@
-import { useRef, useState } from 'react';
-import { downloadText } from '../lib/csv';
-import { useStore } from '../store/useStore';
-import { Button } from './ui';
+import { useRef, useState } from "react";
+import { downloadText } from "../lib/csv";
+import { useStore } from "../store/useStore";
+import { Button } from "./ui";
 
 /**
- * Save, load and reset. Everything lives in this browser's local storage; the
- * export is a plain JSON file meant to live in the gitignored /data folder.
+ * Save, load and reset. The app starts from /data/household.json when that
+ * gitignored file exists (else the generic seed); this browser's local
+ * storage holds only overrides on top of that. Export writes a full snapshot
+ * meant to live in the same /data folder.
  */
 export default function DataToolbar() {
-  const { exportData, importData, resetToSeed } = useStore();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [message, setMessage] = useState<{ text: string; bad: boolean } | null>(null);
+  const { exportData, importData, clearLocalOverrides } = useStore();
+  const fileReference = useRef<HTMLInputElement>(null);
+  const [message, setMessage] = useState<{
+    text: string;
+    isError: boolean;
+  } | null>(null);
 
-  const flash = (text: string, bad = false) => {
-    setMessage({ text, bad });
-    window.setTimeout(() => setMessage(null), 4000);
+  const flash = (text: string, isError = false) => {
+    setMessage({ text, isError });
+    setTimeout(() => setMessage(null), 4000);
   };
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       {message && (
-        <span className={`text-xs font-medium ${message.bad ? 'text-red-600' : 'text-emerald-600'}`}>
+        <span
+          className={`text-xs font-medium ${message.isError ? "text-red-600" : "text-emerald-600"}`}
+        >
           {message.text}
         </span>
       )}
@@ -28,40 +35,50 @@ export default function DataToolbar() {
         size="sm"
         title="Save a JSON backup of your numbers"
         onClick={() => {
-          downloadText('household.json', exportData(), 'application/json');
-          flash('Saved. Keep it in the data/ folder.');
+          downloadText("household.json", exportData(), "application/json");
+          flash("Saved. Keep it in the data/ folder.");
         }}
       >
         Export
       </Button>
-      <Button size="sm" title="Load a JSON backup" onClick={() => fileRef.current?.click()}>
+      <Button
+        size="sm"
+        title="Load a JSON backup"
+        onClick={() => fileReference.current?.click()}
+      >
         Import
       </Button>
       <input
-        ref={fileRef}
+        ref={fileReference}
         type="file"
         accept="application/json,.json"
         className="hidden"
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
+        onChange={async (event_) => {
+          const file = event_.target.files?.[0];
           if (!file) return;
           const error = importData(await file.text());
-          flash(error ?? 'Loaded.', !!error);
-          e.target.value = '';
+          flash(error ?? "Loaded.", !!error);
+          event_.target.value = "";
         }}
       />
       <Button
         size="sm"
         variant="danger"
-        title="Throw away your numbers and go back to the example data"
+        title="Discard edits saved in this browser and fall back to the local data file (or the example data, if there is none)"
         onClick={() => {
-          if (window.confirm('Replace everything with the example placeholder data?')) {
-            resetToSeed();
-            flash('Reset to example data.');
+          if (
+            !confirm(
+              "Clear this browser's saved overrides? In-app edits not written back to data/household.json will be lost.",
+            )
+          ) {
+            return;
           }
+
+          clearLocalOverrides();
+          flash("Local overrides cleared.");
         }}
       >
-        Reset
+        Clear local storage
       </Button>
     </div>
   );

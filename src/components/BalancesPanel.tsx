@@ -1,7 +1,7 @@
-import { deriveStartingBalances } from '../lib/derive';
-import { money } from '../lib/format';
-import { useStore } from '../store/useStore';
-import { Button, Card, DateInput, InfoTip, NumberInput } from './ui';
+import { deriveStartingBalances } from "../lib/derive";
+import { money } from "../lib/format";
+import { useStore } from "../store/useStore";
+import { Button, Card, DateInput, InfoTip, NumberInput } from "./ui";
 
 /**
  * The periodic reality check: what we actually had, on a given date.
@@ -9,17 +9,33 @@ import { Button, Card, DateInput, InfoTip, NumberInput } from './ui';
  */
 
 const COLUMNS = [
-  { key: 'checking', label: 'Checking', hint: 'Everyday spending account.' },
-  { key: 'savings', label: 'Savings / HYSA', hint: 'Cash set aside, including the house fund.' },
-  { key: 'investments', label: 'Investments', hint: 'Taxable brokerage. Not retirement accounts.' },
-  { key: 'retirement', label: 'Retirement', hint: 'All 401(k)s and IRAs combined.' },
-  { key: 'debt', label: 'Debt', hint: 'Everything owed: student loans, car loans, credit cards. Tracked for context; the projection does not amortise it separately.' },
+  { key: "checking", label: "Checking", hint: "Everyday spending account." },
+  {
+    key: "savings",
+    label: "Savings / HYSA",
+    hint: "Cash set aside, including the house fund.",
+  },
+  {
+    key: "investments",
+    label: "Investments",
+    hint: "Taxable brokerage. Not retirement accounts.",
+  },
+  {
+    key: "retirement",
+    label: "Retirement",
+    hint: "All 401(k)s and IRAs combined.",
+  },
+  {
+    key: "debt",
+    label: "Debt",
+    hint: "Everything owed: student loans, car loans, credit cards. Tracked for context; the projection does not amortise it separately.",
+  },
 ] as const;
 
 export default function BalancesPanel() {
   const { balances, addBalance, updateBalance, removeBalance } = useStore();
-  const sorted = [...balances].sort((a, b) => a.date.localeCompare(b.date));
-  const latestId = sorted[sorted.length - 1]?.id;
+  const sorted = balances.toSorted((a, b) => a.date.localeCompare(b.date));
+  const latestId = sorted.at(-1)?.id;
   const starting = deriveStartingBalances(balances);
 
   return (
@@ -63,13 +79,18 @@ export default function BalancesPanel() {
           </thead>
           <tbody>
             {sorted.map((row) => {
-              const net = row.checking + row.savings + row.investments + row.retirement - row.debt;
+              const net =
+                row.checking +
+                row.savings +
+                row.investments +
+                row.retirement -
+                row.debt;
               const isLatest = row.id === latestId;
               return (
                 <tr
                   key={row.id}
                   className={`group border-b border-slate-100 last:border-0 ${
-                    isLatest ? 'bg-blue-50/40' : ''
+                    isLatest ? "bg-blue-50/40" : ""
                   }`}
                 >
                   <td className="py-1 pr-3">

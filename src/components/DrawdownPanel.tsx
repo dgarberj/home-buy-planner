@@ -7,18 +7,36 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
-import { runDrawdown } from '../engine/drawdown';
-import { money, moneyShort } from '../lib/format';
-import { useProjections } from '../store/useProjections';
-import { useStore } from '../store/useStore';
-import { Callout, Card, Field, MoneyInput, NumberInput, PercentInput, Stat, Toggle } from './ui';
+} from "recharts";
+import { runDrawdown } from "../engine/drawdown";
+import { money, moneyShort } from "../lib/format";
+import { useProjections } from "../store/useProjections";
+import { useStore } from "../store/useStore";
+import {
+  Callout,
+  Card,
+  Field,
+  MoneyInput,
+  NumberInput,
+  PercentInput,
+  Stat,
+  Toggle,
+} from "./ui";
 
 /**
  * "Will it last?" -- the question that makes the accumulation numbers mean
  * something. Shown per scenario, because the whole point is to see whether the
  * house decision changes the answer.
  */
+function depletionTone(
+  isRunsOut: boolean,
+  lastsTo: number,
+  planToAge: number,
+): "bad" | "neutral" | "good" {
+  if (!isRunsOut) return "good";
+  return lastsTo < planToAge - 5 ? "bad" : "neutral";
+}
+
 export default function DrawdownPanel() {
   const { summaries, assumptions } = useProjections();
   const setAssumptions = useStore((s) => s.setAssumptions);
@@ -31,13 +49,15 @@ export default function DrawdownPanel() {
 
   const anyReached = results.some((r) => r.result.retirementMonth !== null);
 
-  /** One row per year, one column per scenario, for the depletion chart. */
+  /**
+  One row per year, one column per scenario, for the depletion chart.
+  */
   const chartData: Record<string, number>[] = [];
   const longest = Math.max(0, ...results.map((r) => r.result.track.length));
-  for (let i = 0; i < longest; i++) {
-    const row: Record<string, number> = { age: d.retirementAge + i + 1 };
+  for (let index = 0; index < longest; index++) {
+    const row: Record<string, number> = { age: d.retirementAge + index + 1 };
     for (const r of results) {
-      const point = r.result.track[i];
+      const point = r.result.track[index];
       if (point) row[r.summary.scenarioId] = Math.round(point.balance);
     }
     chartData.push(row);
@@ -58,7 +78,9 @@ export default function DrawdownPanel() {
               value={d.retirementAge}
               min={40}
               max={80}
-              onChange={(v) => setAssumptions({ drawdown: { retirementAge: v } })}
+              onChange={(v) =>
+                setAssumptions({ drawdown: { retirementAge: v } })
+              }
             />
           </Field>
           <Field
@@ -68,7 +90,9 @@ export default function DrawdownPanel() {
             <MoneyInput
               value={d.desiredMonthlySpendToday}
               step={250}
-              onChange={(v) => setAssumptions({ drawdown: { desiredMonthlySpendToday: v } })}
+              onChange={(v) =>
+                setAssumptions({ drawdown: { desiredMonthlySpendToday: v } })
+              }
             />
           </Field>
           <Field
@@ -78,7 +102,9 @@ export default function DrawdownPanel() {
             <PercentInput
               value={d.withdrawalRate}
               step={0.25}
-              onChange={(v) => setAssumptions({ drawdown: { withdrawalRate: v } })}
+              onChange={(v) =>
+                setAssumptions({ drawdown: { withdrawalRate: v } })
+              }
             />
           </Field>
           <Field
@@ -88,7 +114,9 @@ export default function DrawdownPanel() {
             <PercentInput
               value={d.returnAnnual}
               step={0.25}
-              onChange={(v) => setAssumptions({ drawdown: { returnAnnual: v } })}
+              onChange={(v) =>
+                setAssumptions({ drawdown: { returnAnnual: v } })
+              }
             />
           </Field>
           <Field
@@ -97,7 +125,9 @@ export default function DrawdownPanel() {
           >
             <PercentInput
               value={d.inflationAnnual}
-              onChange={(v) => setAssumptions({ drawdown: { inflationAnnual: v } })}
+              onChange={(v) =>
+                setAssumptions({ drawdown: { inflationAnnual: v } })
+              }
             />
           </Field>
           <Field
@@ -114,7 +144,9 @@ export default function DrawdownPanel() {
           <div className="sm:col-span-2 flex items-end">
             <Toggle
               checked={d.includeHomeEquity}
-              onChange={(v) => setAssumptions({ drawdown: { includeHomeEquity: v } })}
+              onChange={(v) =>
+                setAssumptions({ drawdown: { includeHomeEquity: v } })
+              }
               label="Count home equity as spendable"
               hint="Off by default: you have to live somewhere. Only turn this on if the plan really is to downsize or borrow against the house."
             />
@@ -122,20 +154,12 @@ export default function DrawdownPanel() {
         </div>
       </Card>
 
-      {!anyReached ? (
-        <Card title="Will the money last?">
-          <Callout tone="neutral">
-            Age {d.retirementAge} falls outside the projection window, so there is nothing to draw
-            down yet. Stretch the window in Assumptions — the <strong>To 70</strong> preset covers
-            most retirement ages.
-          </Callout>
-        </Card>
-      ) : (
+      {anyReached ? (
         <>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {results.map(({ summary, result }) => {
               if (result.retirementMonth === null) return null;
-              const runsOut = result.depletionAge !== null;
+              const isRunsOut = result.depletionAge !== null;
               const lastsTo = result.depletionAge ?? d.planToAge;
               return (
                 <div
@@ -147,7 +171,10 @@ export default function DrawdownPanel() {
                       className="h-2.5 w-2.5 shrink-0 rounded-full"
                       style={{ backgroundColor: summary.color }}
                     />
-                    <h3 className="min-w-0 truncate text-sm font-semibold text-slate-900" title={summary.scenarioName}>
+                    <h3
+                      className="min-w-0 truncate text-sm font-semibold text-slate-900"
+                      title={summary.scenarioName}
+                    >
                       {summary.scenarioName}
                     </h3>
                   </div>
@@ -164,24 +191,32 @@ export default function DrawdownPanel() {
                     <Stat
                       label="Money lasts until"
                       hint="Simulated month by month: the balance grows at the retirement return and your inflating spending comes out of it."
-                      value={runsOut ? `age ${lastsTo.toFixed(1)}` : `past ${d.planToAge}`}
-                      tone={runsOut ? (lastsTo < d.planToAge - 5 ? 'bad' : 'neutral') : 'good'}
+                      value={
+                        isRunsOut
+                          ? `age ${lastsTo.toFixed(1)}`
+                          : `past ${d.planToAge}`
+                      }
+                      tone={depletionTone(isRunsOut, lastsTo, d.planToAge)}
                       sub={
-                        runsOut
+                        isRunsOut
                           ? `${result.yearsOfIncome.toFixed(1)} years of income`
                           : `${money(result.balanceAtPlanEnd)} still left at ${d.planToAge}`
                       }
                     />
                     <div className="border-t border-slate-100 pt-3 text-xs text-slate-500">
-                      At {(d.withdrawalRate * 100).toFixed(1)}% that pot supports{' '}
+                      At {(d.withdrawalRate * 100).toFixed(1)}% that pot
+                      supports{" "}
                       <strong className="text-slate-700">
                         {money(result.sustainableAnnualIncome)}
-                      </strong>{' '}
-                      a year — about {money(result.sustainableAnnualIncomeToday)} in today&rsquo;s
-                      money.
+                      </strong>{" "}
+                      a year — about{" "}
+                      {money(result.sustainableAnnualIncomeToday)} in
+                      today&rsquo;s money.
                       <span
                         className={`mt-1 block font-semibold ${
-                          result.meetsTargetAtWithdrawalRate ? 'text-emerald-700' : 'text-red-600'
+                          result.meetsTargetAtWithdrawalRate
+                            ? "text-emerald-700"
+                            : "text-red-600"
                         }`}
                       >
                         {result.meetsTargetAtWithdrawalRate
@@ -203,30 +238,37 @@ export default function DrawdownPanel() {
           >
             <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+                <AreaChart
+                  data={chartData}
+                  margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+                >
+                  <CartesianGrid
+                    stroke="#e2e8f0"
+                    strokeDasharray="3 3"
+                    vertical={false}
+                  />
                   <XAxis
                     dataKey="age"
                     tickFormatter={(a: number) => `age ${a}`}
-                    tick={{ fill: '#64748b', fontSize: 12 }}
-                    axisLine={{ stroke: '#cbd5e1' }}
+                    tick={{ fill: "#64748b", fontSize: 12 }}
+                    axisLine={{ stroke: "#cbd5e1" }}
                     tickLine={false}
                   />
                   <YAxis
                     tickFormatter={moneyShort}
-                    tick={{ fill: '#64748b', fontSize: 12 }}
+                    tick={{ fill: "#64748b", fontSize: 12 }}
                     axisLine={false}
                     tickLine={false}
                     width={64}
                   />
                   <Tooltip
-                    formatter={(value: number) => money(value)}
-                    labelFormatter={(a: number) => `Age ${a}`}
+                    formatter={(value) => money(Number(value))}
+                    labelFormatter={(a) => `Age ${a}`}
                     contentStyle={{
                       borderRadius: 12,
-                      border: '1px solid #e2e8f0',
+                      border: "1px solid #e2e8f0",
                       fontSize: 13,
-                      boxShadow: '0 4px 16px rgba(15,23,42,0.08)',
+                      boxShadow: "0 4px 16px rgba(15,23,42,0.08)",
                     }}
                   />
                   <ReferenceLine y={0} stroke="#94a3b8" />
@@ -249,14 +291,23 @@ export default function DrawdownPanel() {
           </Card>
 
           <Callout tone="warn">
-            <strong>What this leaves out.</strong> No taxes on withdrawal (which differ by account
-            type), no Social Security or pension income, no required minimum distributions, no
-            healthcare shocks — and, most importantly, a single smooth return every year. Real
-            markets deliver their bad years in clumps, and a crash early in retirement does far more
-            damage than the same crash later. Treat the age the money runs out as a rough marker,
-            not a date.
+            <strong>What this leaves out.</strong> No taxes on withdrawal (which
+            differ by account type), no Social Security or pension income, no
+            required minimum distributions, no healthcare shocks — and, most
+            importantly, a single smooth return every year. Real markets deliver
+            their bad years in clumps, and a crash early in retirement does far
+            more damage than the same crash later. Treat the age the money runs
+            out as a rough marker, not a date.
           </Callout>
         </>
+      ) : (
+        <Card title="Will the money last?">
+          <Callout tone="neutral">
+            Age {d.retirementAge} falls outside the projection window, so there
+            is nothing to draw down yet. Stretch the window in Assumptions — the{" "}
+            <strong>To 70</strong> preset covers most retirement ages.
+          </Callout>
+        </Card>
       )}
     </div>
   );

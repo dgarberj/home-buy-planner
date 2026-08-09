@@ -1,5 +1,5 @@
-import type { Assumptions } from '../model/types';
-import { monthlyNominal, monthlyPayment } from './finance';
+import type { Assumptions } from "../model/types";
+import { monthlyNominal, monthlyPayment } from "./finance";
 
 /**
  * ============================================================================
@@ -27,11 +27,17 @@ import { monthlyNominal, monthlyPayment } from './finance';
  */
 
 export const DTI_LIMITS = {
-  /** Comfortable. Most lenders approve without argument. */
+  /**
+  Comfortable. Most lenders approve without argument.
+  */
   conservative: 0.36,
-  /** Manual underwriting with compensating factors. */
+  /**
+  Manual underwriting with compensating factors.
+  */
   manual: 0.45,
-  /** The Desktop Underwriter ceiling. Beyond this, no. */
+  /**
+  The Desktop Underwriter ceiling. Beyond this, no.
+  */
   automated: 0.5,
 };
 
@@ -42,49 +48,72 @@ export const DTI_LIMITS = {
 export const MONTHS_REMAINING_EXCLUSION = 10;
 
 export interface DtiInput {
-  /** Gross monthly income before any deduction. NOT take-home. */
+  /**
+  Gross monthly income before any deduction. NOT take-home.
+  */
   grossMonthlyIncome: number;
-  /** Proposed housing payment: principal, interest, tax, insurance, PMI, HOA. */
+  /**
+  Proposed housing payment: principal, interest, tax, insurance, PMI, HOA.
+  */
   proposedHousing: number;
-  /** Support payments, alimony and maintenance you PAY. */
+  /**
+  Support payments, alimony and maintenance you PAY.
+  */
   supportPaid: number;
-  /** Car loans, student loans, personal loans. */
+  /**
+  Car loans, student loans, personal loans.
+  */
   instalmentDebts: number;
-  /** Minimum payments on revolving credit, even if you clear it monthly. */
+  /**
+  Minimum payments on revolving credit, even if you clear it monthly.
+  */
   revolvingMinimums: number;
 }
 
 export interface DtiResult {
-  /** Housing alone as a share of gross income. */
+  /**
+  Housing alone as a share of gross income.
+  */
   frontEnd: number;
-  /** Everything as a share of gross income. This is the one that decides. */
+  /**
+  Everything as a share of gross income. This is the one that decides.
+  */
   backEnd: number;
   totalDebts: number;
-  /** Which band the ratio falls in. */
-  verdict: 'comfortable' | 'workable' | 'tight' | 'declined';
-  /** Housing payment that would land exactly on a given limit. */
+  /**
+  Which band the ratio falls in.
+  */
+  verdict: "comfortable" | "workable" | "tight" | "declined";
+  /**
+  Housing payment that would land exactly on a given limit.
+  */
   headroomAt: Record<keyof typeof DTI_LIMITS, number>;
-  /** How much of the ratio support payments alone is using. */
+  /**
+  How much of the ratio support payments alone is using.
+  */
   supportShare: number;
 }
 
+function dtiVerdict(backEnd: number): DtiResult["verdict"] {
+  if (backEnd <= DTI_LIMITS.conservative) return "comfortable";
+  if (backEnd <= DTI_LIMITS.manual) return "workable";
+  if (backEnd <= DTI_LIMITS.automated) return "tight";
+  return "declined";
+}
+
 export function debtToIncome(input: DtiInput): DtiResult {
-  const nonHousing = input.supportPaid + input.instalmentDebts + input.revolvingMinimums;
+  const nonHousing =
+    input.supportPaid + input.instalmentDebts + input.revolvingMinimums;
   const totalDebts = nonHousing + input.proposedHousing;
   const gross = input.grossMonthlyIncome;
 
   const backEnd = gross > 0 ? totalDebts / gross : Infinity;
 
-  const verdict: DtiResult['verdict'] =
-    backEnd <= DTI_LIMITS.conservative
-      ? 'comfortable'
-      : backEnd <= DTI_LIMITS.manual
-        ? 'workable'
-        : backEnd <= DTI_LIMITS.automated
-          ? 'tight'
-          : 'declined';
+  const verdict = dtiVerdict(backEnd);
 
-  /** The largest housing payment that still fits under each limit. */
+  /**
+  The largest housing payment that still fits under each limit.
+  */
   const headroomAt = {
     conservative: Math.max(0, gross * DTI_LIMITS.conservative - nonHousing),
     manual: Math.max(0, gross * DTI_LIMITS.manual - nonHousing),
@@ -110,7 +139,7 @@ export function debtToIncome(input: DtiInput): DtiResult {
  */
 export function maxPriceByDti(
   assumptions: Assumptions,
-  opts: {
+  options: {
     grossMonthlyIncome: number;
     supportPaid: number;
     instalmentDebts: number;
@@ -121,23 +150,32 @@ export function maxPriceByDti(
   },
 ): number {
   const { home } = assumptions;
-  const limit = opts.limit ?? DTI_LIMITS.manual;
-  const nonHousing = opts.supportPaid + opts.instalmentDebts + opts.revolvingMinimums;
-  const housingAllowance = opts.grossMonthlyIncome * limit - nonHousing;
-  if (housingAllowance <= opts.insuranceMonthly) return 0;
+  const limit = options.limit ?? DTI_LIMITS.manual;
+  const nonHousing =
+    options.supportPaid + options.instalmentDebts + options.revolvingMinimums;
+  const housingAllowance = options.grossMonthlyIncome * limit - nonHousing;
+  if (housingAllowance <= options.insuranceMonthly) return 0;
 
   const loanShare = 1 - home.downPaymentPct;
   const termMonths = Math.round(home.mortgageTermYears * 12);
-  const pmtPerDollar = monthlyPayment(1, monthlyNominal(home.mortgageRateAnnual), termMonths);
-  const needsPmi = loanShare > home.pmiRemovedAtLtv;
-  const pmiPerDollar = needsPmi ? (loanShare * home.pmiAnnualPct) / 12 : 0;
+  const pmtPerDollar = monthlyPayment(
+    1,
+    monthlyNominal(home.mortgageRateAnnual),
+    termMonths,
+  );
+  const isNeedsPmi = loanShare > home.pmiRemovedAtLtv;
+  const pmiPerDollar = isNeedsPmi ? (loanShare * home.pmiAnnualPct) / 12 : 0;
 
   // Upkeep is deliberately absent: a lender does not count it, even though you
   // will pay it. That is one reason a lender's maximum is not a safe maximum.
-  const costPerDollar = loanShare * pmtPerDollar + opts.effectiveTaxRate / 12 + pmiPerDollar;
+  const costPerDollar =
+    loanShare * pmtPerDollar + options.effectiveTaxRate / 12 + pmiPerDollar;
   if (costPerDollar <= 0) return 0;
 
-  return Math.max(0, (housingAllowance - opts.insuranceMonthly) / costPerDollar);
+  return Math.max(
+    0,
+    (housingAllowance - options.insuranceMonthly) / costPerDollar,
+  );
 }
 
 /**

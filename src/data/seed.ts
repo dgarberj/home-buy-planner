@@ -19,7 +19,9 @@ import type {
  * family details here.
  */
 
-/** Bump when the figures below change; see the store's migration logic. */
+/**
+Bump when the figures below change; see the store's migration logic.
+*/
 export const SEED_VERSION = 'generic-1';
 
 export const SEED_ASSUMPTIONS: Assumptions = {
@@ -199,13 +201,19 @@ export const SEED_SCENARIOS: ScenarioConfig[] = [
   { id: 'sc4', name: 'Keep renting', buyMonth: null, hasJobLoss: false, enabled: true, color: '#7c3aed' },
 ];
 
-/** Ages the dashboard reports net worth at. */
+/**
+Ages the dashboard reports net worth at.
+*/
 export const DEFAULT_MILESTONE_AGES = [55, 60, 65, 67, 70];
 
-/** The projection runs until the primary person reaches this age. */
+/**
+The projection runs until the primary person reaches this age.
+*/
 export const DEFAULT_PROJECT_TO_AGE = 70;
 
-/** Five years -- the window the house decision actually lives in. */
+/**
+Five years -- the window the house decision actually lives in.
+*/
 export const SHORT_HORIZON_MONTHS = 60;
 
 /**
@@ -216,14 +224,24 @@ export const SHORT_HORIZON_MONTHS = 60;
 export const DEFAULT_HORIZON_MONTHS =
   (DEFAULT_PROJECT_TO_AGE - SEED_ASSUMPTIONS.household.primaryAge) * 12 + 1;
 
-/** Non-model defaults: framing, targets and shortlists. */
+/**
+Non-model defaults: framing, targets and shortlists.
+*/
 export const SEED_SETTINGS = {
-  /** Base salary before bonus. The 401(k) target is a share of this. */
+  /**
+  Base salary before bonus. The 401(k) target is a share of this.
+  */
   grossAnnualSalary: 90_000,
-  /** Biweekly. Two months a year carry three paycheques. */
+  /**
+  Biweekly. Two months a year carry three paycheques.
+  */
   paychecksPerYear: 26,
-  /** Sets the mortgage-insurance tier on a low deposit. */
+  /**
+  Sets the mortgage-insurance tier on a low deposit.
+  */
   creditScore: 760,
-  /** Municipalities under active consideration; ringed on the county map. */
+  /**
+  Municipalities under active consideration; ringed on the county map.
+  */
   shortlist: [] as string[],
 };

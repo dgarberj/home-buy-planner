@@ -27,8 +27,14 @@ export function monthlyNominal(annualRate: number): number {
   return annualRate / 12;
 }
 
-/** Compound `value` forward by `months` months at a monthly rate. */
-export function compound(value: number, monthlyRate: number, months: number): number {
+/**
+Compound `value` forward by `months` months at a monthly rate.
+*/
+export function compound(
+  value: number,
+  monthlyRate: number,
+  months: number,
+): number {
   return value * Math.pow(1 + monthlyRate, months);
 }
 
@@ -41,12 +47,18 @@ export function compound(value: number, monthlyRate: number, months: number): nu
  * @param monthlyRate periodic rate (use `monthlyNominal(apr)`)
  * @param termMonths total number of payments
  */
-export function monthlyPayment(principal: number, monthlyRate: number, termMonths: number): number {
+export function monthlyPayment(
+  principal: number,
+  monthlyRate: number,
+  termMonths: number,
+): number {
   if (termMonths <= 0) return 0;
   if (principal <= 0) return 0;
   // A 0% loan is just principal spread evenly; the formula divides by zero.
   if (monthlyRate === 0) return principal / termMonths;
-  return (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
+  return (
+    (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths))
+  );
 }
 
 /**

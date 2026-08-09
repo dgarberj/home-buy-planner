@@ -22,7 +22,9 @@
 
 export const SECOND_EARNER_MARGINAL_RATE = 0.3372;
 
-/** Net of tax, from a gross annual salary. */
+/**
+Net of tax, from a gross annual salary.
+*/
 export function netMonthlyFromGross(grossAnnual: number): number {
   return (grossAnnual * (1 - SECOND_EARNER_MARGINAL_RATE)) / 12;
 }
@@ -31,11 +33,15 @@ export interface SecondIncomeOption {
   key: string;
   label: string;
   grossAnnual: number;
-  /** Childcare and other costs of working, per month. */
+  /**
+  Childcare and other costs of working, per month.
+  */
   costsMonthly: number;
   hoursNote: string;
   note: string;
-  /** Does this build Social Security credits at the full rate? */
+  /**
+  Does this build Social Security credits at the full rate?
+  */
   fullCredits: boolean;
 }
 
@@ -88,7 +94,9 @@ export const SECOND_INCOME_OPTIONS: SecondIncomeOption[] = [
   },
 ];
 
-/** Net monthly benefit once the costs of working are subtracted. */
-export function netBenefit(option: SecondIncomeOption, duringChildcare: boolean): number {
-  return netMonthlyFromGross(option.grossAnnual) - (duringChildcare ? option.costsMonthly : 0);
+/**
+Net monthly benefit once the costs of working are subtracted.
+*/
+export function netBenefit(option: SecondIncomeOption, isDuringChildcare: boolean): number {
+  return netMonthlyFromGross(option.grossAnnual) - (isDuringChildcare ? option.costsMonthly : 0);
 }

@@ -17,14 +17,22 @@ export interface Source {
   title: string;
   publisher: string;
   url: string;
-  /** What this source actually provides. */
+  /**
+  What this source actually provides.
+  */
   covers: string;
-  /** When I retrieved it. */
+  /**
+  When I retrieved it.
+  */
   retrieved: string;
   reliability: Reliability;
-  /** How often it needs re-checking. */
+  /**
+  How often it needs re-checking.
+  */
   refresh: string;
-  /** Caveats worth knowing before relying on it. */
+  /**
+  Caveats worth knowing before relying on it.
+  */
   note?: string;
 }
 
@@ -343,7 +351,9 @@ export interface SourceTopic {
   key: string;
   label: string;
   description: string;
-  /** Which parts of the app rely on these. */
+  /**
+  Which parts of the app rely on these.
+  */
   usedBy: string;
   sourceIds: string[];
 }
@@ -411,5 +421,5 @@ export function sourceById(id: string): Source | undefined {
 export function sourcesFor(topicKey: string): Source[] {
   const topic = SOURCE_TOPICS.find((t) => t.key === topicKey);
   if (!topic) return [];
-  return topic.sourceIds.map(sourceById).filter((s): s is Source => s !== undefined);
+  return topic.sourceIds.map((id) => sourceById(id)).filter((s): s is Source => s !== undefined);
 }

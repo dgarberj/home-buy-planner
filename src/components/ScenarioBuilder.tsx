@@ -1,7 +1,7 @@
-import type { ScenarioConfig } from '../model/types';
-import { duration, monthLabel, pct } from '../lib/format';
-import { useStore } from '../store/useStore';
-import { Button, Card, INLINE_INPUT, PercentInput, Slider, Toggle } from './ui';
+import type { ScenarioConfig } from "../model/types";
+import { duration, monthLabel, pct } from "../lib/format";
+import { useStore } from "../store/useStore";
+import { Button, Card, INLINE_INPUT, PercentInput, Slider, Toggle } from "./ui";
 
 /**
  * The "what if" controls. Everything here is a slider or a switch on purpose:
@@ -11,39 +11,49 @@ import { Button, Card, INLINE_INPUT, PercentInput, Slider, Toggle } from './ui';
 function ScenarioCard({ scenario }: { scenario: ScenarioConfig }) {
   const { assumptions, settings, updateScenario, removeScenario } = useStore();
   const horizon = settings.horizonMonths;
-  const jl = { ...assumptions.jobLoss, ...(scenario.jobLossOverride ?? {}) };
+  const jl = { ...assumptions.jobLoss, ...scenario.jobLossOverride };
 
   const setOverride = (patch: Partial<typeof jl>) =>
-    updateScenario(scenario.id, { jobLossOverride: { ...scenario.jobLossOverride, ...patch } });
+    updateScenario(scenario.id, {
+      jobLossOverride: { ...scenario.jobLossOverride, ...patch },
+    });
 
   const buyMonth = scenario.buyMonth;
 
   return (
     <div
       className={`rounded-2xl border bg-white transition ${
-        scenario.enabled ? 'border-slate-200 shadow-sm' : 'border-slate-200 bg-slate-50 opacity-60'
+        scenario.enabled
+          ? "border-slate-200 shadow-sm"
+          : "border-slate-200 bg-slate-50 opacity-60"
       }`}
     >
       <header className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
         <input
           type="color"
           value={scenario.color}
-          onChange={(e) => updateScenario(scenario.id, { color: e.target.value })}
+          onChange={(event_) =>
+            updateScenario(scenario.id, { color: event_.target.value })
+          }
           title="Line colour on the chart"
           className="h-7 w-7 shrink-0 cursor-pointer rounded-lg border border-slate-200 bg-transparent p-0.5"
         />
         <input
           value={scenario.name}
-          onChange={(e) => updateScenario(scenario.id, { name: e.target.value })}
+          onChange={(event_) =>
+            updateScenario(scenario.id, { name: event_.target.value })
+          }
           className={`${INLINE_INPUT} min-w-0 flex-1 font-semibold text-slate-900`}
         />
         <button
           type="button"
-          onClick={() => updateScenario(scenario.id, { enabled: !scenario.enabled })}
-          title={scenario.enabled ? 'Hide from the chart' : 'Show on the chart'}
+          onClick={() =>
+            updateScenario(scenario.id, { enabled: !scenario.enabled })
+          }
+          title={scenario.enabled ? "Hide from the chart" : "Show on the chart"}
           className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
         >
-          {scenario.enabled ? 'Shown' : 'Hidden'}
+          {scenario.enabled ? "Shown" : "Hidden"}
         </button>
         <button
           type="button"
@@ -58,7 +68,9 @@ function ScenarioCard({ scenario }: { scenario: ScenarioConfig }) {
       <div className="space-y-4 px-4 py-4">
         <Toggle
           checked={buyMonth !== null}
-          onChange={(v) => updateScenario(scenario.id, { buyMonth: v ? 24 : null })}
+          onChange={(v) =>
+            updateScenario(scenario.id, { buyMonth: v ? 24 : null })
+          }
           label="Buy a house"
           hint="Turn this off to model carrying on renting for the whole projection."
         />
@@ -135,15 +147,18 @@ function ScenarioCard({ scenario }: { scenario: ScenarioConfig }) {
               label="Pause retirement contributions"
               hint="Both your contribution and the employer match stop, since they come with the job."
             />
-            {scenario.jobLossOverride && Object.keys(scenario.jobLossOverride).length > 0 && (
-              <button
-                type="button"
-                onClick={() => updateScenario(scenario.id, { jobLossOverride: undefined })}
-                className="text-xs font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900"
-              >
-                Reset to the shared job-loss settings
-              </button>
-            )}
+            {scenario.jobLossOverride &&
+              Object.keys(scenario.jobLossOverride).length > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateScenario(scenario.id, { jobLossOverride: undefined })
+                  }
+                  className="text-xs font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900"
+                >
+                  Reset to the shared job-loss settings
+                </button>
+              )}
           </div>
         )}
       </div>
@@ -170,34 +185,44 @@ export default function ScenarioBuilder() {
             Shared job-loss defaults
           </h4>
           <p className="mt-0.5 text-xs text-slate-500">
-            Scenarios start from these. Change a slider inside a scenario and it overrides them just
-            for that one.
+            Scenarios start from these. Change a slider inside a scenario and it
+            overrides them just for that one.
           </p>
         </div>
         <label className="block">
-          <span className="text-sm font-medium text-slate-700">Income still coming in</span>
+          <span className="text-sm font-medium text-slate-700">
+            Income still coming in
+          </span>
           <div className="mt-1.5">
             <PercentInput
               value={assumptions.jobLoss.incomeReplacementPct}
               step={5}
-              onChange={(v) => setAssumptions({ jobLoss: { incomeReplacementPct: v } })}
+              onChange={(v) =>
+                setAssumptions({ jobLoss: { incomeReplacementPct: v } })
+              }
             />
           </div>
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-slate-700">Spending cut back by</span>
+          <span className="text-sm font-medium text-slate-700">
+            Spending cut back by
+          </span>
           <div className="mt-1.5">
             <PercentInput
               value={assumptions.jobLoss.expenseCutPct}
               step={5}
-              onChange={(v) => setAssumptions({ jobLoss: { expenseCutPct: v } })}
+              onChange={(v) =>
+                setAssumptions({ jobLoss: { expenseCutPct: v } })
+              }
             />
           </div>
         </label>
         <div className="sm:col-span-2 flex items-end">
           <Toggle
             checked={assumptions.jobLoss.pauseRetirementContributions}
-            onChange={(v) => setAssumptions({ jobLoss: { pauseRetirementContributions: v } })}
+            onChange={(v) =>
+              setAssumptions({ jobLoss: { pauseRetirementContributions: v } })
+            }
             label="Pause retirement contributions during a gap"
           />
         </div>

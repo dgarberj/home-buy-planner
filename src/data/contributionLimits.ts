@@ -11,13 +11,17 @@
 export const HSA_LIMITS = {
   selfOnly2026: 4_400,
   family2026: 8_750,
-  /** Extra allowance from age 55, if not enrolled in Medicare. */
+  /**
+  Extra allowance from age 55, if not enrolled in Medicare.
+  */
   catchUp55: 1_000,
   hdhpMinDeductibleFamily: 3_400,
   hdhpMaxOutOfPocketFamily: 17_000,
 };
 
-/** 401(k) employee elective deferral limit, 2026. */
+/**
+401(k) employee elective deferral limit, 2026.
+*/
 export const K401_LIMITS = {
   employeeDeferral2026: 24_500,
   catchUp50: 8_000,
@@ -32,21 +36,35 @@ export const K401_LIMITS = {
  * and paying a penalty.
  */
 export const RETIREMENT_TARGETS = {
-  /** Share of gross salary you put into the 401(k) each month. */
+  /**
+  Share of gross salary you put into the 401(k) each month.
+  */
   employeeSharePct: 0.06,
-  /** Employer's monthly 401(k) match, as a share of gross salary. */
+  /**
+  Employer's monthly 401(k) match, as a share of gross salary.
+  */
   employerMatchPct: 0.045,
-  /** Employer's once-a-year 401(k) contribution, as a share of gross salary. */
+  /**
+  Employer's once-a-year 401(k) contribution, as a share of gross salary.
+  */
   employerAnnual401kPct: 0.015,
-  /** Employer's once-a-year HSA seed, in dollars. */
+  /**
+  Employer's once-a-year HSA seed, in dollars.
+  */
   employerAnnualHsaSeed: 1_000,
-  /** Fund the HSA to the family limit, counting the employer seed towards it. */
+  /**
+  Fund the HSA to the family limit, counting the employer seed towards it.
+  */
   maxOutHsa: true,
-  /** Calendar month the employer's annual contributions land. */
+  /**
+  Calendar month the employer's annual contributions land.
+  */
   employerLumpMonth: 1,
 };
 
-/** Your own HSA room once the employer seed is counted against the limit. */
+/**
+Your own HSA room once the employer seed is counted against the limit.
+*/
 export function employeeHsaRoom(): number {
   return HSA_LIMITS.family2026 - RETIREMENT_TARGETS.employerAnnualHsaSeed;
 }

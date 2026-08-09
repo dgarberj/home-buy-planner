@@ -1,38 +1,40 @@
-import { useState } from 'react';
-import AssumptionsPanel from './components/AssumptionsPanel';
-import BalancesPanel from './components/BalancesPanel';
-import BudgetPanel from './components/BudgetPanel';
-import Dashboard from './components/Dashboard';
-import DataToolbar from './components/DataToolbar';
-import ContributionGauges from './components/ContributionGauges';
-import DrawdownPanel from './components/DrawdownPanel';
-import LenderPanel from './components/LenderPanel';
-import LeversBar from './components/LeversBar';
-import MarketPanel from './components/MarketPanel';
-import WaitingPanel from './components/WaitingPanel';
-import MonthlyDataTable from './components/MonthlyDataTable';
-import RetirementMilestones from './components/RetirementMilestones';
-import ScenarioBuilder from './components/ScenarioBuilder';
-import SourcesPanel from './components/SourcesPanel';
-import Section from './components/Section';
+import { useState } from "react";
+import AssumptionsPanel from "./components/AssumptionsPanel";
+import BalancesPanel from "./components/BalancesPanel";
+import BudgetPanel from "./components/BudgetPanel";
+import Dashboard from "./components/Dashboard";
+import DataToolbar from "./components/DataToolbar";
+import ContributionGauges from "./components/ContributionGauges";
+import DrawdownPanel from "./components/DrawdownPanel";
+import LenderPanel from "./components/LenderPanel";
+import LeversBar from "./components/LeversBar";
+import MarketPanel from "./components/MarketPanel";
+import WaitingPanel from "./components/WaitingPanel";
+import MonthlyDataTable from "./components/MonthlyDataTable";
+import RetirementMilestones from "./components/RetirementMilestones";
+import ScenarioBuilder from "./components/ScenarioBuilder";
+import SourcesPanel from "./components/SourcesPanel";
+import Section from "./components/Section";
 
 const NAV = [
-  { id: 'budget', label: 'Budget' },
-  { id: 'assumptions', label: 'Assumptions' },
-  { id: 'balances', label: 'Balances' },
-  { id: 'contributions', label: 'Contributions' },
-  { id: 'market', label: 'Where to buy' },
-  { id: 'lender', label: 'Lender view' },
-  { id: 'waiting', label: 'Worth waiting?' },
-  { id: 'scenarios', label: 'Scenarios' },
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'retirement', label: 'Retirement' },
-  { id: 'drawdown', label: 'Will it last?' },
-  { id: 'detail', label: 'Month by month' },
-  { id: 'sources', label: 'Sources' },
+  { id: "budget", label: "Budget" },
+  { id: "assumptions", label: "Assumptions" },
+  { id: "balances", label: "Balances" },
+  { id: "contributions", label: "Contributions" },
+  { id: "market", label: "Where to buy" },
+  { id: "lender", label: "Lender view" },
+  { id: "waiting", label: "Worth waiting?" },
+  { id: "scenarios", label: "Scenarios" },
+  { id: "dashboard", label: "Dashboard" },
+  { id: "retirement", label: "Retirement" },
+  { id: "drawdown", label: "Will it last?" },
+  { id: "detail", label: "Month by month" },
+  { id: "sources", label: "Sources" },
 ];
 
-/** A short, non-technical explainer, folded away until someone wants it. */
+/**
+A short, non-technical explainer, folded away until someone wants it.
+*/
 function HowToRead() {
   const [open, setOpen] = useState(false);
   return (
@@ -43,51 +45,64 @@ function HowToRead() {
         className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
       >
         <span>
-          <span className="text-base font-semibold text-slate-900">How to read this</span>
+          <span className="text-base font-semibold text-slate-900">
+            How to read this
+          </span>
           <span className="ml-2 text-sm text-slate-500">
             60 seconds on what the numbers mean
           </span>
         </span>
-        <span className="text-slate-400">{open ? '−' : '+'}</span>
+        <span className="text-slate-400">{open ? "−" : "+"}</span>
       </button>
       {open && (
         <div className="border-t border-slate-100 px-5 py-4 text-sm leading-relaxed text-slate-600">
           <p>
-            This tool answers one question:{' '}
+            This tool answers one question:{" "}
             <strong className="text-slate-900">
-              when can we buy a house, and would we be okay if one of us lost a job?
+              when can we buy a house, and would we be okay if one of us lost a
+              job?
             </strong>
           </p>
           <ul className="mt-3 space-y-2">
             <li>
-              <strong className="text-slate-900">Start at the top.</strong> The budget is every
-              recurring dollar in and out. Change any number and everything below updates instantly.
+              <strong className="text-slate-900">Start at the top.</strong> The
+              budget is every recurring dollar in and out. Change any number and
+              everything below updates instantly.
             </li>
             <li>
-              <strong className="text-slate-900">Scenarios are versions of the future.</strong> Each
-              one picks a month to buy and whether a job loss happens. Drag the sliders — that is
-              what they are for.
+              <strong className="text-slate-900">
+                Scenarios are versions of the future.
+              </strong>{" "}
+              Each one picks a month to buy and whether a job loss happens. Drag
+              the sliders — that is what they are for.
             </li>
             <li>
-              <strong className="text-slate-900">"House ready"</strong> is the first month our
-              savings would cover the down payment and closing costs. The house gets more expensive
-              while we save, so waiting is not free.
+              <strong className="text-slate-900">"House ready"</strong> is the
+              first month our savings would cover the down payment and closing
+              costs. The house gets more expensive while we save, so waiting is
+              not free.
             </li>
             <li>
-              <strong className="text-slate-900">"Thinnest cash"</strong> is the lowest our
-              spendable savings ever get. It is the resilience number. Below zero, in red, means the
-              plan does not fund itself.
+              <strong className="text-slate-900">"Thinnest cash"</strong> is the
+              lowest our spendable savings ever get. It is the resilience
+              number. Below zero, in red, means the plan does not fund itself.
             </li>
             <li>
-              <strong className="text-slate-900">Commitments are different from expenses.</strong>{' '}
-              A fixed obligation with a known end date never inflates and and never gets cut in
-              a crisis — and the month it ends, money frees up for good.
+              <strong className="text-slate-900">
+                Commitments are different from expenses.
+              </strong>{" "}
+              A fixed obligation with a known end date never inflates and
+              never gets cut in a crisis — and the month it ends, money frees
+              up for good.
             </li>
             <li>
-              <strong className="text-slate-900">Nothing here is a prediction.</strong> It is
-              arithmetic on the assumptions we typed in. Change an assumption and you get a
-              different, equally confident-looking answer — which is exactly why it is worth playing
-              with the extremes.
+              <strong className="text-slate-900">
+                Nothing here is a prediction.
+              </strong>{" "}
+              It is arithmetic on the assumptions we typed in. Change an
+              assumption and you get a different, equally confident-looking
+              answer — which is exactly why it is worth playing with the
+              extremes.
             </li>
           </ul>
         </div>
@@ -102,7 +117,9 @@ export default function App() {
       <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
           <div className="mr-auto">
-            <h1 className="text-base font-semibold tracking-tight">Household Financial Health</h1>
+            <h1 className="text-base font-semibold tracking-tight">
+              Home Buy Planner
+            </h1>
             <p className="text-xs text-slate-500">
               Runs entirely on this computer. Nothing is sent anywhere.
             </p>
@@ -248,8 +265,12 @@ export default function App() {
         </Section>
 
         <footer className="border-t border-slate-200 pt-6 text-xs text-slate-400">
-          Your numbers are saved in this browser only. Use Export to keep a backup in the gitignored{' '}
-          <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-500">data/</code> folder.
+          Your numbers are saved in this browser only. Use Export to keep a
+          backup in the gitignored{" "}
+          <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-500">
+            data/
+          </code>{" "}
+          folder.
         </footer>
       </main>
     </div>

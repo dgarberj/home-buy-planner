@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 import {
   ALL_MUNICIPALITIES,
   DELCO_CLR_FACTOR,
@@ -6,12 +6,12 @@ import {
   effectiveRate,
   estimatedMonthlyTax,
   type Municipality,
-} from '../data/localMarket';
-import { monthlyPayment, monthlyNominal } from '../engine/finance';
-import { money, pct } from '../lib/format';
-import { useStore } from '../store/useStore';
-import { pmiRateFor, CONVENTIONAL_97 } from '../data/mortgageInsurance';
-import { districtFor, ratingSummary } from '../data/schools';
+} from "../data/localMarket";
+import { monthlyPayment, monthlyNominal } from "../engine/finance";
+import { money, pct } from "../lib/format";
+import { useStore } from "../store/useStore";
+import { pmiRateFor, CONVENTIONAL_97 } from "../data/mortgageInsurance";
+import { districtFor, ratingSummary } from "../data/schools";
 import {
   cashToClose,
   classifyReach,
@@ -19,8 +19,8 @@ import {
   maxAffordablePrice,
   monthlyCostOfHouse,
   type Reach,
-} from '../engine/affordability';
-import CountyMap from './CountyMap';
+} from "../engine/affordability";
+import CountyMap from "./CountyMap";
 import {
   Button,
   Callout,
@@ -31,7 +31,7 @@ import {
   NumberInput,
   SectionTitle,
   Toggle,
-} from './ui';
+} from "./ui";
 
 /**
  * Where to buy, costed properly.
@@ -42,17 +42,17 @@ import {
  * levers elsewhere in this app. This panel makes it pickable.
  */
 const REACH_LABEL: Record<Reach, string> = {
-  comfortable: 'Comfortable',
-  stretch: 'A stretch',
-  'out-of-reach': 'Out of reach',
-  unknown: 'Unknown',
+  comfortable: "Comfortable",
+  stretch: "A stretch",
+  "out-of-reach": "Out of reach",
+  unknown: "Unknown",
 };
 
 const REACH_STYLE: Record<Reach, string> = {
-  comfortable: 'bg-emerald-100 text-emerald-800',
-  stretch: 'bg-amber-100 text-amber-800',
-  'out-of-reach': 'bg-red-100 text-red-700',
-  unknown: 'bg-slate-100 text-slate-500',
+  comfortable: "bg-emerald-100 text-emerald-800",
+  stretch: "bg-amber-100 text-amber-800",
+  "out-of-reach": "bg-red-100 text-red-700",
+  unknown: "bg-slate-100 text-slate-500",
 };
 
 export default function MarketPanel() {
@@ -60,7 +60,9 @@ export default function MarketPanel() {
   const home = assumptions.home;
 
   const [price, setPrice] = useState(home.targetPrice);
-  const [selected, setSelected] = useState<string>(settings.shortlist[0] ?? 'Marple');
+  const [selected, setSelected] = useState<string>(
+    settings.shortlist[0] ?? "Marple",
+  );
 
   const creditScore = settings.creditScore;
   const pmiRate = pmiRateFor(home.downPaymentPct, creditScore);
@@ -70,7 +72,8 @@ export default function MarketPanel() {
   // Measured after the car loan clears, since that is when the real budget
   // arrives and it is well before any plausible purchase.
   const budget = useMemo(
-    () => housingBudget(assumptions, { atMonth: 12, reserveForSavings: reserve }),
+    () =>
+      housingBudget(assumptions, { atMonth: 12, reserveForSavings: reserve }),
     [assumptions, reserve],
   );
   const ceilingPrice = useMemo(
@@ -109,7 +112,7 @@ export default function MarketPanel() {
       return { m, rate, max, cost, reach: classifyReach(m.medianPrice, max) };
     });
 
-    return rows.sort((a, b) => {
+    return rows.toSorted((a, b) => {
       if (a.cost && b.cost) return a.cost.total - b.cost.total;
       if (a.cost) return -1;
       if (b.cost) return 1;
@@ -119,19 +122,25 @@ export default function MarketPanel() {
 
   const pricedCount = affordability.filter((r) => r.cost).length;
   const [pricedOnly, setPricedOnly] = useState(false);
-  const visible = pricedOnly ? affordability.filter((r) => r.cost) : affordability;
+  const visible = pricedOnly
+    ? affordability.filter((r) => r.cost)
+    : affordability;
 
-
-  /** Full monthly cost of owning here: loan + tax + insurance + upkeep. */
+  /**
+  Full monthly cost of owning here: loan + tax + insurance + upkeep.
+  */
   const monthlyCost = (m: Municipality, p: number) => {
     const loan = p * (1 - home.downPaymentPct);
-    const pi = monthlyPayment(loan, monthlyNominal(home.mortgageRateAnnual), home.mortgageTermYears * 12);
+    const pi = monthlyPayment(
+      loan,
+      monthlyNominal(home.mortgageRateAnnual),
+      home.mortgageTermYears * 12,
+    );
     const tax = estimatedMonthlyTax(p, m);
     const insurance = 150; // rough homeowner's premium; excluded from the tax figures
     const upkeep = (p * home.maintenanceAnnualPct) / 12;
     return { pi, tax, insurance, upkeep, total: pi + tax + insurance + upkeep };
   };
-
 
   return (
     <div className="space-y-5">
@@ -160,7 +169,9 @@ export default function MarketPanel() {
                   key={name}
                   type="button"
                   onClick={() =>
-                    setSettings({ shortlist: settings.shortlist.filter((n) => n !== name) })
+                    setSettings({
+                      shortlist: settings.shortlist.filter((n) => n !== name),
+                    })
                   }
                   className="rounded-full border border-blue-300 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-800 hover:bg-blue-100"
                   title="Remove from shortlist"
@@ -196,14 +207,19 @@ export default function MarketPanel() {
               const pmi = (loan * pmiRate) / 12;
               const district = districtFor(mu.schoolDistrict);
               return (
-                <div key={name} className="rounded-xl border border-slate-200 p-4">
+                <div
+                  key={name}
+                  className="rounded-xl border border-slate-200 p-4"
+                >
                   <div className="flex items-baseline justify-between gap-3">
                     <h4 className="font-semibold text-slate-900">{name}</h4>
                     <span className="whitespace-nowrap text-lg font-semibold tabular-nums">
                       {money(cost.total + pmi)}/mo
                     </span>
                   </div>
-                  <p className="mt-0.5 text-sm text-slate-500">{mu.schoolDistrict} schools</p>
+                  <p className="mt-0.5 text-sm text-slate-500">
+                    {mu.schoolDistrict} schools
+                  </p>
                   <dl className="mt-3 space-y-1 text-sm">
                     <div className="flex justify-between gap-3">
                       <dt className="text-slate-500">Loan payment</dt>
@@ -215,20 +231,28 @@ export default function MarketPanel() {
                     </div>
                     <div className="flex justify-between gap-3">
                       <dt className="text-slate-500">Mortgage insurance</dt>
-                      <dd className="tabular-nums">{pmi > 0 ? money(pmi) : '—'}</dd>
+                      <dd className="tabular-nums">
+                        {pmi > 0 ? money(pmi) : "—"}
+                      </dd>
                     </div>
                     <div className="flex justify-between gap-3">
                       <dt className="text-slate-500">Insurance + upkeep</dt>
-                      <dd className="tabular-nums">{money(cost.insurance + cost.upkeep)}</dd>
+                      <dd className="tabular-nums">
+                        {money(cost.insurance + cost.upkeep)}
+                      </dd>
                     </div>
                   </dl>
-                  {district && (district.mathProficiency !== null || district.paRank2025 !== null) ? (
+                  {district &&
+                  (district.mathProficiency !== null ||
+                    district.paRank2025 !== null) ? (
                     <p className="mt-3 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-600">
-                      {district.paRank2025 !== null && <>PA rank #{district.paRank2025}. </>}
+                      {district.paRank2025 !== null && (
+                        <>PA rank #{district.paRank2025}. </>
+                      )}
                       {district.mathProficiency !== null && (
                         <>
-                          Maths {district.mathProficiency}%, reading {district.readingProficiency}%
-                          proficient.{' '}
+                          Maths {district.mathProficiency}%, reading{" "}
+                          {district.readingProficiency}% proficient.{" "}
                         </>
                       )}
                       {district.note}
@@ -250,7 +274,10 @@ export default function MarketPanel() {
         subtitle="A Conventional 97 needs 3% down. What that costs depends almost entirely on your credit score."
       >
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Credit score" hint="Sets the mortgage-insurance rate. The gap between 760+ and 680 is enormous on a small deposit.">
+          <Field
+            label="Credit score"
+            hint="Sets the mortgage-insurance rate. The gap between 760+ and 680 is enormous on a small deposit."
+          >
             <NumberInput
               value={creditScore}
               min={580}
@@ -259,17 +286,22 @@ export default function MarketPanel() {
               onChange={(v) => setSettings({ creditScore: v })}
             />
           </Field>
-          <Field label="Down payment" hint="3% is the Conventional 97 minimum. 20% avoids mortgage insurance entirely.">
+          <Field
+            label="Down payment"
+            hint="3% is the Conventional 97 minimum. 20% avoids mortgage insurance entirely."
+          >
             <div className="flex flex-wrap gap-1.5">
               {[0.03, 0.05, 0.1, 0.2].map((dp) => (
                 <button
                   key={dp}
                   type="button"
-                  onClick={() => setAssumptions({ home: { downPaymentPct: dp } })}
+                  onClick={() =>
+                    setAssumptions({ home: { downPaymentPct: dp } })
+                  }
                   className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${
                     Math.abs(home.downPaymentPct - dp) < 0.001
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   {pct(dp, 0)}
@@ -280,25 +312,33 @@ export default function MarketPanel() {
           <div>
             <SectionTitle>Mortgage insurance</SectionTitle>
             <p className="whitespace-nowrap text-xl font-semibold tabular-nums">
-              {pmiRate > 0 ? `${money((price * (1 - home.downPaymentPct) * pmiRate) / 12)}/mo` : 'None'}
+              {pmiRate > 0
+                ? `${money((price * (1 - home.downPaymentPct) * pmiRate) / 12)}/mo`
+                : "None"}
             </p>
             <p className="mt-1 text-xs text-slate-500">
-              {pmiRate > 0 ? `${pct(pmiRate, 2)} of the loan a year` : 'Deposit is 20% or more'}
+              {pmiRate > 0
+                ? `${pct(pmiRate, 2)} of the loan a year`
+                : "Deposit is 20% or more"}
             </p>
           </div>
         </div>
         <div className="mt-4">
           <Button
             variant="primary"
-            onClick={() => setAssumptions({ home: { pmiAnnualPct: pmiRate, pmiUpfrontPct: 0 } })}
+            onClick={() =>
+              setAssumptions({
+                home: { pmiAnnualPct: pmiRate, pmiUpfrontPct: 0 },
+              })
+            }
           >
             Apply this mortgage-insurance rate
           </Button>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-slate-600">
-          {CONVENTIONAL_97.note} Rates here are indicative published tables — insurers price
-          individually on credit, debt-to-income and property type, so get a real quote before
-          committing.
+          {CONVENTIONAL_97.note} Rates here are indicative published tables —
+          insurers price individually on credit, debt-to-income and property
+          type, so get a real quote before committing.
         </p>
       </Card>
 
@@ -317,7 +357,9 @@ export default function MarketPanel() {
             <SectionTitle>Available for housing</SectionTitle>
             <p className="whitespace-nowrap text-2xl font-semibold tabular-nums">
               {money(budget.monthlyBudget)}
-              <span className="ml-1 text-sm font-normal text-slate-400">/mo</span>
+              <span className="ml-1 text-sm font-normal text-slate-400">
+                /mo
+              </span>
             </p>
             <p className="mt-1 text-xs text-slate-500">
               all-in: loan, tax, insurance, mortgage insurance and upkeep
@@ -329,16 +371,18 @@ export default function MarketPanel() {
               {money(ceilingPrice)}
             </p>
             <p className="mt-1 text-xs text-slate-500">
-              at a typical {pct(0.018, 1)} effective tax rate — higher-tax towns buy less
+              at a typical {pct(0.018, 1)} effective tax rate — higher-tax towns
+              buy less
             </p>
           </div>
         </div>
 
         <Callout tone="warn">
-          <strong>The trap in the tax table.</strong> The lowest rates sit under the best schools,
-          and those are exactly the places you cannot buy. Radnor is 1.26% with a{' '}
-          {money(1_206_000)} median. Marple is 1.09% with a {money(651_500)} median. A cheap rate on
-          a house out of reach is worth nothing.
+          <strong>The trap in the tax table.</strong> The lowest rates sit under
+          the best schools, and those are exactly the places you cannot buy.
+          Radnor is 1.26% with a {money(1_206_000)} median. Marple is 1.09% with
+          a {money(651_500)} median. A cheap rate on a house out of reach is
+          worth nothing.
         </Callout>
 
         <div className="mt-4 overflow-x-auto">
@@ -354,7 +398,10 @@ export default function MarketPanel() {
                 <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <span className="inline-flex items-center">
                     Median price
-                    <InfoTip placement="bottom" text="Typical home value from Zillow or Redfin, 2026. Towns with no sourced price are listed at the bottom rather than guessed at." />
+                    <InfoTip
+                      placement="bottom"
+                      text="Typical home value from Zillow or Redfin, 2026. Towns with no sourced price are listed at the bottom rather than guessed at."
+                    />
                   </span>
                 </th>
                 <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -363,7 +410,10 @@ export default function MarketPanel() {
                 <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <span className="inline-flex items-center">
                     All-in / month
-                    <InfoTip placement="bottom" text="What the typical house here would cost you monthly: loan, property and school tax, insurance, mortgage insurance and upkeep." />
+                    <InfoTip
+                      placement="bottom"
+                      text="What the typical house here would cost you monthly: loan, property and school tax, insurance, mortgage insurance and upkeep."
+                    />
                   </span>
                 </th>
                 <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -383,7 +433,9 @@ export default function MarketPanel() {
                 <tr
                   key={`${row.m.countyKey}-${row.m.name}`}
                   className={`border-b border-slate-100 last:border-0 ${
-                    settings.shortlist.includes(row.m.name) ? 'bg-blue-50/50' : ''
+                    settings.shortlist.includes(row.m.name)
+                      ? "bg-blue-50/50"
+                      : ""
                   }`}
                 >
                   <td className="py-2 pr-4 font-medium text-slate-900">
@@ -394,30 +446,34 @@ export default function MarketPanel() {
                       </span>
                     )}
                   </td>
-                  <td className="py-2 pr-4 capitalize text-slate-500">{row.m.countyKey}</td>
+                  <td className="py-2 pr-4 capitalize text-slate-500">
+                    {row.m.countyKey}
+                  </td>
                   <td
                     className={`py-2 pr-4 text-right tabular-nums ${
-                      row.m.medianPrice ? 'text-slate-900' : 'text-slate-300'
+                      row.m.medianPrice ? "text-slate-900" : "text-slate-300"
                     }`}
                   >
-                    {row.m.medianPrice ? money(row.m.medianPrice) : '—'}
+                    {row.m.medianPrice ? money(row.m.medianPrice) : "—"}
                   </td>
                   <td className="py-2 pr-4 text-right tabular-nums text-slate-600">
                     {pct(row.rate, 2)}
                   </td>
                   <td
                     className={`py-2 pr-4 text-right font-semibold tabular-nums ${
-                      row.cost ? 'text-slate-900' : 'text-slate-300'
+                      row.cost ? "text-slate-900" : "text-slate-300"
                     }`}
                   >
-                    {row.cost ? money(row.cost.total) : '—'}
+                    {row.cost ? money(row.cost.total) : "—"}
                   </td>
                   <td
                     className={`py-2 pr-4 text-right tabular-nums ${
-                      row.m.medianPrice ? 'text-slate-600' : 'text-slate-300'
+                      row.m.medianPrice ? "text-slate-600" : "text-slate-300"
                     }`}
                   >
-                    {row.m.medianPrice ? money(cashToClose(assumptions, row.m.medianPrice)) : '—'}
+                    {row.m.medianPrice
+                      ? money(cashToClose(assumptions, row.m.medianPrice))
+                      : "—"}
                   </td>
                   <td className="py-2 pr-4">
                     <span
@@ -442,7 +498,9 @@ export default function MarketPanel() {
                         })
                       }
                     >
-                      {settings.shortlist.includes(row.m.name) ? 'Listed' : 'Shortlist'}
+                      {settings.shortlist.includes(row.m.name)
+                        ? "Listed"
+                        : "Shortlist"}
                     </Button>
                   </td>
                 </tr>
@@ -459,9 +517,11 @@ export default function MarketPanel() {
             hint="Off by default. The other towns still have complete tax and school data — a missing price is a gap in what I could source, not a reason to hide them."
           />
           <p className="text-xs text-slate-500">
-            Showing {visible.length} of {ALL_MUNICIPALITIES.length} municipalities across three
-            counties. {pricedCount} have a sourced median price; the rest are sorted by tax rate and
-            show <span className="text-slate-400">&mdash;</span> where a price would go.
+            Showing {visible.length} of {ALL_MUNICIPALITIES.length}{" "}
+            municipalities across three counties. {pricedCount} have a sourced
+            median price; the rest are sorted by tax rate and show{" "}
+            <span className="text-slate-400">&mdash;</span> where a price would
+            go.
           </p>
         </div>
       </Card>
@@ -472,32 +532,43 @@ export default function MarketPanel() {
       >
         <div className="grid gap-4 md:grid-cols-2">
           {NEIGHBOURING_COUNTIES.map((c) => (
-            <div key={c.name} className="rounded-xl border border-slate-200 p-4">
+            <div
+              key={c.name}
+              className="rounded-xl border border-slate-200 p-4"
+            >
               <div className="flex items-baseline justify-between">
                 <h4 className="font-semibold text-slate-900">
                   {c.name}, {c.state}
                 </h4>
-                <span className="text-lg font-semibold tabular-nums">{money(c.medianPrice)}</span>
+                <span className="text-lg font-semibold tabular-nums">
+                  {money(c.medianPrice)}
+                </span>
               </div>
               <p className="mt-1 text-xs text-slate-400">{c.priceNote}</p>
               <p className="mt-2 text-sm text-slate-600">
-                Typical effective tax {pct(c.effectiveTaxRate, 2)} — about{' '}
-                <strong>{money((c.medianPrice * c.effectiveTaxRate) / 12)}/mo</strong> on the median
-                house.
+                Typical effective tax {pct(c.effectiveTaxRate, 2)} — about{" "}
+                <strong>
+                  {money((c.medianPrice * c.effectiveTaxRate) / 12)}/mo
+                </strong>{" "}
+                on the median house.
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-500">{c.note}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                {c.note}
+              </p>
             </div>
           ))}
         </div>
       </Card>
 
       <Callout tone="bad">
-        <strong>Read this before trusting any number above.</strong> Pennsylvania taxes the{' '}
-        <em>assessed</em> value, not what you pay. Delaware County last reassessed for 2021 using
-        2020 values, and <strong>buying does not trigger a reassessment</strong> — so two identical
-        houses next door to each other can carry very different bills, permanently. These estimates
-        divide the sale price by the state&rsquo;s common level ratio factor ({DELCO_CLR_FACTOR}),
-        which is a county-wide average. Use this table to rank places; look up the actual assessment
+        <strong>Read this before trusting any number above.</strong>{" "}
+        Pennsylvania taxes the <em>assessed</em> value, not what you pay.
+        Delaware County last reassessed for 2021 using 2020 values, and{" "}
+        <strong>buying does not trigger a reassessment</strong> — so two
+        identical houses next door to each other can carry very different bills,
+        permanently. These estimates divide the sale price by the state&rsquo;s
+        common level ratio factor ({DELCO_CLR_FACTOR}), which is a county-wide
+        average. Use this table to rank places; look up the actual assessment
         before making an offer on an actual house.
       </Callout>
     </div>

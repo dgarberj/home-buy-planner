@@ -1,5 +1,5 @@
-import type { Assumptions } from '../model/types';
-import { monthlyNominal, monthlyPayment } from './finance';
+import type { Assumptions } from "../model/types";
+import { monthlyNominal, monthlyPayment } from "./finance";
 
 /**
  * ============================================================================
@@ -20,13 +20,19 @@ import { monthlyNominal, monthlyPayment } from './finance';
  */
 
 export interface HousingBudget {
-  /** Everything available for housing each month, all-in. */
+  /**
+  Everything available for housing each month, all-in.
+  */
   monthlyBudget: number;
-  /** How that number was arrived at, for display. */
+  /**
+  How that number was arrived at, for display.
+  */
   breakdown: {
     income: number;
     coResident: number;
-    /** Second income net of the costs of working. Can be negative. */
+    /**
+    Second income net of the costs of working. Can be negative.
+    */
     secondIncome: number;
     livingCosts: number;
     obligations: number;
@@ -44,12 +50,16 @@ export interface HousingBudget {
  */
 export function housingBudget(
   assumptions: Assumptions,
-  opts: { atMonth: number; reserveForSavings: number },
+  options: { atMonth: number; reserveForSavings: number },
 ): HousingBudget {
   const { income, expenses, retirement, coResident, obligations } = assumptions;
 
   const obligationsDue = obligations
-    .filter((o) => o.startMonth <= opts.atMonth && (o.endMonth === null || o.endMonth >= opts.atMonth))
+    .filter(
+      (o) =>
+        o.startMonth <= options.atMonth &&
+        (o.endMonth === null || o.endMonth >= options.atMonth),
+    )
     .reduce((sum, o) => sum + o.monthlyAmount, 0);
 
   const coResidentIncome = coResident.enabled ? coResident.monthlyAmount : 0;
@@ -57,13 +67,14 @@ export function housingBudget(
   // A second earner counts only once they have actually started, and net of
   // the childcare that comes with it while that is still running.
   const second = assumptions.secondIncome;
-  const secondRunning = second.enabled && opts.atMonth >= second.startMonth;
-  const secondNet = secondRunning
-    ? second.monthlyTakeHome -
-      (second.additionalCostsEndMonth === null || opts.atMonth <= second.additionalCostsEndMonth
-        ? second.additionalCostsMonthly
-        : 0)
+  const secondRunning = second.enabled && options.atMonth >= second.startMonth;
+  const isSecondCostsStillApplying =
+    second.additionalCostsEndMonth === null ||
+    options.atMonth <= second.additionalCostsEndMonth;
+  const secondCosts = isSecondCostsStillApplying
+    ? second.additionalCostsMonthly
     : 0;
+  const secondNet = secondRunning ? second.monthlyTakeHome - secondCosts : 0;
 
   const livingCosts = expenses.fixedMonthly + expenses.variableMonthly;
 
@@ -74,7 +85,7 @@ export function housingBudget(
     livingCosts -
     obligationsDue -
     retirement.employeeMonthly -
-    opts.reserveForSavings;
+    options.reserveForSavings;
 
   return {
     monthlyBudget,
@@ -85,7 +96,7 @@ export function housingBudget(
       livingCosts,
       obligations: obligationsDue,
       retirementContributions: retirement.employeeMonthly,
-      reserveForSavings: opts.reserveForSavings,
+      reserveForSavings: options.reserveForSavings,
     },
   };
 }
@@ -104,11 +115,15 @@ export function housingBudget(
  */
 export function maxAffordablePrice(
   assumptions: Assumptions,
-  opts: {
+  options: {
     monthlyBudget: number;
-    /** Effective property tax as a share of market value, for this township. */
+    /**
+    Effective property tax as a share of market value, for this township.
+    */
     effectiveTaxRate: number;
-    /** Monthly homeowner's insurance, which does not scale with price. */
+    /**
+    Monthly homeowner's insurance, which does not scale with price.
+    */
     insuranceMonthly: number;
   },
 ): number {
@@ -117,24 +132,38 @@ export function maxAffordablePrice(
   const termMonths = Math.round(home.mortgageTermYears * 12);
 
   // Payment on a $1 loan, so the whole thing stays linear in price.
-  const pmtPerDollar = monthlyPayment(1, monthlyNominal(home.mortgageRateAnnual), termMonths);
+  const pmtPerDollar = monthlyPayment(
+    1,
+    monthlyNominal(home.mortgageRateAnnual),
+    termMonths,
+  );
 
-  const needsPmi = loanShare > home.pmiRemovedAtLtv;
-  const pmiPerDollar = needsPmi ? (loanShare * home.pmiAnnualPct) / 12 : 0;
+  const isNeedsPmi = loanShare > home.pmiRemovedAtLtv;
+  const pmiPerDollar = isNeedsPmi ? (loanShare * home.pmiAnnualPct) / 12 : 0;
 
   const costPerDollarOfPrice =
-    loanShare * pmtPerDollar + opts.effectiveTaxRate / 12 + home.maintenanceAnnualPct / 12 + pmiPerDollar;
+    loanShare * pmtPerDollar +
+    options.effectiveTaxRate / 12 +
+    home.maintenanceAnnualPct / 12 +
+    pmiPerDollar;
 
   if (costPerDollarOfPrice <= 0) return 0;
 
-  const price = (opts.monthlyBudget - opts.insuranceMonthly) / costPerDollarOfPrice;
+  const price =
+    (options.monthlyBudget - options.insuranceMonthly) / costPerDollarOfPrice;
   return Math.max(0, price);
 }
 
-/** All-in monthly cost of a specific house in a specific township. */
+/**
+All-in monthly cost of a specific house in a specific township.
+*/
 export function monthlyCostOfHouse(
   assumptions: Assumptions,
-  opts: { price: number; effectiveTaxRate: number; insuranceMonthly: number },
+  options: {
+    price: number;
+    effectiveTaxRate: number;
+    insuranceMonthly: number;
+  },
 ): {
   principalAndInterest: number;
   tax: number;
@@ -144,39 +173,43 @@ export function monthlyCostOfHouse(
   total: number;
 } {
   const { home } = assumptions;
-  const loan = opts.price * (1 - home.downPaymentPct);
+  const loan = options.price * (1 - home.downPaymentPct);
   const termMonths = Math.round(home.mortgageTermYears * 12);
   const principalAndInterest = monthlyPayment(
     loan,
     monthlyNominal(home.mortgageRateAnnual),
     termMonths,
   );
-  const needsPmi = 1 - home.downPaymentPct > home.pmiRemovedAtLtv;
-  const pmi = needsPmi ? (loan * home.pmiAnnualPct) / 12 : 0;
-  const tax = (opts.price * opts.effectiveTaxRate) / 12;
-  const maintenance = (opts.price * home.maintenanceAnnualPct) / 12;
+  const isNeedsPmi = 1 - home.downPaymentPct > home.pmiRemovedAtLtv;
+  const pmi = isNeedsPmi ? (loan * home.pmiAnnualPct) / 12 : 0;
+  const tax = (options.price * options.effectiveTaxRate) / 12;
+  const maintenance = (options.price * home.maintenanceAnnualPct) / 12;
 
   return {
     principalAndInterest,
     tax,
-    insurance: opts.insuranceMonthly,
+    insurance: options.insuranceMonthly,
     pmi,
     maintenance,
-    total: principalAndInterest + tax + opts.insuranceMonthly + pmi + maintenance,
+    total:
+      principalAndInterest + tax + options.insuranceMonthly + pmi + maintenance,
   };
 }
 
-export type Reach = 'comfortable' | 'stretch' | 'out-of-reach' | 'unknown';
+export type Reach = "comfortable" | "stretch" | "out-of-reach" | "unknown";
 
 /**
  * How a town's typical house sits against what you can carry.
  * "Comfortable" leaves a tenth of the budget spare; "stretch" uses all of it.
  */
-export function classifyReach(medianPrice: number | null | undefined, maxPrice: number): Reach {
-  if (medianPrice === null || medianPrice === undefined) return 'unknown';
-  if (medianPrice <= maxPrice * 0.9) return 'comfortable';
-  if (medianPrice <= maxPrice) return 'stretch';
-  return 'out-of-reach';
+export function classifyReach(
+  medianPrice: number | null | undefined,
+  maxPrice: number,
+): Reach {
+  if (medianPrice === null || medianPrice === undefined) return "unknown";
+  if (medianPrice <= maxPrice * 0.9) return "comfortable";
+  if (medianPrice <= maxPrice) return "stretch";
+  return "out-of-reach";
 }
 
 /**
@@ -189,14 +222,19 @@ export function classifyReach(medianPrice: number | null | undefined, maxPrice: 
 export function cashToClose(assumptions: Assumptions, price: number): number {
   const { home } = assumptions;
   const loanShare = 1 - home.downPaymentPct;
-  const upfrontPmi = loanShare > home.pmiRemovedAtLtv ? loanShare * home.pmiUpfrontPct : 0;
-  const gross = price * (home.downPaymentPct + home.closingCostPct + upfrontPmi);
+  const upfrontPmi =
+    loanShare > home.pmiRemovedAtLtv ? loanShare * home.pmiUpfrontPct : 0;
+  const gross =
+    price * (home.downPaymentPct + home.closingCostPct + upfrontPmi);
 
   const raw =
-    !home.assistanceEnabled || home.assistanceRepayment === 'none'
+    !home.assistanceEnabled || home.assistanceRepayment === "none"
       ? 0
       : price * home.assistancePctOfPrice;
-  const assistance = home.assistanceMaxAmount === null ? raw : Math.min(raw, home.assistanceMaxAmount);
+  const assistance =
+    home.assistanceMaxAmount === null
+      ? raw
+      : Math.min(raw, home.assistanceMaxAmount);
 
   return Math.max(0, gross - assistance);
 }
@@ -224,36 +262,67 @@ export function cashToClose(assumptions: Assumptions, price: number): number {
  */
 export interface AffordabilityPoint {
   month: number;
-  /** What the house costs by then, having appreciated. */
+  /**
+  What the house costs by then, having appreciated.
+  */
   price: number;
-  /** The dearest house the budget carries that month. */
+  /**
+  The dearest house the budget carries that month.
+  */
   maxPrice: number;
   monthlyBudget: number;
-  /** Liquid savings available, from a projection where you never buy. */
+  /**
+  Liquid savings available, from a projection where you never buy.
+  */
   cashAvailable: number;
-  /** Deposit + closing costs + the buffer you want left afterwards. */
+  /**
+  Deposit + closing costs + the buffer you want left afterwards.
+  */
   cashNeeded: number;
-  /** Positive means the monthly payment is out of reach by this much. */
+  /**
+  Positive means the monthly payment is out of reach by this much.
+  */
   monthlyGap: number;
-  /** Positive means you are short of cash by this much. */
+  /**
+  Positive means you are short of cash by this much.
+  */
   cashGap: number;
   affordable: boolean;
-  binding: 'monthly payment' | 'cash' | 'both' | 'none';
+  binding: "monthly payment" | "cash" | "both" | "none";
 }
 
 export interface WaitingVerdict {
   town: string;
-  /** First month both constraints are satisfied, or null if never. */
+  /**
+  First month both constraints are satisfied, or null if never.
+  */
   affordableFrom: number | null;
-  /** Which constraint is holding you back at the start. */
-  bindingToday: AffordabilityPoint['binding'];
-  /** Is the monthly gap shrinking, widening, or static? */
-  monthlyGapTrend: 'closing' | 'widening' | 'static';
-  /** Months until the monthly gap closes on its own, if it ever does. */
+  /**
+  Which constraint is holding you back at the start.
+  */
+  bindingToday: AffordabilityPoint["binding"];
+  /**
+  Is the monthly gap shrinking, widening, or static?
+  */
+  monthlyGapTrend: "closing" | "widening" | "static";
+  /**
+  Months until the monthly gap closes on its own, if it ever does.
+  */
   monthlyGapClosesAt: number | null;
-  /** Months until the cash is there, ignoring the monthly constraint. */
+  /**
+  Months until the cash is there, ignoring the monthly constraint.
+  */
   cashReadyAt: number | null;
   timeline: AffordabilityPoint[];
+}
+
+function bindingConstraint(
+  isMonthlyOk: boolean,
+  isCashOk: boolean,
+): AffordabilityPoint["binding"] {
+  if (isMonthlyOk && isCashOk) return "none";
+  if (!isMonthlyOk && !isCashOk) return "both";
+  return isMonthlyOk ? "cash" : "monthly payment";
 }
 
 /**
@@ -263,60 +332,70 @@ export interface WaitingVerdict {
  */
 export function affordabilityTimeline(
   assumptions: Assumptions,
-  opts: {
+  options: {
     medianPriceToday: number;
     effectiveTaxRate: number;
     insuranceMonthly: number;
     months: number;
     reserveForSavings: number;
-    /** Liquid savings per month if you carry on renting. */
+    /**
+    Liquid savings per month if you carry on renting.
+    */
     cashTrack: number[];
-    /** Months of outgoings you want left in the bank after closing. */
+    /**
+    Months of outgoings you want left in the bank after closing.
+    */
     bufferMonthsRequired: number;
   },
 ): AffordabilityPoint[] {
-  const appreciation = Math.pow(1 + assumptions.home.appreciationAnnual, 1 / 12) - 1;
-  const incomeGrowth = Math.pow(1 + assumptions.income.growthAnnual, 1 / 12) - 1;
+  const appreciation =
+    Math.pow(1 + assumptions.home.appreciationAnnual, 1 / 12) - 1;
+  const incomeGrowth =
+    Math.pow(1 + assumptions.income.growthAnnual, 1 / 12) - 1;
 
   const points: AffordabilityPoint[] = [];
 
-  for (let m = 1; m <= opts.months; m++) {
-    const price = opts.medianPriceToday * Math.pow(1 + appreciation, m - 1);
+  for (let m = 1; m <= options.months; m++) {
+    const price = options.medianPriceToday * Math.pow(1 + appreciation, m - 1);
 
     // The budget grows with pay and steps up as commitments end.
     const grown: Assumptions = {
       ...assumptions,
       income: {
         ...assumptions.income,
-        monthlyTakeHome: assumptions.income.monthlyTakeHome * Math.pow(1 + incomeGrowth, m - 1),
+        monthlyTakeHome:
+          assumptions.income.monthlyTakeHome *
+          Math.pow(1 + incomeGrowth, m - 1),
       },
     };
     const budget = housingBudget(grown, {
       atMonth: m,
-      reserveForSavings: opts.reserveForSavings,
+      reserveForSavings: options.reserveForSavings,
     });
     const maxPrice = maxAffordablePrice(grown, {
       monthlyBudget: budget.monthlyBudget,
-      effectiveTaxRate: opts.effectiveTaxRate,
-      insuranceMonthly: opts.insuranceMonthly,
+      effectiveTaxRate: options.effectiveTaxRate,
+      insuranceMonthly: options.insuranceMonthly,
     });
 
     const cost = monthlyCostOfHouse(grown, {
       price,
-      effectiveTaxRate: opts.effectiveTaxRate,
-      insuranceMonthly: opts.insuranceMonthly,
+      effectiveTaxRate: options.effectiveTaxRate,
+      insuranceMonthly: options.insuranceMonthly,
     });
     const bufferNeeded =
-      opts.bufferMonthsRequired *
-      (assumptions.expenses.fixedMonthly + assumptions.expenses.variableMonthly + cost.total);
+      options.bufferMonthsRequired *
+      (assumptions.expenses.fixedMonthly +
+        assumptions.expenses.variableMonthly +
+        cost.total);
 
-    const cashAvailable = opts.cashTrack[m - 1] ?? 0;
+    const cashAvailable = options.cashTrack[m - 1] ?? 0;
     const cashNeeded = cashToClose(assumptions, price) + bufferNeeded;
 
     const monthlyGap = price - maxPrice;
     const cashGap = cashNeeded - cashAvailable;
-    const monthlyOk = monthlyGap <= 0;
-    const cashOk = cashGap <= 0;
+    const isMonthlyOk = monthlyGap <= 0;
+    const isCashOk = cashGap <= 0;
 
     points.push({
       month: m,
@@ -327,35 +406,39 @@ export function affordabilityTimeline(
       cashNeeded,
       monthlyGap,
       cashGap,
-      affordable: monthlyOk && cashOk,
-      binding:
-        monthlyOk && cashOk ? 'none' : !monthlyOk && !cashOk ? 'both' : monthlyOk ? 'cash' : 'monthly payment',
+      affordable: isMonthlyOk && isCashOk,
+      binding: bindingConstraint(isMonthlyOk, isCashOk),
     });
   }
 
   return points;
 }
 
-/** Summarise a timeline into the answer to "should we wait?". */
-export function waitingVerdict(town: string, timeline: AffordabilityPoint[]): WaitingVerdict {
+/**
+Summarise a timeline into the answer to "should we wait?".
+*/
+export function waitingVerdict(
+  town: string,
+  timeline: AffordabilityPoint[],
+): WaitingVerdict {
   const first = timeline[0];
   const affordable = timeline.find((p) => p.affordable);
   const monthlyCloses = timeline.find((p) => p.monthlyGap <= 0);
   const cashReady = timeline.find((p) => p.cashGap <= 0);
 
-  const last = timeline[timeline.length - 1];
-  let trend: WaitingVerdict['monthlyGapTrend'] = 'static';
+  const last = timeline.at(-1);
+  let trend: WaitingVerdict["monthlyGapTrend"] = "static";
   if (first && last) {
     const change = last.monthlyGap - first.monthlyGap;
     // A dollar either way over years is noise; call anything smaller static.
-    if (change < -1_000) trend = 'closing';
-    else if (change > 1_000) trend = 'widening';
+    if (change < -1_000) trend = "closing";
+    else if (change > 1_000) trend = "widening";
   }
 
   return {
     town,
     affordableFrom: affordable?.month ?? null,
-    bindingToday: first?.binding ?? 'none',
+    bindingToday: first?.binding ?? "none",
     monthlyGapTrend: trend,
     monthlyGapClosesAt: monthlyCloses?.month ?? null,
     cashReadyAt: cashReady?.month ?? null,

@@ -9,7 +9,9 @@
  *  - Month numbering starts at 1. Month 1 is "this month" (no growth applied yet).
  */
 
-/** Income assumptions. */
+/**
+Income assumptions.
+*/
 export interface IncomeAssumptions {
   /**
    * Take-home from regular paycheques only, per month, today. A bonus paid as
@@ -17,11 +19,17 @@ export interface IncomeAssumptions {
    * it hides the eleven months where the money is not actually available.
    */
   monthlyTakeHome: number;
-  /** Expected annual raise, as a decimal. 0.03 = 3%/yr. */
+  /**
+  Expected annual raise, as a decimal. 0.03 = 3%/yr.
+  */
   growthAnnual: number;
-  /** Bonus, net of withholding, landing as a lump once a year. 0 for none. */
+  /**
+  Bonus, net of withholding, landing as a lump once a year. 0 for none.
+  */
   annualBonusNet: number;
-  /** Calendar month the bonus lands. 1 = January. */
+  /**
+  Calendar month the bonus lands. 1 = January.
+  */
   annualBonusMonth: number;
   /**
    * Calendar month the projection starts, 1-12. Needed so the engine can work
@@ -30,19 +38,31 @@ export interface IncomeAssumptions {
   calendarStartMonth: number;
 }
 
-/** Expense assumptions. Housing is handled separately (rent -> PITI). */
+/**
+Expense assumptions. Housing is handled separately (rent -> PITI).
+*/
 export interface ExpenseAssumptions {
-  /** Non-housing fixed costs per month (insurance, subscriptions, loan payments...). */
+  /**
+  Non-housing fixed costs per month (insurance, subscriptions, loan payments...).
+  */
   fixedMonthly: number;
-  /** Variable costs per month (groceries, dining, travel...). */
+  /**
+  Variable costs per month (groceries, dining, travel...).
+  */
   variableMonthly: number;
-  /** Annual inflation applied to expenses and rent, as a decimal. */
+  /**
+  Annual inflation applied to expenses and rent, as a decimal.
+  */
   inflationAnnual: number;
-  /** Current rent, per month. Replaced by PITI at the buy month. */
+  /**
+  Current rent, per month. Replaced by PITI at the buy month.
+  */
   currentRentMonthly: number;
 }
 
-/** Retirement account assumptions. */
+/**
+Retirement account assumptions.
+*/
 export interface RetirementAssumptions {
   currentBalance: number;
   /**
@@ -61,11 +81,17 @@ export interface RetirementAssumptions {
    * Also free money, and easy to forget precisely because it arrives once.
    */
   employerAnnualLump: number;
-  /** Calendar month the employer lump lands. 1 = January. */
+  /**
+  Calendar month the employer lump lands. 1 = January.
+  */
   employerAnnualLumpMonth: number;
-  /** Pay medical from the HSA rather than from cash. */
+  /**
+  Pay medical from the HSA rather than from cash.
+  */
   hsaPayMedical: boolean;
-  /** Take the one-off reimbursement. */
+  /**
+  Take the one-off reimbursement.
+  */
   hsaTakeReimbursement: boolean;
   /**
    * Stop maxing the HSA and route the difference to the deposit instead.
@@ -75,7 +101,9 @@ export interface RetirementAssumptions {
    * is often the single fastest lever you have.
    */
   pauseHsaMax: boolean;
-  /** Employee contribution while paused -- typically 401(k) plus expected medical only. */
+  /**
+  Employee contribution while paused -- typically 401(k) plus expected medical only.
+  */
   pausedEmployeeMonthly: number;
   /**
    * Medical spending paid FROM the HSA each month instead of out of cash.
@@ -94,7 +122,9 @@ export interface RetirementAssumptions {
    * tax-free line of credit against your own HSA.
    */
   hsaReimbursement: number;
-  /** Projection month the reimbursement lands, when not tied to the purchase. */
+  /**
+  Projection month the reimbursement lands, when not tied to the purchase.
+  */
   hsaReimbursementMonth: number;
   /**
    * Land the reimbursement in whatever month that scenario buys, rather than a
@@ -105,7 +135,9 @@ export interface RetirementAssumptions {
    * A scenario that never buys never takes it.
    */
   hsaReimbursementAtPurchase: boolean;
-  /** Expected annual return, as a decimal. */
+  /**
+  Expected annual return, as a decimal.
+  */
   returnAnnual: number;
   /**
    * Grow contributions at the same rate as income. Over a few years this barely
@@ -129,13 +161,21 @@ export interface RetirementAssumptions {
  * and any shortfall sells investments to cover it.
  */
 export interface SavingsAssumptions {
-  /** Checking + savings/HYSA today. */
+  /**
+  Checking + savings/HYSA today.
+  */
   cashBalance: number;
-  /** Taxable brokerage today. Not retirement. */
+  /**
+  Taxable brokerage today. Not retirement.
+  */
   investmentBalance: number;
-  /** Annual return on the cash pool, as a decimal. Think HYSA. */
+  /**
+  Annual return on the cash pool, as a decimal. Think HYSA.
+  */
   cashReturnAnnual: number;
-  /** Annual return on the invested pool, as a decimal. */
+  /**
+  Annual return on the invested pool, as a decimal.
+  */
   investmentReturnAnnual: number;
   /**
    * How many months of total outgoings (living costs + housing) to hold in cash
@@ -164,11 +204,17 @@ export interface SavingsAssumptions {
 export interface TimedObligation {
   id: string;
   label: string;
-  /** Fixed monthly amount. Never inflated. */
+  /**
+  Fixed monthly amount. Never inflated.
+  */
   monthlyAmount: number;
-  /** First projection month it applies (1-based). */
+  /**
+  First projection month it applies (1-based).
+  */
   startMonth: number;
-  /** Last projection month it applies, or null to run to the horizon. */
+  /**
+  Last projection month it applies, or null to run to the horizon.
+  */
   endMonth: number | null;
 }
 
@@ -191,15 +237,25 @@ export interface TimedObligation {
 export interface CoResidentIncome {
   enabled: boolean;
   label: string;
-  /** Contribution towards household costs each month. */
+  /**
+  Contribution towards household costs each month.
+  */
   monthlyAmount: number;
-  /** Only counts from the month you buy. Off means it starts immediately. */
+  /**
+  Only counts from the month you buy. Off means it starts immediately.
+  */
   requiresHomePurchase: boolean;
-  /** Extra you would pay for a house with the space -- in-law suite, basement. */
+  /**
+  Extra you would pay for a house with the space -- in-law suite, basement.
+  */
   homePricePremium: number;
-  /** Track inflation, as a cost-of-living adjustment would. */
+  /**
+  Track inflation, as a cost-of-living adjustment would.
+  */
   growsWithInflation: boolean;
-  /** Last month it applies, or null to run to the horizon. */
+  /**
+  Last month it applies, or null to run to the horizon.
+  */
   endMonth: number | null;
 }
 
@@ -221,9 +277,13 @@ export interface CoResidentIncome {
 export interface SecondIncome {
   enabled: boolean;
   label: string;
-  /** Take-home pay per month, after tax. */
+  /**
+  Take-home pay per month, after tax.
+  */
   monthlyTakeHome: number;
-  /** Projection month it starts (1-based). */
+  /**
+  Projection month it starts (1-based).
+  */
   startMonth: number;
   /**
    * Extra costs incurred BY working: childcare, commuting, a second car.
@@ -242,9 +302,13 @@ export interface SecondIncome {
    * employer has to actually offer it at that level.
    */
   dependentCareFsaAnnual: number;
-  /** Marginal rate the FSA saves at. A second income is taxed at the top. */
+  /**
+  Marginal rate the FSA saves at. A second income is taxed at the top.
+  */
   dependentCareFsaTaxRate: number;
-  /** Track pay rises like the main income. */
+  /**
+  Track pay rises like the main income.
+  */
   growsWithIncome: boolean;
   /**
    * Whether a household job loss cuts this too. Normally false: a different
@@ -253,28 +317,48 @@ export interface SecondIncome {
   affectedByJobLoss: boolean;
 }
 
-/** Who the plan is for. Drives the retirement-age milestones. */
+/**
+Who the plan is for. Drives the retirement-age milestones.
+*/
 export interface HouseholdAssumptions {
-  /** Age today of the person the milestones are anchored to. */
+  /**
+  Age today of the person the milestones are anchored to.
+  */
   primaryAge: number;
-  /** Partner's age today. Shown alongside; not used in the maths. */
+  /**
+  Partner's age today. Shown alongside; not used in the maths.
+  */
   partnerAge: number;
 }
 
-/** Terms of the home we're modelling buying. */
+/**
+Terms of the home we're modelling buying.
+*/
 export interface HomePurchaseAssumptions {
-  /** Today's price of the kind of house we want. Appreciates until we buy it. */
+  /**
+  Today's price of the kind of house we want. Appreciates until we buy it.
+  */
   targetPrice: number;
-  /** Down payment as a decimal of purchase price. 0.2 = 20%. */
+  /**
+  Down payment as a decimal of purchase price. 0.2 = 20%.
+  */
   downPaymentPct: number;
-  /** Closing costs as a decimal of purchase price. 0.03 = 3%. */
+  /**
+  Closing costs as a decimal of purchase price. 0.03 = 3%.
+  */
   closingCostPct: number;
-  /** Nominal annual mortgage rate, as a decimal. 0.065 = 6.5%. */
+  /**
+  Nominal annual mortgage rate, as a decimal. 0.065 = 6.5%.
+  */
   mortgageRateAnnual: number;
   mortgageTermYears: number;
-  /** Property tax + insurance + HOA, per month (the "TI" of PITI). */
+  /**
+  Property tax + insurance + HOA, per month (the "TI" of PITI).
+  */
   taxInsuranceHoaMonthly: number;
-  /** Annual home appreciation, as a decimal. Applies before AND after purchase. */
+  /**
+  Annual home appreciation, as a decimal. Applies before AND after purchase.
+  */
   appreciationAnnual: number;
   /**
    * Yearly upkeep as a decimal of the home's current value. 0.01 = 1%/yr, the
@@ -290,16 +374,22 @@ export interface HomePurchaseAssumptions {
    * so a 20% down payment never pays any.
    */
   pmiAnnualPct: number;
-  /** Loan-to-value at which PMI drops off. Conventionally 0.8. */
+  /**
+  Loan-to-value at which PMI drops off. Conventionally 0.8.
+  */
   pmiRemovedAtLtv: number;
-  /** Take down-payment assistance at all. */
+  /**
+  Take down-payment assistance at all.
+  */
   assistanceEnabled: boolean;
   /**
    * Down-payment assistance as a share of purchase price. K-FIT is 5% with no
    * dollar cap; Keystone Advantage is 4% capped at $6,000.
    */
   assistancePctOfPrice: number;
-  /** Dollar cap on that assistance, or null for none. */
+  /**
+  Dollar cap on that assistance, or null for none.
+  */
   assistanceMaxAmount: number | null;
   /**
    * How the assistance behaves afterwards.
@@ -314,8 +404,10 @@ export interface HomePurchaseAssumptions {
    * Modelled as a lien against equity rather than as a gift, because until it
    * is forgiven that is exactly what it is.
    */
-  assistanceRepayment: 'forgiven' | 'deferred' | 'amortised' | 'none';
-  /** Years over which forgiven or amortised assistance clears. */
+  assistanceRepayment: "forgiven" | "deferred" | "amortised" | "none";
+  /**
+  Years over which forgiven or amortised assistance clears.
+  */
   assistanceTermYears: number;
   /**
    * One-off mortgage insurance premium charged at closing, as a decimal of the
@@ -325,17 +417,29 @@ export interface HomePurchaseAssumptions {
   pmiUpfrontPct: number;
 }
 
-/** Parameters of a hypothetical job loss. Only applied when a scenario opts in. */
+/**
+Parameters of a hypothetical job loss. Only applied when a scenario opts in.
+*/
 export interface JobLossAssumptions {
-  /** Month the income disruption begins (1-based). */
+  /**
+  Month the income disruption begins (1-based).
+  */
   startMonth: number;
-  /** How many months it lasts. */
+  /**
+  How many months it lasts.
+  */
   durationMonths: number;
-  /** Share of normal take-home still coming in (severance/UI/spouse). 0.4 = 40%. */
+  /**
+  Share of normal take-home still coming in (severance/UI/spouse). 0.4 = 40%.
+  */
   incomeReplacementPct: number;
-  /** Share of normal expenses cut during the gap. 0.2 = spend 20% less. */
+  /**
+  Share of normal expenses cut during the gap. 0.2 = spend 20% less.
+  */
   expenseCutPct: number;
-  /** If true, employee + employer retirement contributions stop during the gap. */
+  /**
+  If true, employee + employer retirement contributions stop during the gap.
+  */
   pauseRetirementContributions: boolean;
 }
 
@@ -346,18 +450,26 @@ export interface JobLossAssumptions {
  * question that actually matters -- "is it enough, and for how long".
  */
 export interface DrawdownAssumptions {
-  /** Age the primary person stops working. */
+  /**
+  Age the primary person stops working.
+  */
   retirementAge: number;
   /**
    * Safe withdrawal rate used for the headline "what income does this support"
    * figure. 0.04 is the classic 4% rule.
    */
   withdrawalRate: number;
-  /** Desired total monthly spending in retirement, in TODAY's dollars. */
+  /**
+  Desired total monthly spending in retirement, in TODAY's dollars.
+  */
   desiredMonthlySpendToday: number;
-  /** Expected annual return once retired. Usually lower than while working. */
+  /**
+  Expected annual return once retired. Usually lower than while working.
+  */
   returnAnnual: number;
-  /** Inflation applied to retirement spending. */
+  /**
+  Inflation applied to retirement spending.
+  */
   inflationAnnual: number;
   /**
    * Count home equity as spendable. Off by default: you have to live
@@ -365,17 +477,25 @@ export interface DrawdownAssumptions {
    * downsize or borrow against it.
    */
   includeHomeEquity: boolean;
-  /** Age to simulate to. Running out before this is the failure case. */
+  /**
+  Age to simulate to. Running out before this is the failure case.
+  */
   planToAge: number;
 }
 
 export interface Assumptions {
   household: HouseholdAssumptions;
-  /** Fixed commitments with an end date. See TimedObligation. */
+  /**
+  Fixed commitments with an end date. See TimedObligation.
+  */
   obligations: TimedObligation[];
-  /** A relative moving in, contingent on buying a house with room for them. */
+  /**
+  A relative moving in, contingent on buying a house with room for them.
+  */
   coResident: CoResidentIncome;
-  /** A partner returning to work, with the costs that come with it. */
+  /**
+  A partner returning to work, with the costs that come with it.
+  */
   secondIncome: SecondIncome;
   drawdown: DrawdownAssumptions;
   income: IncomeAssumptions;
@@ -386,15 +506,21 @@ export interface Assumptions {
   jobLoss: JobLossAssumptions;
 }
 
-/** A single recurring line item in the budget. */
+/**
+A single recurring line item in the budget.
+*/
 export interface BudgetItem {
   id: string;
   label: string;
   category: string;
-  type: 'income' | 'fixed' | 'variable';
-  /** Monthly amount, always positive. `type` carries the sign. */
+  type: "income" | "fixed" | "variable";
+  /**
+  Monthly amount, always positive. `type` carries the sign.
+  */
   amount: number;
-  /** Rent is tracked separately: it is replaced by the mortgage at the buy month. */
+  /**
+  Rent is tracked separately: it is replaced by the mortgage at the buy month.
+  */
   isRent?: boolean;
   /**
    * Optional start/end months, as "YYYY-MM". Giving an item either of these
@@ -405,71 +531,109 @@ export interface BudgetItem {
   endsOn?: string;
 }
 
-/** A point-in-time record of what we actually have. Updated monthly/quarterly. */
+/**
+A point-in-time record of what we actually have. Updated monthly/quarterly.
+*/
 export interface BalanceSnapshot {
   id: string;
-  /** ISO date, e.g. "2026-08-01". */
+  /**
+  ISO date, e.g. "2026-08-01".
+  */
   date: string;
   checking: number;
   savings: number;
   investments: number;
   retirement: number;
-  /** Total outstanding debt (student loans, cars, cards). */
+  /**
+  Total outstanding debt (student loans, cars, cards).
+  */
   debt: number;
   note?: string;
 }
 
-/** One "what if" to run through the engine. */
+/**
+One "what if" to run through the engine.
+*/
 export interface ScenarioConfig {
   id: string;
   name: string;
-  /** Month we buy (1-based), or null to model never buying. */
+  /**
+  Month we buy (1-based), or null to model never buying.
+  */
   buyMonth: number | null;
   hasJobLoss: boolean;
-  /** Per-scenario overrides of the shared job-loss assumptions. */
+  /**
+  Per-scenario overrides of the shared job-loss assumptions.
+  */
   jobLossOverride?: Partial<JobLossAssumptions>;
-  /** Shown/hidden on the dashboard without deleting the scenario. */
+  /**
+  Shown/hidden on the dashboard without deleting the scenario.
+  */
   enabled: boolean;
-  /** Line colour on the chart. */
+  /**
+  Line colour on the chart.
+  */
   color: string;
 }
 
-/** One month of output from the projection engine. */
+/**
+One month of output from the projection engine.
+*/
 export interface MonthlyResult {
-  /** 1-based month index. */
+  /**
+  1-based month index.
+  */
   month: number;
-  /** 1-based year index, i.e. months 1-12 are year 1. */
+  /**
+  1-based year index, i.e. months 1-12 are year 1.
+  */
   year: number;
-  /** All employment income this month, after any job-loss reduction. */
+  /**
+  All employment income this month, after any job-loss reduction.
+  */
   netIncome: number;
-  /** The bonus slice of `netIncome`. Zero in the eleven months it does not land. */
+  /**
+  The bonus slice of `netIncome`. Zero in the eleven months it does not land.
+  */
   bonusIncome: number;
   /**
    * A co-resident's contribution this month. Kept separate from `netIncome`
    * because it survives a job loss, which is most of the reason it matters.
    */
   coResidentIncome: number;
-  /** A partner's take-home this month, before the costs of working. */
+  /**
+  A partner's take-home this month, before the costs of working.
+  */
   secondIncome: number;
   /**
    * Childcare and other costs of that second job, NET of the Dependent Care
    * FSA tax saving.
    */
   secondIncomeCosts: number;
-  /** Tax saved this month by paying childcare through a Dependent Care FSA. */
+  /**
+  Tax saved this month by paying childcare through a Dependent Care FSA.
+  */
   dependentCareTaxSaving: number;
-  /** Medical paid from the HSA this month instead of out of cash. */
+  /**
+  Medical paid from the HSA this month instead of out of cash.
+  */
   hsaMedicalPaid: number;
-  /** One-off HSA reimbursement landing in cash this month. */
+  /**
+  One-off HSA reimbursement landing in cash this month.
+  */
   hsaReimbursed: number;
-  /** Fixed + variable living costs, after inflation and any job-loss cut. */
+  /**
+  Fixed + variable living costs, after inflation and any job-loss cut.
+  */
   totalExpenses: number;
   /**
    * The housing cheque you actually write: rent before the buy month, then
    * principal & interest + tax/insurance/HOA + PMI from the buy month onward.
    */
   housingPayment: number;
-  /** The PMI slice of `housingPayment`. Already included in it -- do not add twice. */
+  /**
+  The PMI slice of `housingPayment`. Already included in it -- do not add twice.
+  */
   pmiPayment: number;
   /**
    * Upkeep accrued this month (0 while renting). Kept separate from
@@ -477,44 +641,80 @@ export interface MonthlyResult {
    * but it is subtracted from cash flow just the same.
    */
   homeMaintenance: number;
-  /** True while this month falls inside the scenario's job-loss window. */
+  /**
+  True while this month falls inside the scenario's job-loss window.
+  */
   jobLossActive: boolean;
-  /** True from the buy month onward. */
+  /**
+  True from the buy month onward.
+  */
   ownsHome: boolean;
-  /** What you put into retirement this month, out of your own pay. */
+  /**
+  What you put into retirement this month, out of your own pay.
+  */
   employeeContribution: number;
-  /** What your employer put in this month: regular match plus any annual lump. */
+  /**
+  What your employer put in this month: regular match plus any annual lump.
+  */
   employerContribution: number;
-  /** Fixed commitments due this month (support payments and the like). */
+  /**
+  Fixed commitments due this month (see TimedObligation).
+  */
   obligations: number;
-  /** all income - expenses - obligations - housing - maintenance - retirement contribution. */
+  /**
+  all income - expenses - obligations - housing - maintenance - retirement contribution.
+  */
   netCashFlow: number;
-  /** The near-term cash buffer. Goes NEGATIVE if the plan runs dry -- the risk signal. */
+  /**
+  The near-term cash buffer. Goes NEGATIVE if the plan runs dry -- the risk signal.
+  */
   cashBalance: number;
-  /** The invested pool. Sold off before cash is allowed to go negative. */
+  /**
+  The invested pool. Sold off before cash is allowed to go negative.
+  */
   investmentBalance: number;
-  /** cashBalance + investmentBalance. What you could actually put your hands on. */
+  /**
+  cashBalance + investmentBalance. What you could actually put your hands on.
+  */
   liquidSavings: number;
-  /** Age of the primary person this month. */
+  /**
+  Age of the primary person this month.
+  */
   age: number;
   retirementBalance: number;
-  /** Market value of the home (0 before purchase). */
+  /**
+  Market value of the home (0 before purchase).
+  */
   homeValue: number;
-  /** Outstanding mortgage principal (0 before purchase). */
+  /**
+  Outstanding mortgage principal (0 before purchase).
+  */
   mortgageBalance: number;
-  /** homeValue - mortgageBalance (0 before purchase). */
+  /**
+  homeValue - mortgageBalance (0 before purchase).
+  */
   homeEquity: number;
-  /** liquidSavings + retirementBalance + homeEquity. */
+  /**
+  liquidSavings + retirementBalance + homeEquity.
+  */
   netWorth: number;
-  /** One-time cash out the door this month (down payment + closing costs, less assistance). */
+  /**
+  One-time cash out the door this month (down payment + closing costs, less assistance).
+  */
   purchaseOutflow: number;
-  /** Down-payment assistance received at closing. */
+  /**
+  Down-payment assistance received at closing.
+  */
   assistanceReceived: number;
-  /** What is still owed on that assistance -- a lien against your equity. */
+  /**
+  What is still owed on that assistance -- a lien against your equity.
+  */
   assistanceOutstanding: number;
 }
 
-/** Headline numbers for the dashboard, derived from a MonthlyResult[]. */
+/**
+Headline numbers for the dashboard, derived from a MonthlyResult[].
+*/
 export interface ScenarioSummary {
   scenarioId: string;
   scenarioName: string;
@@ -526,47 +726,89 @@ export interface ScenarioSummary {
    * track within the horizon.
    */
   readinessMonth: number | null;
-  /** Cash required at `readinessMonth`, or at the end of the horizon if never ready. */
+  /**
+  Cash required at `readinessMonth`, or at the end of the horizon if never ready.
+  */
   readinessCashRequired: number;
-  /** Did we actually have the cash on hand in the month we bought? */
+  /**
+  Did we actually have the cash on hand in the month we bought?
+  */
   fundedAtPurchase: boolean;
-  /** Lowest liquid savings balance across the horizon -- the buffer risk indicator. */
+  /**
+  Lowest liquid savings balance across the horizon -- the buffer risk indicator.
+  */
   minCashBuffer: number;
-  /** Month in which `minCashBuffer` occurs. */
+  /**
+  Month in which `minCashBuffer` occurs.
+  */
   minCashBufferMonth: number;
-  /** True if liquid savings ever goes below zero. */
+  /**
+  True if liquid savings ever goes below zero.
+  */
   goesNegative: boolean;
-  /** Net worth at months 12 / 36 / 60 (or as far as the horizon reaches). */
+  /**
+  Net worth at months 12 / 36 / 60 (or as far as the horizon reaches).
+  */
   netWorthAtYear: Record<number, number>;
-  /** Net worth at each requested milestone age that falls inside the horizon. */
+  /**
+  Net worth at each requested milestone age that falls inside the horizon.
+  */
   netWorthAtAge: Record<number, number>;
-  /** Retirement balance at each milestone age. */
+  /**
+  Retirement balance at each milestone age.
+  */
   retirementAtAge: Record<number, number>;
-  /** Home equity at each milestone age. */
+  /**
+  Home equity at each milestone age.
+  */
   homeEquityAtAge: Record<number, number>;
-  /** Invested (non-retirement) balance at each milestone age. */
+  /**
+  Invested (non-retirement) balance at each milestone age.
+  */
   investmentsAtAge: Record<number, number>;
-  /** Month the mortgage is fully repaid, if that happens inside the horizon. */
+  /**
+  Month the mortgage is fully repaid, if that happens inside the horizon.
+  */
   mortgagePaidOffMonth: number | null;
-  /** Total mortgage interest paid across the horizon. */
+  /**
+  Total mortgage interest paid across the horizon.
+  */
   totalInterestPaid: number;
-  /** Total housing outlay across the horizon: rent before the buy, PITI + PMI after. */
+  /**
+  Total housing outlay across the horizon: rent before the buy, PITI + PMI after.
+  */
   totalHousingPaid: number;
-  /** Total upkeep accrued across the horizon. */
+  /**
+  Total upkeep accrued across the horizon.
+  */
   totalMaintenancePaid: number;
-  /** Total PMI paid across the horizon, monthly premiums only. */
+  /**
+  Total PMI paid across the horizon, monthly premiums only.
+  */
   totalPmiPaid: number;
-  /** Total fixed obligations paid across the horizon. */
+  /**
+  Total fixed obligations paid across the horizon.
+  */
   totalObligationsPaid: number;
-  /** Down-payment assistance received at closing, if any. */
+  /**
+  Down-payment assistance received at closing, if any.
+  */
   assistanceReceived: number;
-  /** Total co-resident contribution received across the horizon. */
+  /**
+  Total co-resident contribution received across the horizon.
+  */
   totalCoResidentIncome: number;
-  /** Total second income received, before its costs. */
+  /**
+  Total second income received, before its costs.
+  */
   totalSecondIncome: number;
-  /** Total childcare and other costs of that second job. */
+  /**
+  Total childcare and other costs of that second job.
+  */
   totalSecondIncomeCosts: number;
-  /** Month PMI falls away, if it was ever charged and the LTV clears in time. */
+  /**
+  Month PMI falls away, if it was ever charged and the LTV clears in time.
+  */
   pmiEndsMonth: number | null;
   endingNetWorth: number;
 }

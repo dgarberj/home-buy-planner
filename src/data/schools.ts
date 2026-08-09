@@ -17,13 +17,21 @@
 
 export interface SchoolDistrict {
   name: string;
-  /** Share proficient in maths, as a percentage. Null when not sourced. */
+  /**
+  Share proficient in maths, as a percentage. Null when not sourced.
+  */
   mathProficiency: number | null;
-  /** Share proficient in reading, as a percentage. Null when not sourced. */
+  /**
+  Share proficient in reading, as a percentage. Null when not sourced.
+  */
   readingProficiency: number | null;
-  /** Rank among Pennsylvania districts on 2025 PSSA/Keystone results. */
+  /**
+  Rank among Pennsylvania districts on 2025 PSSA/Keystone results.
+  */
   paRank2025: number | null;
-  /** Niche's 2024 national district ranking. */
+  /**
+  Niche's 2024 national district ranking.
+  */
   nationalRank: number | null;
   note: string | null;
 }

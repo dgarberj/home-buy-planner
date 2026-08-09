@@ -16,19 +16,31 @@ export interface AssistanceProgram {
   key: string;
   name: string;
   provider: string;
-  /** What you get, in words. */
+  /**
+  What you get, in words.
+  */
   benefit: string;
-  /** Percentage of purchase price, where the benefit scales. */
+  /**
+  Percentage of purchase price, where the benefit scales.
+  */
   pctOfPrice: number | null;
-  /** Hard cap in dollars, or null for none. */
+  /**
+  Hard cap in dollars, or null for none.
+  */
   maxAmount: number | null;
-  /** How it is repaid: forgiven, deferred, amortised, or a straight grant. */
+  /**
+  How it is repaid: forgiven, deferred, amortised, or a straight grant.
+  */
   repayment: 'forgiven' | 'deferred' | 'amortised' | 'grant';
   minCreditScore: number | null;
-  /** Liquid assets you may still hold after closing. Retirement usually excluded. */
+  /**
+  Liquid assets you may still hold after closing. Retirement usually excluded.
+  */
   maxLiquidAssetsAfterClosing: number | null;
   requiresFirstTimeBuyer: boolean;
-  /** Household income ceiling for a 3+ person household in Delaware County. */
+  /**
+  Household income ceiling for a 3+ person household in Delaware County.
+  */
   incomeLimit3Plus: number | null;
   purchasePriceLimit: number | null;
   combinable: string;
@@ -145,11 +157,17 @@ export const ASSISTANCE_PROGRAMS: AssistanceProgram[] = [
 export interface EligibilityCheck {
   program: AssistanceProgram;
   eligible: boolean;
-  /** Estimated benefit in dollars at the given purchase price. */
+  /**
+  Estimated benefit in dollars at the given purchase price.
+  */
   estimatedBenefit: number;
-  /** Reasons it does not apply, if any. */
+  /**
+  Reasons it does not apply, if any.
+  */
   blockers: string[];
-  /** Things that need confirming rather than blocking. */
+  /**
+  Things that need confirming rather than blocking.
+  */
   caveats: string[];
 }
 
@@ -200,14 +218,12 @@ export function checkEligibility(input: {
       );
     }
     if (program.key === 'delco-first') {
-      caveats.push('Aimed at low-to-moderate incomes; the published limits are not the PHFA ones. Confirm directly.');
-      caveats.push('Funding is limited and completing the counselling does not guarantee an award.');
-    }
-    if (program.key === 'kfit' || program.key === 'kdate') {
+      caveats.push('Aimed at low-to-moderate incomes; the published limits are not the PHFA ones. Confirm directly.', 'Funding is limited and completing the counselling does not guarantee an award.');
+    } else if (program.key === 'kfit' || program.key === 'kdate') {
       caveats.push('Requires a PHFA first mortgage, so compare its rate against a Conventional 97.');
     }
 
-    const byPct = program.pctOfPrice !== null ? input.purchasePrice * program.pctOfPrice : Infinity;
+    const byPct = program.pctOfPrice === null ? Infinity : input.purchasePrice * program.pctOfPrice;
     const byCap = program.maxAmount ?? Infinity;
     const estimated = Math.min(byPct, byCap);
 

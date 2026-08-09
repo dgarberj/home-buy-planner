@@ -1,0 +1,41 @@
+# Deny install scripts by default; only these known, required build steps
+# (vite's esbuild binary fetch, eslint-plugin-import-x's native resolver) are
+# allowed to run.
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+
+# Refuse to install a package version published in the last 7 days, to avoid
+# pulling in a compromised release before it's caught and pulled/patched.
+minimumReleaseAge: 10080
+
+# Packages deliberately upgraded to their newest release on 2026-08-09 (as
+# part of the ESLint 10 / pnpm 11 toolchain bump) and manually vetted then --
+# exempted so `pnpm run` isn't blocked for a week waiting for them to age
+# past the cutoff above. New updates to these packages get no special
+# treatment; only the versions already in the lockfile are exempt.
+minimumReleaseAgeExclude:
+  - "@typescript-eslint/eslint-plugin"
+  - "@typescript-eslint/parser"
+  - "@typescript-eslint/project-service"
+  - "@typescript-eslint/scope-manager"
+  - "@typescript-eslint/tsconfig-utils"
+  - "@typescript-eslint/type-utils"
+  - "@typescript-eslint/types"
+  - "@typescript-eslint/typescript-estree"
+  - "@typescript-eslint/utils"
+  - "@typescript-eslint/visitor-keys"
+  - baseline-browser-mapping
+  - browserslist
+  - caniuse-lite
+  - comment-parser
+  - core-js-compat
+  - electron-to-chromium
+  - eslint
+  - eslint-plugin-n
+  - eslint-plugin-unicorn
+  - nanoid
+  - node-releases
+  - postcss
+  - typescript-eslint
+  - update-browserslist-db

@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from "react";
 
 /**
  * A blank white page is the worst possible failure: it tells you nothing and
@@ -11,23 +11,26 @@ interface State {
   info: ErrorInfo | null;
 }
 
-export default class ErrorBoundary extends Component<{ children: ReactNode }, State> {
-  state: State = { error: null, info: null };
-
+export default class ErrorBoundary extends Component<
+  { children: ReactNode },
+  State
+> {
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { error };
   }
 
+  private clearSavedData = () => {
+    localStorage.removeItem("home-buy-planner");
+    location.reload();
+  };
+
+  state: State = { error: null, info: null };
+
   componentDidCatch(error: Error, info: ErrorInfo) {
     // Keep the detail around for the panel below, and in the console for you.
-    console.error('Render failed:', error, info);
+    console.error("Render failed:", error, info);
     this.setState({ info });
   }
-
-  private clearSavedData = () => {
-    window.localStorage.removeItem('household-financial-health');
-    window.location.reload();
-  };
 
   render() {
     const { error, info } = this.state;
@@ -36,15 +39,18 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, St
     return (
       <div className="min-h-screen bg-slate-50 px-6 py-16">
         <div className="mx-auto max-w-2xl rounded-2xl border border-red-200 bg-white p-8 shadow-sm">
-          <h1 className="text-xl font-semibold text-slate-900">Something broke while rendering</h1>
+          <h1 className="text-xl font-semibold text-slate-900">
+            Something broke while rendering
+          </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
-            Nine times out of ten this is saved data from an older version of the app that no
-            longer matches the current shape. Clearing it resets everything to the example
-            numbers — <strong>if you have real figures in here, export them first</strong> from a
-            previous session, or re-import your{' '}
+            Nine times out of ten this is saved data from an older version of
+            the app that no longer matches the current shape. Clearing it resets
+            everything to the example numbers —{" "}
+            <strong>if you have real figures in here, export them first</strong>{" "}
+            from a previous session, or re-import your{" "}
             <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-700">
               data/household.json
-            </code>{' '}
+            </code>{" "}
             afterwards.
           </p>
 
@@ -58,7 +64,7 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, St
             </button>
             <button
               type="button"
-              onClick={() => window.location.reload()}
+              onClick={() => location.reload()}
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               Just reload
@@ -71,8 +77,10 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, St
             </summary>
             <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-900 p-4 text-xs leading-relaxed text-slate-100">
               {error.message}
-              {error.stack ? `\n\n${error.stack}` : ''}
-              {info?.componentStack ? `\n\nComponent stack:${info.componentStack}` : ''}
+              {error.stack ? `\n\n${error.stack}` : ""}
+              {info?.componentStack
+                ? `\n\nComponent stack:${info.componentStack}`
+                : ""}
             </pre>
           </details>
         </div>

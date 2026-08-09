@@ -1,9 +1,21 @@
-import { useMemo } from 'react';
-import type { BudgetItem } from '../model/types';
-import { budgetSurplus, deriveBudgetTotals, deriveObligations, isObligation } from '../lib/derive';
-import { money } from '../lib/format';
-import { useStore } from '../store/useStore';
-import { Button, Card, DateInput, InfoTip, INLINE_INPUT, MoneyInput } from './ui';
+import { useMemo } from "react";
+import type { BudgetItem } from "../model/types";
+import {
+  budgetSurplus,
+  deriveBudgetTotals,
+  deriveObligations,
+  isObligation,
+} from "../lib/derive";
+import { money } from "../lib/format";
+import { useStore } from "../store/useStore";
+import {
+  Button,
+  Card,
+  DateInput,
+  InfoTip,
+  INLINE_INPUT,
+  MoneyInput,
+} from "./ui";
 
 /**
  * The monthly budget: every recurring dollar in and out, editable in place.
@@ -13,24 +25,29 @@ import { Button, Card, DateInput, InfoTip, INLINE_INPUT, MoneyInput } from './ui
  * single "left over each month" number that answers the real question.
  */
 
-const GROUPS: { type: BudgetItem['type']; title: string; hint: string; accent: string }[] = [
+const GROUPS: {
+  type: BudgetItem["type"];
+  title: string;
+  hint: string;
+  accent: string;
+}[] = [
   {
-    type: 'income',
-    title: 'Money in',
-    hint: 'Take-home pay after tax and deductions — what actually arrives in the bank.',
-    accent: 'text-emerald-700',
+    type: "income",
+    title: "Money in",
+    hint: "Take-home pay after tax and deductions — what actually arrives in the bank.",
+    accent: "text-emerald-700",
   },
   {
-    type: 'fixed',
-    title: 'Fixed costs',
-    hint: 'Same amount every month: rent, insurance, car and loan payments, subscriptions.',
-    accent: 'text-slate-700',
+    type: "fixed",
+    title: "Fixed costs",
+    hint: "Same amount every month: rent, insurance, car and loan payments, subscriptions.",
+    accent: "text-slate-700",
   },
   {
-    type: 'variable',
-    title: 'Variable costs',
-    hint: 'Spending that moves around month to month: groceries, dining, shopping, travel.',
-    accent: 'text-slate-700',
+    type: "variable",
+    title: "Variable costs",
+    hint: "Spending that moves around month to month: groceries, dining, shopping, travel.",
+    accent: "text-slate-700",
   },
 ];
 
@@ -42,14 +59,18 @@ function Row({ item, dated = false }: { item: BudgetItem; dated?: boolean }) {
       <td className="py-1 pr-2">
         <input
           value={item.label}
-          onChange={(e) => updateBudgetItem(item.id, { label: e.target.value })}
+          onChange={(event_) =>
+            updateBudgetItem(item.id, { label: event_.target.value })
+          }
           className={`${INLINE_INPUT} text-slate-900`}
         />
       </td>
       <td className="py-1 pr-2">
         <input
           value={item.category}
-          onChange={(e) => updateBudgetItem(item.id, { category: e.target.value })}
+          onChange={(event_) =>
+            updateBudgetItem(item.id, { category: event_.target.value })
+          }
           className={`${INLINE_INPUT} text-slate-500`}
         />
       </td>
@@ -68,16 +89,20 @@ function Row({ item, dated = false }: { item: BudgetItem; dated?: boolean }) {
             <DateInput
               type="month"
               variant="inline"
-              value={item.startsOn ?? ''}
-              onChange={(v) => updateBudgetItem(item.id, { startsOn: v || undefined })}
+              value={item.startsOn ?? ""}
+              onChange={(v) =>
+                updateBudgetItem(item.id, { startsOn: v || undefined })
+              }
             />
           </td>
           <td className="py-1 pr-2">
             <DateInput
               type="month"
               variant="inline"
-              value={item.endsOn ?? ''}
-              onChange={(v) => updateBudgetItem(item.id, { endsOn: v || undefined })}
+              value={item.endsOn ?? ""}
+              onChange={(v) =>
+                updateBudgetItem(item.id, { endsOn: v || undefined })
+              }
             />
           </td>
         </>
@@ -103,7 +128,7 @@ function Group({
   total,
   onAdd,
   dated = false,
-  addLabel = '+ Add line',
+  addLabel = "+ Add line",
 }: {
   title: string;
   hint: string;
@@ -125,11 +150,13 @@ function Group({
           <span className="ml-1 text-xs font-normal text-slate-400">/mo</span>
         </span>
       </div>
-      <div className={`px-2 py-1 ${dated ? 'overflow-x-auto' : ''}`}>
+      <div className={`px-2 py-1 ${dated ? "overflow-x-auto" : ""}`}>
         {items.length === 0 ? (
           <p className="px-2 py-3 text-sm text-slate-400">Nothing here yet.</p>
         ) : (
-          <table className={`w-full table-fixed ${dated ? 'min-w-[560px]' : ''}`}>
+          <table
+            className={`w-full table-fixed ${dated ? "min-w-[560px]" : ""}`}
+          >
             <colgroup>
               {dated ? (
                 <>
@@ -189,7 +216,9 @@ export default function BudgetPanel() {
   const obligationsTotal = useMemo(
     () =>
       deriveObligations(budget, startDate)
-        .filter((o) => o.startMonth <= 1 && (o.endMonth === null || o.endMonth >= 1))
+        .filter(
+          (o) => o.startMonth <= 1 && (o.endMonth === null || o.endMonth >= 1),
+        )
         .reduce((sum, o) => sum + o.monthlyAmount, 0),
     [budget, startDate],
   );
@@ -206,7 +235,7 @@ export default function BudgetPanel() {
           </div>
           <div
             className={`whitespace-nowrap text-2xl font-semibold tabular-nums ${
-              surplus < 0 ? 'text-red-600' : 'text-emerald-600'
+              surplus < 0 ? "text-red-600" : "text-emerald-600"
             }`}
           >
             {money(surplus)}
@@ -220,11 +249,11 @@ export default function BudgetPanel() {
             key={g.type}
             title={g.title}
             hint={g.hint}
-            items={budget.filter((b) => b.type === g.type && !b.isRent && !isObligation(b))}
-            total={
-              g.type === 'income' ? totals.income : g.type === 'fixed' ? totals.fixed : totals.variable
-            }
-            onAdd={() => addBudgetItem({ type: g.type, label: 'New item' })}
+            items={budget.filter(
+              (b) => b.type === g.type && !b.isRent && !isObligation(b),
+            )}
+            total={totals[g.type]}
+            onAdd={() => addBudgetItem({ type: g.type, label: "New item" })}
           />
         ))}
       </div>
@@ -235,7 +264,14 @@ export default function BudgetPanel() {
           hint="Rent is tracked on its own because it is replaced by the mortgage payment the month you buy. Everything else carries on."
           items={rentItems}
           total={totals.rent}
-          onAdd={() => addBudgetItem({ type: 'fixed', label: 'Rent', category: 'Housing', isRent: true })}
+          onAdd={() =>
+            addBudgetItem({
+              type: "fixed",
+              label: "Rent",
+              category: "Housing",
+              isRent: true,
+            })
+          }
         />
         <Group
           dated
@@ -244,34 +280,41 @@ export default function BudgetPanel() {
           hint="A lease, a loan, or a court-ordered or contractual payment with a known end date. These are modelled differently from ordinary expenses: they never inflate, and they are NOT cut during a job loss — you cannot unilaterally stop paying a court-ordered obligation. The month one ends, cash flow steps up for good."
           items={obligationItems}
           total={obligationsTotal}
-          onAdd={() =>
+          onAdd={() => {
+            const fiveYearsOut = new Date();
+            fiveYearsOut.setFullYear(fiveYearsOut.getFullYear() + 5);
             addBudgetItem({
-              type: 'fixed',
-              label: 'New commitment',
-              category: 'Family',
-              endsOn: new Date(new Date().setFullYear(new Date().getFullYear() + 5))
-                .toISOString()
-                .slice(0, 7),
-            })
-          }
+              type: "fixed",
+              label: "New commitment",
+              category: "Family",
+              endsOn: fiveYearsOut.toISOString().slice(0, 7),
+            });
+          }}
         />
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
         <span>
-          In <strong className="tabular-nums text-emerald-700">{money(totals.income)}</strong>
+          In{" "}
+          <strong className="tabular-nums text-emerald-700">
+            {money(totals.income)}
+          </strong>
         </span>
         <span aria-hidden>−</span>
         <span>
-          Out{' '}
+          Out{" "}
           <strong className="tabular-nums text-slate-900">
-            {money(totals.fixed + totals.variable + totals.rent + obligationsTotal)}
+            {money(
+              totals.fixed + totals.variable + totals.rent + obligationsTotal,
+            )}
           </strong>
         </span>
         <span aria-hidden>=</span>
         <span>
-          Left over{' '}
-          <strong className={`tabular-nums ${surplus < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+          Left over{" "}
+          <strong
+            className={`tabular-nums ${surplus < 0 ? "text-red-600" : "text-emerald-700"}`}
+          >
             {money(surplus)}
           </strong>
         </span>

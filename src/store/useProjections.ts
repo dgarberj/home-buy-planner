@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import type { Assumptions, ScenarioSummary } from '../model/types';
-import { resolveAssumptions } from '../lib/derive';
-import { runAllScenarios } from '../engine/projection';
-import { useStore } from './useStore';
+import { useMemo } from "react";
+import type { Assumptions, ScenarioSummary } from "../model/types";
+import { resolveAssumptions } from "../lib/derive";
+import { runAllScenarios } from "../engine/projection";
+import { useStore } from "./useStore";
 
 /**
  * The single place the UI meets the engine.
@@ -10,7 +10,10 @@ import { useStore } from './useStore';
  * Everything downstream reads from here, so the whole app always shows one
  * consistent set of numbers, and the engine stays free of React.
  */
-export function useProjections(): { assumptions: Assumptions; summaries: ScenarioSummary[] } {
+export function useProjections(): {
+  assumptions: Assumptions;
+  summaries: ScenarioSummary[];
+} {
   const assumptionsInput = useStore((s) => s.assumptions);
   const budget = useStore((s) => s.budget);
   const balances = useStore((s) => s.balances);
@@ -35,7 +38,13 @@ export function useProjections(): { assumptions: Assumptions; summaries: Scenari
   );
 
   const summaries = useMemo(
-    () => runAllScenarios(assumptions, scenarios, settings.horizonMonths, settings.milestoneAges),
+    () =>
+      runAllScenarios(
+        assumptions,
+        scenarios,
+        settings.horizonMonths,
+        settings.milestoneAges,
+      ),
     [assumptions, scenarios, settings.horizonMonths, settings.milestoneAges],
   );
 

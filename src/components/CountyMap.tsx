@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   COUNTY_INFO,
   clrFactorFor,
@@ -7,12 +7,17 @@ import {
   municipalitiesIn,
   rankedByTax,
   type Municipality,
-} from '../data/localMarket';
-import { districtFor, ratingBand, ratingSummary, PA_AVERAGE } from '../data/schools';
-import { monthlyNominal, monthlyPayment } from '../engine/finance';
-import { money, moneyShort, pct } from '../lib/format';
-import { useStore } from '../store/useStore';
-import { Button, InfoTip, Modal } from './ui';
+} from "../data/localMarket";
+import {
+  districtFor,
+  ratingBand,
+  ratingSummary,
+  PA_AVERAGE,
+} from "../data/schools";
+import { monthlyNominal, monthlyPayment } from "../engine/finance";
+import { money, moneyShort, pct } from "../lib/format";
+import { useStore } from "../store/useStore";
+import { Button, InfoTip, Modal } from "./ui";
 
 /**
  * A tile map of Delaware County.
@@ -28,16 +33,59 @@ import { Button, InfoTip, Modal } from './ui';
  * Colour is the tax rate. Hover for the detail.
  */
 
-/** [column, row] roughly following county geography. West is left, south is down. */
+/**
+[column, row] roughly following county geography. West is left, south is down.
+*/
 const LAYOUT: Record<string, [number, number]> = {
-  Radnor: [7, 0], Haverford: [8, 0], Millbourne: [9, 0],
-  Newtown: [6, 1], Marple: [7, 1], 'Darby, Upper': [8, 1], 'East Lansdowne': [9, 1],
-  Edgmont: [5, 2], 'Providence, Upper': [6, 2], Springfield: [7, 2], 'Clifton Heights': [8, 2], Lansdowne: [9, 2], Yeadon: [10, 2],
-  Thornbury: [4, 3], Middletown: [5, 3], Media: [6, 3], Morton: [7, 3], Aldan: [8, 3], Colwyn: [9, 3], 'Darby Borough': [10, 3],
-  'Chadds Ford': [3, 4], Concord: [4, 4], 'Rose Valley': [5, 4], 'Providence, Nether': [6, 4], Rutledge: [7, 4], Collingdale: [8, 4], 'Darby Township': [9, 4],
-  Bethel: [3, 5], 'Chester Heights': [4, 5], Aston: [5, 5], Swarthmore: [6, 5], 'Ridley Township': [7, 5], Folcroft: [8, 5], 'Sharon Hill': [9, 5],
-  'Chichester, Upper': [3, 6], Brookhaven: [4, 6], Parkside: [5, 6], 'Chester Township': [6, 6], Glenolden: [7, 6], Norwood: [8, 6], 'Prospect Park': [9, 6],
-  'Chichester, Lower': [2, 7], 'Marcus Hook': [3, 7], Trainer: [4, 7], Upland: [5, 7], 'Chester City': [6, 7], Eddystone: [7, 7], 'Ridley Park': [8, 7], Tinicum: [9, 7],
+  Radnor: [7, 0],
+  Haverford: [8, 0],
+  Millbourne: [9, 0],
+  Newtown: [6, 1],
+  Marple: [7, 1],
+  "Darby, Upper": [8, 1],
+  "East Lansdowne": [9, 1],
+  Edgmont: [5, 2],
+  "Providence, Upper": [6, 2],
+  Springfield: [7, 2],
+  "Clifton Heights": [8, 2],
+  Lansdowne: [9, 2],
+  Yeadon: [10, 2],
+  Thornbury: [4, 3],
+  Middletown: [5, 3],
+  Media: [6, 3],
+  Morton: [7, 3],
+  Aldan: [8, 3],
+  Colwyn: [9, 3],
+  "Darby Borough": [10, 3],
+  "Chadds Ford": [3, 4],
+  Concord: [4, 4],
+  "Rose Valley": [5, 4],
+  "Providence, Nether": [6, 4],
+  Rutledge: [7, 4],
+  Collingdale: [8, 4],
+  "Darby Township": [9, 4],
+  Bethel: [3, 5],
+  "Chester Heights": [4, 5],
+  Aston: [5, 5],
+  Swarthmore: [6, 5],
+  "Ridley Township": [7, 5],
+  Folcroft: [8, 5],
+  "Sharon Hill": [9, 5],
+  "Chichester, Upper": [3, 6],
+  Brookhaven: [4, 6],
+  Parkside: [5, 6],
+  "Chester Township": [6, 6],
+  Glenolden: [7, 6],
+  Norwood: [8, 6],
+  "Prospect Park": [9, 6],
+  "Chichester, Lower": [2, 7],
+  "Marcus Hook": [3, 7],
+  Trainer: [4, 7],
+  Upland: [5, 7],
+  "Chester City": [6, 7],
+  Eddystone: [7, 7],
+  "Ridley Park": [8, 7],
+  Tinicum: [9, 7],
 };
 
 const TILE = 78;
@@ -45,7 +93,21 @@ const GAP = 5;
 const COLS = 11;
 const ROWS = 8;
 
-/** Green where tax is low, red where it is high. */
+/**
+Green where tax is low, red where it is high.
+*/
+function tileStroke(isHighlighted: boolean, isHovered: boolean): string {
+  if (isHighlighted) return "#1d4ed8";
+  if (isHovered) return "#0f172a";
+  return "rgba(15,23,42,0.10)";
+}
+
+function tileStrokeWidth(isHighlighted: boolean, isHovered: boolean): number {
+  if (isHighlighted) return 3;
+  if (isHovered) return 2;
+  return 1;
+}
+
 function tileColour(rate: number, min: number, max: number): string {
   const t = (rate - min) / (max - min || 1);
   // 140deg (green) down to 0deg (red).
@@ -53,17 +115,19 @@ function tileColour(rate: number, min: number, max: number): string {
   return `hsl(${hue}, 62%, ${78 - t * 14}%)`;
 }
 
-/** Short enough to fit inside a tile. */
+/**
+Short enough to fit inside a tile.
+*/
 function shortName(name: string): string {
   return name
-    .replace('Chichester, Lower', 'Lwr Chich')
-    .replace('Chichester, Upper', 'Upr Chich')
-    .replace('Providence, Nether', 'Nether Prov')
-    .replace('Providence, Upper', 'Upper Prov')
-    .replace('Darby, Upper', 'Upper Darby')
-    .replace(' Township', ' Twp')
-    .replace(' Borough', ' Boro')
-    .replace('East Lansdowne', 'E Lansdowne');
+    .replace("Chichester, Lower", "Lwr Chich")
+    .replace("Chichester, Upper", "Upr Chich")
+    .replace("Providence, Nether", "Nether Prov")
+    .replace("Providence, Upper", "Upper Prov")
+    .replace("Darby, Upper", "Upper Darby")
+    .replace(" Township", " Twp")
+    .replace(" Borough", " Boro")
+    .replace("East Lansdowne", "E Lansdowne");
 }
 
 /**
@@ -76,33 +140,35 @@ function shortName(name: string): string {
  */
 const METRICS = [
   {
-    key: 'price' as const,
-    label: 'Median home price',
-    unit: 'median',
-    hint: 'Typical home value in this town. Blank where no price could be sourced — which is an absence of data, not a cheap town.',
+    key: "price" as const,
+    label: "Median home price",
+    unit: "median",
+    hint: "Typical home value in this town. Blank where no price could be sourced — which is an absence of data, not a cheap town.",
   },
   {
-    key: 'taxMonthly' as const,
-    label: 'Property tax per month',
-    unit: 'tax/mo',
+    key: "taxMonthly" as const,
+    label: "Property tax per month",
+    unit: "tax/mo",
     hint: "Monthly property and school tax on this town's own median home, so the figures are comparable as lived costs rather than on a hypothetical house.",
   },
   {
-    key: 'taxRate' as const,
-    label: 'Tax rate',
-    unit: 'of value',
-    hint: 'Annual property and school tax as a share of market value. The only figure that compares directly across county lines.',
+    key: "taxRate" as const,
+    label: "Tax rate",
+    unit: "of value",
+    hint: "Annual property and school tax as a share of market value. The only figure that compares directly across county lines.",
   },
 ];
 
-type MetricKey = (typeof METRICS)[number]['key'];
+type MetricKey = (typeof METRICS)[number]["key"];
 
-/** Colour for the little school dot on each tile. */
+/**
+Colour for the little school dot on each tile.
+*/
 const BAND_COLOUR: Record<string, string> = {
-  strong: '#15803d',
-  above: '#65a30d',
-  below: '#b45309',
-  unknown: 'rgba(15,23,42,0.18)',
+  strong: "#15803d",
+  above: "#65a30d",
+  below: "#b45309",
+  unknown: "rgba(15,23,42,0.18)",
 };
 
 export default function CountyMap({
@@ -111,17 +177,22 @@ export default function CountyMap({
   onPick,
 }: {
   price: number;
-  /** Municipalities to ring, e.g. the ones you are actually considering. */
+  /**
+  Municipalities to ring, e.g. the ones you are actually considering.
+  */
   highlighted?: string[];
   onPick?: (name: string) => void;
 }) {
   const [hover, setHover] = useState<Municipality | null>(null);
-  const [cursor, setCursor] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [cursor, setCursor] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
   const [open, setOpen] = useState<Municipality | null>(null);
-  const [countyKey, setCountyKey] = useState('delaware');
+  const [countyKey, setCountyKey] = useState("delaware");
   // Tax rate is the only metric sourced for all 112 municipalities, so it is
   // the default -- picking a price metric first showed a mostly empty map.
-  const [metricKey, setMetricKey] = useState<MetricKey>('taxRate');
+  const [metricKey, setMetricKey] = useState<MetricKey>("taxRate");
   const metric = METRICS.find((x) => x.key === metricKey)!;
 
   /**
@@ -130,14 +201,16 @@ export default function CountyMap({
    * real local price with a hypothetical one.
    */
   const tileValue = (m: Municipality): { text: string; known: boolean } => {
+    if (metricKey === "taxRate")
+      return { text: pct(effectiveRate(m), 2), known: true };
     const basis = m.medianPrice ?? null;
-    if (metricKey === 'taxRate') return { text: pct(effectiveRate(m), 2), known: true };
-    if (basis === null) return { text: '—', known: false };
-    if (metricKey === 'price') return { text: moneyShort(basis), known: true };
+    if (basis === null) return { text: "—", known: false };
+    if (metricKey === "price") return { text: moneyShort(basis), known: true };
     return { text: money(estimatedMonthlyTax(basis, m)), known: true };
   };
 
-  const county = COUNTY_INFO.find((c) => c.key === countyKey) ?? COUNTY_INFO[0]!;
+  const county =
+    COUNTY_INFO.find((c) => c.key === countyKey) ?? COUNTY_INFO[0]!;
   const municipalities = municipalitiesIn(countyKey);
 
   /**
@@ -150,7 +223,9 @@ export default function CountyMap({
     const perRow = 7;
     return [index % perRow, Math.floor(index / perRow)];
   };
-  const ordered = county.geographicLayout ? municipalities : rankedByTax(countyKey);
+  const ordered = county.geographicLayout
+    ? municipalities
+    : rankedByTax(countyKey);
   const rows = county.geographicLayout ? ROWS : Math.ceil(ordered.length / 7);
   const cols = county.geographicLayout ? COLS : 7;
 
@@ -166,7 +241,9 @@ export default function CountyMap({
   const detail = open ? districtFor(open.schoolDistrict) : null;
   const onShortlist = open ? settings.shortlist.includes(open.name) : false;
 
-  /** Full monthly cost of owning here, for the modal. */
+  /**
+  Full monthly cost of owning here, for the modal.
+  */
   const costOf = (m: Municipality, atPrice: number) => {
     const home = assumptions.home;
     const loan = atPrice * (1 - home.downPaymentPct);
@@ -178,7 +255,14 @@ export default function CountyMap({
     const tax = estimatedMonthlyTax(atPrice, m);
     const pmi = home.downPaymentPct < 0.2 ? (loan * home.pmiAnnualPct) / 12 : 0;
     const upkeep = (atPrice * home.maintenanceAnnualPct) / 12;
-    return { pi, tax, pmi, upkeep, insurance: 150, total: pi + tax + pmi + upkeep + 150 };
+    return {
+      pi,
+      tax,
+      pmi,
+      upkeep,
+      insurance: 150,
+      total: pi + tax + pmi + upkeep + 150,
+    };
   };
 
   return (
@@ -193,8 +277,8 @@ export default function CountyMap({
               onClick={() => setCountyKey(c.key)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
                 c.key === countyKey
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
               {c.name}
@@ -217,8 +301,8 @@ export default function CountyMap({
               onClick={() => setMetricKey(x.key)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
                 x.key === metricKey
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
               {x.label}
@@ -226,14 +310,17 @@ export default function CountyMap({
           ))}
         </div>
         <InfoTip text={metric.hint} />
-        {metricKey !== 'taxRate' && (
+        {metricKey !== "taxRate" && (
           <span className="text-xs text-amber-700">
-            {municipalities.filter((m) => m.medianPrice).length} of {municipalities.length} towns in
-            this county have a sourced price — the rest show &ldquo;no price&rdquo;
+            {municipalities.filter((m) => m.medianPrice).length} of{" "}
+            {municipalities.length} towns in this county have a sourced price —
+            the rest show &ldquo;no price&rdquo;
           </span>
         )}
       </div>
-      <p className="mb-3 max-w-3xl text-xs leading-relaxed text-slate-500">{county.note}</p>
+      <p className="mb-3 max-w-3xl text-xs leading-relaxed text-slate-500">
+        {county.note}
+      </p>
 
       <div className="overflow-x-auto">
         <svg
@@ -255,7 +342,9 @@ export default function CountyMap({
                 key={m.name}
                 transform={`translate(${x}, ${y})`}
                 onMouseEnter={() => setHover(m)}
-                onMouseMove={(e) => setCursor({ x: e.clientX, y: e.clientY })}
+                onMouseMove={(event_) =>
+                  setCursor({ x: event_.clientX, y: event_.clientY })
+                }
                 onMouseLeave={() => setHover(null)}
                 onClick={() => {
                   setOpen(m);
@@ -270,15 +359,15 @@ export default function CountyMap({
                   height={TILE}
                   rx={9}
                   fill={tileColour(effectiveRate(m), min, max)}
-                  stroke={isHighlighted ? '#1d4ed8' : isHovered ? '#0f172a' : 'rgba(15,23,42,0.10)'}
-                  strokeWidth={isHighlighted ? 3 : isHovered ? 2 : 1}
+                  stroke={tileStroke(isHighlighted, isHovered)}
+                  strokeWidth={tileStrokeWidth(isHighlighted, isHovered)}
                 />
                 <text
                   x={TILE / 2}
                   y={TILE / 2 - 6}
                   textAnchor="middle"
                   className="pointer-events-none"
-                  style={{ fontSize: 10, fontWeight: 600, fill: '#0f172a' }}
+                  style={{ fontSize: 10, fontWeight: 600, fill: "#0f172a" }}
                 >
                   {shortName(m.name).length > 12
                     ? `${shortName(m.name).slice(0, 11)}…`
@@ -292,7 +381,7 @@ export default function CountyMap({
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    fill: tileValue(m).known ? '#0f172a' : 'rgba(15,23,42,0.3)',
+                    fill: tileValue(m).known ? "#0f172a" : "rgba(15,23,42,0.3)",
                   }}
                 >
                   {tileValue(m).text}
@@ -304,9 +393,9 @@ export default function CountyMap({
                   y={TILE / 2 + 24}
                   textAnchor="middle"
                   className="pointer-events-none"
-                  style={{ fontSize: 9, fill: 'rgba(15,23,42,0.55)' }}
+                  style={{ fontSize: 9, fill: "rgba(15,23,42,0.55)" }}
                 >
-                  {tileValue(m).known ? metric.unit : 'no price'}
+                  {tileValue(m).known ? metric.unit : "no price"}
                 </text>
                 {/* School standing, where it is sourced. */}
                 <circle
@@ -325,27 +414,45 @@ export default function CountyMap({
       {/* --- Legend ------------------------------------------------------ */}
       <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500">
         <span className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-sm" style={{ background: 'hsl(140,62%,78%)' }} />
+          <span
+            className="h-3 w-3 rounded-sm"
+            style={{ background: "hsl(140,62%,78%)" }}
+          />
           low tax ({pct(min, 2)} of value)
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-sm" style={{ background: 'hsl(0,62%,64%)' }} />
+          <span
+            className="h-3 w-3 rounded-sm"
+            style={{ background: "hsl(0,62%,64%)" }}
+          />
           high tax ({pct(max, 2)})
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: BAND_COLOUR.strong }} />
+          <span
+            className="h-2.5 w-2.5 rounded-full"
+            style={{ background: BAND_COLOUR.strong }}
+          />
           top-100 PA district
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: BAND_COLOUR.above }} />
+          <span
+            className="h-2.5 w-2.5 rounded-full"
+            style={{ background: BAND_COLOUR.above }}
+          />
           above state average
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: BAND_COLOUR.below }} />
+          <span
+            className="h-2.5 w-2.5 rounded-full"
+            style={{ background: BAND_COLOUR.below }}
+          />
           below
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: BAND_COLOUR.unknown }} />
+          <span
+            className="h-2.5 w-2.5 rounded-full"
+            style={{ background: BAND_COLOUR.unknown }}
+          />
           not sourced
         </span>
         <span className="flex items-center gap-2">
@@ -354,13 +461,14 @@ export default function CountyMap({
         </span>
       </div>
       <p className="mt-2 text-xs text-slate-400">
-        Every tile shows <strong>{metric.label.toLowerCase()}</strong>, labelled &ldquo;
-        {metric.unit}&rdquo;. Colour is always the tax rate. Tax figures use each town&rsquo;s own
-        median home, so nothing here is a hypothetical house. Click any township for the full
-        breakdown.{' '}
+        Every tile shows <strong>{metric.label.toLowerCase()}</strong>, labelled
+        &ldquo;
+        {metric.unit}&rdquo;. Colour is always the tax rate. Tax figures use
+        each town&rsquo;s own median home, so nothing here is a hypothetical
+        house. Click any township for the full breakdown.{" "}
         {county.geographicLayout
-          ? 'Tiles are arranged roughly geographically, but they are schematic, not real boundaries.'
-          : 'Tiles are ordered by tax rate, cheapest first — no geography implied.'}
+          ? "Tiles are arranged roughly geographically, but they are schematic, not real boundaries."
+          : "Tiles are ordered by tax rate, cheapest first — no geography implied."}
       </p>
 
       {/* --- Hover tooltip, following the cursor -------------------------- */}
@@ -374,26 +482,36 @@ export default function CountyMap({
           }}
         >
           <div className="text-sm font-semibold">{hover.name}</div>
-          <div className="mt-0.5 text-xs text-slate-300">{hover.schoolDistrict} schools</div>
+          <div className="mt-0.5 text-xs text-slate-300">
+            {hover.schoolDistrict} schools
+          </div>
 
           <dl className="mt-2 space-y-1 text-xs">
             <div className="flex justify-between gap-3">
               <dt className="text-slate-400">Median home price</dt>
               <dd className="font-semibold tabular-nums">
-                {hover.medianPrice ? money(hover.medianPrice) : <span className="text-slate-500">not sourced</span>}
+                {hover.medianPrice ? (
+                  money(hover.medianPrice)
+                ) : (
+                  <span className="text-slate-500">not sourced</span>
+                )}
               </dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-slate-400">
-                Property tax {hover.medianPrice ? 'on that' : `on ${money(price)}`}
+                Property tax{" "}
+                {hover.medianPrice ? "on that" : `on ${money(price)}`}
               </dt>
               <dd className="font-semibold tabular-nums">
-                {money(estimatedMonthlyTax(hover.medianPrice ?? price, hover))} / month
+                {money(estimatedMonthlyTax(hover.medianPrice ?? price, hover))}{" "}
+                / month
               </dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-slate-400">Tax rate</dt>
-              <dd className="tabular-nums">{pct(effectiveRate(hover), 2)} of value</dd>
+              <dd className="tabular-nums">
+                {pct(effectiveRate(hover), 2)} of value
+              </dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt className="text-slate-400">Total millage</dt>
@@ -406,12 +524,18 @@ export default function CountyMap({
               <span className="flex items-start gap-1.5">
                 <span
                   className="mt-1 h-2 w-2 shrink-0 rounded-full"
-                  style={{ background: BAND_COLOUR[ratingBand(hover.schoolDistrict)] }}
+                  style={{
+                    background: BAND_COLOUR[ratingBand(hover.schoolDistrict)],
+                  }}
                 />
-                <span className="text-slate-200">{ratingSummary(hover.schoolDistrict)}</span>
+                <span className="text-slate-200">
+                  {ratingSummary(hover.schoolDistrict)}
+                </span>
               </span>
             ) : (
-              <span className="text-slate-400">School performance not sourced</span>
+              <span className="text-slate-400">
+                School performance not sourced
+              </span>
             )}
           </div>
 
@@ -420,7 +544,9 @@ export default function CountyMap({
               {pct(hover.wageTax, 2)} local wage tax
             </div>
           )}
-          <div className="mt-2 text-[11px] text-slate-500">Click for the full breakdown</div>
+          <div className="mt-2 text-[11px] text-slate-500">
+            Click for the full breakdown
+          </div>
         </div>
       )}
 
@@ -428,7 +554,7 @@ export default function CountyMap({
       <Modal
         open={open !== null}
         onClose={() => setOpen(null)}
-        title={open?.name ?? ''}
+        title={open?.name ?? ""}
         subtitle={open ? `${open.schoolDistrict} school district` : undefined}
         footer={
           open && (
@@ -442,7 +568,7 @@ export default function CountyMap({
                   })
                 }
               >
-                {onShortlist ? 'Remove from shortlist' : 'Add to shortlist'}
+                {onShortlist ? "Remove from shortlist" : "Add to shortlist"}
               </Button>
               <Button variant="primary" onClick={() => setOpen(null)}>
                 Done
@@ -462,13 +588,18 @@ export default function CountyMap({
                 <p className="mt-2 text-2xl font-semibold tabular-nums">
                   {money(open.medianPrice)}
                 </p>
-                <p className="mt-1 text-xs text-slate-500">{open.priceSource}</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {open.priceSource}
+                </p>
               </section>
             )}
 
             <section>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Monthly cost of {open.medianPrice ? 'the median house here' : `a ${money(price)} house`}
+                Monthly cost of{" "}
+                {open.medianPrice
+                  ? "the median house here"
+                  : `a ${money(price)} house`}
               </h3>
               <dl className="mt-3 space-y-1.5 text-sm">
                 {(() => {
@@ -476,12 +607,18 @@ export default function CountyMap({
                   return (
                     <>
                       <div className="flex justify-between gap-4">
-                        <dt className="text-slate-600">Principal &amp; interest</dt>
+                        <dt className="text-slate-600">
+                          Principal &amp; interest
+                        </dt>
                         <dd className="tabular-nums">{money(c.pi)}</dd>
                       </div>
                       <div className="flex justify-between gap-4">
-                        <dt className="text-slate-600">Property + school tax</dt>
-                        <dd className="tabular-nums font-medium">{money(c.tax)}</dd>
+                        <dt className="text-slate-600">
+                          Property + school tax
+                        </dt>
+                        <dd className="tabular-nums font-medium">
+                          {money(c.tax)}
+                        </dd>
                       </div>
                       {c.pmi > 0 && (
                         <div className="flex justify-between gap-4">
@@ -499,7 +636,9 @@ export default function CountyMap({
                       </div>
                       <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
                         <dt className="font-medium text-slate-900">All in</dt>
-                        <dd className="tabular-nums text-lg font-semibold">{money(c.total)}</dd>
+                        <dd className="tabular-nums text-lg font-semibold">
+                          {money(c.total)}
+                        </dd>
                       </div>
                     </>
                   );
@@ -523,26 +662,38 @@ export default function CountyMap({
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-slate-600">School district</dt>
-                  <dd className="tabular-nums font-medium">{open.school.toFixed(4)}</dd>
+                  <dd className="tabular-nums font-medium">
+                    {open.school.toFixed(4)}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
                   <dt className="font-medium text-slate-900">Total</dt>
-                  <dd className="tabular-nums font-semibold">{open.total.toFixed(4)} mills</dd>
+                  <dd className="tabular-nums font-semibold">
+                    {open.total.toFixed(4)} mills
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-slate-600">Effective rate on market value</dt>
-                  <dd className="tabular-nums">{pct(effectiveRate(open), 2)}</dd>
+                  <dt className="text-slate-600">
+                    Effective rate on market value
+                  </dt>
+                  <dd className="tabular-nums">
+                    {pct(effectiveRate(open), 2)}
+                  </dd>
                 </div>
                 {open.wageTax > 0 && (
                   <div className="flex justify-between gap-4">
-                    <dt className="text-slate-600">Local wage tax on earnings</dt>
-                    <dd className="tabular-nums text-amber-700">{pct(open.wageTax, 2)}</dd>
+                    <dt className="text-slate-600">
+                      Local wage tax on earnings
+                    </dt>
+                    <dd className="tabular-nums text-amber-700">
+                      {pct(open.wageTax, 2)}
+                    </dd>
                   </div>
                 )}
               </dl>
               <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                The school slice is usually the biggest, and it is the one that varies most across
-                the county.
+                The school slice is usually the biggest, and it is the one that
+                varies most across the county.
               </p>
             </section>
 
@@ -551,12 +702,18 @@ export default function CountyMap({
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 {open.schoolDistrict} schools
               </h3>
-              {detail && (detail.mathProficiency !== null || detail.paRank2025 !== null) ? (
+              {detail &&
+              (detail.mathProficiency !== null ||
+                detail.paRank2025 !== null) ? (
                 <dl className="mt-3 space-y-1.5 text-sm">
                   {detail.paRank2025 !== null && (
                     <div className="flex justify-between gap-4">
-                      <dt className="text-slate-600">Pennsylvania rank (2025)</dt>
-                      <dd className="tabular-nums font-medium">#{detail.paRank2025}</dd>
+                      <dt className="text-slate-600">
+                        Pennsylvania rank (2025)
+                      </dt>
+                      <dd className="tabular-nums font-medium">
+                        #{detail.paRank2025}
+                      </dd>
                     </div>
                   )}
                   {detail.nationalRank !== null && (
@@ -590,21 +747,26 @@ export default function CountyMap({
                 </dl>
               ) : (
                 <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-900">
-                  No performance figures sourced for this district. That is an absence of data, not
-                  a bad score — look it up before it sways a decision.
+                  No performance figures sourced for this district. That is an
+                  absence of data, not a bad score — look it up before it sways
+                  a decision.
                 </p>
               )}
               {detail?.note && (
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">{detail.note}</p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                  {detail.note}
+                </p>
               )}
             </section>
 
             <p className="border-t border-slate-100 pt-4 text-xs leading-relaxed text-slate-500">
-              Pennsylvania taxes assessed value, and buying does not trigger a reassessment. This
-              converts a sale price using {open.countyKey}&rsquo;s county-wide drift factor of{' '}
-              {clrFactorFor(open)}, so it is reliable for ranking places and not for budgeting a
-              specific house. Raw millage is NOT comparable across county lines — only the
-              effective rate is. Check the actual assessment before making an offer.
+              Pennsylvania taxes assessed value, and buying does not trigger a
+              reassessment. This converts a sale price using {open.countyKey}
+              &rsquo;s county-wide drift factor of {clrFactorFor(open)}, so it
+              is reliable for ranking places and not for budgeting a specific
+              house. Raw millage is NOT comparable across county lines — only
+              the effective rate is. Check the actual assessment before making
+              an offer.
             </p>
           </div>
         )}

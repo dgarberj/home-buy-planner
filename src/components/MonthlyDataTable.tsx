@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import type { MonthlyResult } from '../model/types';
-import { downloadText, projectionToCsv } from '../lib/csv';
-import { money, monthLabel } from '../lib/format';
-import { useProjections } from '../store/useProjections';
-import { useStore } from '../store/useStore';
-import { Button, Card, InfoTip, Select } from './ui';
+import { useState } from "react";
+import type { MonthlyResult } from "../model/types";
+import { downloadText, projectionToCsv } from "../lib/csv";
+import { money, monthLabel } from "../lib/format";
+import { useProjections } from "../store/useProjections";
+import { useStore } from "../store/useStore";
+import { Button, Card, InfoTip, Select } from "./ui";
 
 /**
  * The raw month-by-month output of the engine, with nothing rounded away.
@@ -13,39 +13,125 @@ import { Button, Card, InfoTip, Select } from './ui';
  * turn.
  */
 
+function rowHighlightClass(row: MonthlyResult): string {
+  if (row.jobLossActive) return "bg-amber-50/70";
+  if (row.purchaseOutflow > 0) return "bg-blue-50/70";
+  return "odd:bg-slate-50/40";
+}
+
+function cellEmphasisClass(
+  isNegative: boolean,
+  hasEmphasis: boolean | undefined,
+): string {
+  if (isNegative) return "font-semibold text-red-600";
+  if (hasEmphasis) return "font-medium text-slate-900";
+  return "text-slate-600";
+}
+
 const COLUMNS: {
   key: keyof MonthlyResult;
   label: string;
   hint?: string;
-  align?: 'right';
+  align?: "right";
   emphasis?: boolean;
 }[] = [
-  { key: 'netIncome', label: 'Income', hint: 'Take-home pay, after any job-loss reduction.', align: 'right' },
-  { key: 'totalExpenses', label: 'Living costs', hint: 'Everything except housing, inflated over time.', align: 'right' },
-  { key: 'secondIncome', label: 'Second income', hint: 'A partner\u2019s take-home, before the costs of working.', align: 'right' },
-  { key: 'secondIncomeCosts', label: 'Childcare', hint: 'Childcare and other costs incurred purely because of that second job. Stops at school age.', align: 'right' },
-  { key: 'coResidentIncome', label: 'Co-resident', hint: 'A relative\u2019s contribution. Starts only once you own, and does not stop during a job loss.', align: 'right' },
-  { key: 'obligations', label: 'Commitments', hint: 'Support payments and other fixed commitments. Never inflated, never cut during a job loss.', align: 'right' },
-  { key: 'housingPayment', label: 'Housing', hint: 'Rent before you buy; principal, interest, tax, insurance and HOA after.', align: 'right' },
-  { key: 'pmiPayment', label: 'of which PMI', hint: 'Mortgage insurance, already included in the housing payment to its left.', align: 'right' },
-  { key: 'homeMaintenance', label: 'Upkeep', hint: 'Maintenance and repairs accrued this month. Not a bill you receive, but real money all the same.', align: 'right' },
-  { key: 'netCashFlow', label: 'Cash flow', hint: 'Income minus living costs, housing, and your retirement contribution.', align: 'right' },
-  { key: 'purchaseOutflow', label: 'House purchase', hint: 'Down payment plus closing costs, in the month you buy.', align: 'right' },
-  { key: 'cashBalance', label: 'Cash buffer', hint: 'The emergency fund. Surplus above the buffer target is swept into investments; shortfalls sell investments to refill this.', align: 'right' },
-  { key: 'investmentBalance', label: 'Investments', hint: 'The taxable pot outside retirement.', align: 'right' },
-  { key: 'liquidSavings', label: 'Total liquid', hint: 'Cash plus investments. Red means the plan does not fund itself.', align: 'right', emphasis: true },
-  { key: 'retirementBalance', label: 'Retirement', align: 'right' },
-  { key: 'homeValue', label: 'Home value', align: 'right' },
-  { key: 'mortgageBalance', label: 'Mortgage owed', align: 'right' },
-  { key: 'homeEquity', label: 'Home equity', align: 'right' },
-  { key: 'netWorth', label: 'Net worth', align: 'right', emphasis: true },
+  {
+    key: "netIncome",
+    label: "Income",
+    hint: "Take-home pay, after any job-loss reduction.",
+    align: "right",
+  },
+  {
+    key: "totalExpenses",
+    label: "Living costs",
+    hint: "Everything except housing, inflated over time.",
+    align: "right",
+  },
+  {
+    key: "secondIncome",
+    label: "Second income",
+    hint: "A partner\u{2019}s take-home, before the costs of working.",
+    align: "right",
+  },
+  {
+    key: "secondIncomeCosts",
+    label: "Childcare",
+    hint: "Childcare and other costs incurred purely because of that second job. Stops at school age.",
+    align: "right",
+  },
+  {
+    key: "coResidentIncome",
+    label: "Co-resident",
+    hint: "A relative\u{2019}s contribution. Starts only once you own, and does not stop during a job loss.",
+    align: "right",
+  },
+  {
+    key: "obligations",
+    label: "Commitments",
+    hint: "Support payments and other fixed commitments. Never inflated, never cut during a job loss.",
+    align: "right",
+  },
+  {
+    key: "housingPayment",
+    label: "Housing",
+    hint: "Rent before you buy; principal, interest, tax, insurance and HOA after.",
+    align: "right",
+  },
+  {
+    key: "pmiPayment",
+    label: "of which PMI",
+    hint: "Mortgage insurance, already included in the housing payment to its left.",
+    align: "right",
+  },
+  {
+    key: "homeMaintenance",
+    label: "Upkeep",
+    hint: "Maintenance and repairs accrued this month. Not a bill you receive, but real money all the same.",
+    align: "right",
+  },
+  {
+    key: "netCashFlow",
+    label: "Cash flow",
+    hint: "Income minus living costs, housing, and your retirement contribution.",
+    align: "right",
+  },
+  {
+    key: "purchaseOutflow",
+    label: "House purchase",
+    hint: "Down payment plus closing costs, in the month you buy.",
+    align: "right",
+  },
+  {
+    key: "cashBalance",
+    label: "Cash buffer",
+    hint: "The emergency fund. Surplus above the buffer target is swept into investments; shortfalls sell investments to refill this.",
+    align: "right",
+  },
+  {
+    key: "investmentBalance",
+    label: "Investments",
+    hint: "The taxable pot outside retirement.",
+    align: "right",
+  },
+  {
+    key: "liquidSavings",
+    label: "Total liquid",
+    hint: "Cash plus investments. Red means the plan does not fund itself.",
+    align: "right",
+    emphasis: true,
+  },
+  { key: "retirementBalance", label: "Retirement", align: "right" },
+  { key: "homeValue", label: "Home value", align: "right" },
+  { key: "mortgageBalance", label: "Mortgage owed", align: "right" },
+  { key: "homeEquity", label: "Home equity", align: "right" },
+  { key: "netWorth", label: "Net worth", align: "right", emphasis: true },
 ];
 
 export default function MonthlyDataTable() {
   const { summaries } = useProjections();
   const settings = useStore((s) => s.settings);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [yearFilter, setYearFilter] = useState<number | 'all'>('all');
+  const [yearFilter, setYearFilter] = useState<number | "all">("all");
 
   if (summaries.length === 0) {
     return (
@@ -57,12 +143,15 @@ export default function MonthlyDataTable() {
     );
   }
 
-  const selected = summaries.find((s) => s.scenarioId === selectedId) ?? summaries[0]!;
-  const years = Array.from(
-    new Set(selected.months.map((m) => m.year)),
-  ).sort((a, b) => a - b);
+  const selected =
+    summaries.find((s) => s.scenarioId === selectedId) ?? summaries[0]!;
+  const years = [...new Set(selected.months.map((m) => m.year))].toSorted(
+    (a, b) => a - b,
+  );
   const rows =
-    yearFilter === 'all' ? selected.months : selected.months.filter((m) => m.year === yearFilter);
+    yearFilter === "all"
+      ? selected.months
+      : selected.months.filter((m) => m.year === yearFilter);
 
   return (
     <Card
@@ -73,9 +162,13 @@ export default function MonthlyDataTable() {
           size="sm"
           onClick={() =>
             downloadText(
-              `projection-${selected.scenarioName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.csv`,
-              projectionToCsv(selected.months, settings.startDate, selected.scenarioName),
-              'text/csv',
+              `projection-${selected.scenarioName.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-")}.csv`,
+              projectionToCsv(
+                selected.months,
+                settings.startDate,
+                selected.scenarioName,
+              ),
+              "text/csv",
             )
           }
         >
@@ -92,11 +185,14 @@ export default function MonthlyDataTable() {
               onClick={() => setSelectedId(s.scenarioId)}
               className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition ${
                 s.scenarioId === selected.scenarioId
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: s.color }}
+              />
               {s.scenarioName}
             </button>
           ))}
@@ -107,7 +203,7 @@ export default function MonthlyDataTable() {
           <Select
             className="w-32"
             value={String(yearFilter)}
-            onChange={(v) => setYearFilter(v === 'all' ? 'all' : Number(v))}
+            onChange={(v) => setYearFilter(v === "all" ? "all" : Number(v))}
           >
             <option value="all">All years</option>
             {years.map((y) => (
@@ -144,13 +240,7 @@ export default function MonthlyDataTable() {
             {rows.map((row) => (
               <tr
                 key={row.month}
-                className={`border-b border-slate-100 last:border-0 ${
-                  row.jobLossActive
-                    ? 'bg-amber-50/70'
-                    : row.purchaseOutflow > 0
-                      ? 'bg-blue-50/70'
-                      : 'odd:bg-slate-50/40'
-                }`}
+                className={`border-b border-slate-100 last:border-0 ${rowHighlightClass(row)}`}
               >
                 <td className="whitespace-nowrap px-3 py-1.5">
                   <span className="font-medium text-slate-900">
@@ -172,17 +262,11 @@ export default function MonthlyDataTable() {
                 </td>
                 {COLUMNS.map((c) => {
                   const value = row[c.key] as number;
-                  const negative = value < 0;
+                  const isNegative = value < 0;
                   return (
                     <td
                       key={String(c.key)}
-                      className={`whitespace-nowrap px-3 py-1.5 text-right tabular-nums ${
-                        negative
-                          ? 'font-semibold text-red-600'
-                          : c.emphasis
-                            ? 'font-medium text-slate-900'
-                            : 'text-slate-600'
-                      } ${value === 0 && !c.emphasis ? 'text-slate-300' : ''}`}
+                      className={`whitespace-nowrap px-3 py-1.5 text-right tabular-nums ${cellEmphasisClass(isNegative, c.emphasis)} ${value === 0 && !c.emphasis ? "text-slate-300" : ""}`}
                     >
                       {money(value)}
                     </td>
@@ -202,7 +286,8 @@ export default function MonthlyDataTable() {
           <span className="h-3 w-3 rounded-sm bg-amber-100" /> job-loss months
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="font-semibold text-red-600">red</span> negative — money you do not have
+          <span className="font-semibold text-red-600">red</span> negative —
+          money you do not have
         </span>
       </div>
     </Card>

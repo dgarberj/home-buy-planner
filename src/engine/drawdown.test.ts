@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import type { Assumptions, ScenarioConfig } from '../model/types';
-import { requiredPortfolio, runDrawdown } from './drawdown';
-import { runProjection } from './projection';
+import { describe, expect, it } from "vitest";
+import type { Assumptions, ScenarioConfig } from "../model/types";
+import { requiredPortfolio, runDrawdown } from "./drawdown";
+import { runProjection } from "./projection";
 
 /**
  * Same trick as the projection tests: every rate is zero so the arithmetic can
@@ -17,7 +17,7 @@ const FLAT: Assumptions = {
   obligations: [],
   coResident: {
     enabled: false,
-    label: 'None',
+    label: "None",
     monthlyAmount: 0,
     requiresHomePurchase: true,
     homePricePremium: 0,
@@ -26,7 +26,7 @@ const FLAT: Assumptions = {
   },
   secondIncome: {
     enabled: false,
-    label: 'Second income',
+    label: "Second income",
     monthlyTakeHome: 0,
     startMonth: 1,
     additionalCostsMonthly: 0,
@@ -45,7 +45,13 @@ const FLAT: Assumptions = {
     includeHomeEquity: false,
     planToAge: 95,
   },
-  income: { monthlyTakeHome: 10_000, growthAnnual: 0, annualBonusNet: 0, annualBonusMonth: 1, calendarStartMonth: 1 },
+  income: {
+    monthlyTakeHome: 10_000,
+    growthAnnual: 0,
+    annualBonusNet: 0,
+    annualBonusMonth: 1,
+    calendarStartMonth: 1,
+  },
   expenses: {
     fixedMonthly: 3_000,
     variableMonthly: 2_000,
@@ -91,7 +97,7 @@ const FLAT: Assumptions = {
     assistanceEnabled: false,
     assistancePctOfPrice: 0,
     assistanceMaxAmount: null,
-    assistanceRepayment: 'none' as const,
+    assistanceRepayment: "none" as const,
     assistanceTermYears: 10,
   },
   jobLoss: {
@@ -104,36 +110,42 @@ const FLAT: Assumptions = {
 };
 
 const RENT: ScenarioConfig = {
-  id: 'rent',
-  name: 'Keep renting',
+  id: "rent",
+  name: "Keep renting",
   buyMonth: null,
   hasJobLoss: false,
   enabled: true,
-  color: '#000',
+  color: "#000",
 };
 
-/** Age 65 is month 301 when you are 40 today. */
+/**
+Age 65 is month 301 when you are 40 today.
+*/
 const RETIREMENT_MONTH = 301;
 const POT = 1_303_500;
 
 const project = (a: Assumptions = FLAT, months = RETIREMENT_MONTH) =>
   runProjection(a, RENT, months);
 
-describe('runDrawdown -- the pot at retirement', () => {
-  it('finds the month the primary person retires', () => {
+describe("runDrawdown -- the pot at retirement", () => {
+  it("finds the month the primary person retires", () => {
     const r = runDrawdown(project(), FLAT);
     expect(r.retirementMonth).toBe(RETIREMENT_MONTH);
   });
 
-  it('adds up retirement accounts and liquid savings', () => {
+  it("adds up retirement accounts and liquid savings", () => {
     const r = runDrawdown(project(), FLAT);
     expect(r.retirementAccountsAtRetirement).toBeCloseTo(551_500, 4);
     expect(r.liquidAtRetirement).toBeCloseTo(752_000, 4);
     expect(r.portfolioAtRetirement).toBeCloseTo(POT, 4);
   });
 
-  it('leaves the house out of the pot by default', () => {
-    const owner = runProjection(FLAT, { ...RENT, buyMonth: 12 }, RETIREMENT_MONTH);
+  it("leaves the house out of the pot by default", () => {
+    const owner = runProjection(
+      FLAT,
+      { ...RENT, buyMonth: 12 },
+      RETIREMENT_MONTH,
+    );
     const r = runDrawdown(owner, FLAT);
     expect(r.homeEquityAtRetirement).toBeGreaterThan(0);
     expect(r.portfolioAtRetirement).toBeCloseTo(
@@ -142,20 +154,26 @@ describe('runDrawdown -- the pot at retirement', () => {
     );
   });
 
-  it('counts the house when told to', () => {
-    const owner = runProjection(FLAT, { ...RENT, buyMonth: 12 }, RETIREMENT_MONTH);
+  it("counts the house when told to", () => {
+    const owner = runProjection(
+      FLAT,
+      { ...RENT, buyMonth: 12 },
+      RETIREMENT_MONTH,
+    );
     const withHouse: Assumptions = {
       ...FLAT,
       drawdown: { ...FLAT.drawdown, includeHomeEquity: true },
     };
     const r = runDrawdown(owner, withHouse);
     expect(r.portfolioAtRetirement).toBeCloseTo(
-      r.retirementAccountsAtRetirement + r.liquidAtRetirement + r.homeEquityAtRetirement,
+      r.retirementAccountsAtRetirement +
+        r.liquidAtRetirement +
+        r.homeEquityAtRetirement,
       4,
     );
   });
 
-  it('gives up gracefully when retirement is outside the projection', () => {
+  it("gives up gracefully when retirement is outside the projection", () => {
     const r = runDrawdown(project(FLAT, 60), FLAT);
     expect(r.retirementMonth).toBeNull();
     expect(r.portfolioAtRetirement).toBe(0);
@@ -163,14 +181,14 @@ describe('runDrawdown -- the pot at retirement', () => {
   });
 });
 
-describe('runDrawdown -- the withdrawal-rate view', () => {
-  it('applies the withdrawal rate to the pot', () => {
+describe("runDrawdown -- the withdrawal-rate view", () => {
+  it("applies the withdrawal rate to the pot", () => {
     const r = runDrawdown(project(), FLAT);
     // 4% of 1,303,500
     expect(r.sustainableAnnualIncome).toBeCloseTo(52_140, 4);
   });
 
-  it('scales with the withdrawal rate', () => {
+  it("scales with the withdrawal rate", () => {
     const cautious: Assumptions = {
       ...FLAT,
       drawdown: { ...FLAT.drawdown, withdrawalRate: 0.03 },
@@ -179,14 +197,14 @@ describe('runDrawdown -- the withdrawal-rate view', () => {
     expect(r.sustainableAnnualIncome).toBeCloseTo(POT * 0.03, 4);
   });
 
-  it('compares it against the spending you actually want', () => {
+  it("compares it against the spending you actually want", () => {
     const r = runDrawdown(project(), FLAT);
     expect(r.desiredAnnualSpendAtRetirement).toBeCloseTo(60_000, 4);
     expect(r.annualShortfall).toBeCloseTo(60_000 - 52_140, 4);
     expect(r.meetsTargetAtWithdrawalRate).toBe(false);
   });
 
-  it('reports meeting the target when the pot is big enough', () => {
+  it("reports meeting the target when the pot is big enough", () => {
     const modest: Assumptions = {
       ...FLAT,
       drawdown: { ...FLAT.drawdown, desiredMonthlySpendToday: 3_000 },
@@ -196,7 +214,7 @@ describe('runDrawdown -- the withdrawal-rate view', () => {
     expect(r.meetsTargetAtWithdrawalRate).toBe(true);
   });
 
-  it('translates the sustainable income back into today’s money', () => {
+  it("translates the sustainable income back into today’s money", () => {
     const inflating: Assumptions = {
       ...FLAT,
       drawdown: { ...FLAT.drawdown, inflationAnnual: 0.03 },
@@ -204,22 +222,30 @@ describe('runDrawdown -- the withdrawal-rate view', () => {
     const r = runDrawdown(project(), inflating);
     // 25 years of 3% inflation between now and retirement.
     const factor = Math.pow(1.03, 25);
-    expect(r.sustainableAnnualIncomeToday).toBeCloseTo(r.sustainableAnnualIncome / factor, 4);
-    expect(r.sustainableAnnualIncomeToday).toBeLessThan(r.sustainableAnnualIncome);
+    expect(r.sustainableAnnualIncomeToday).toBeCloseTo(
+      r.sustainableAnnualIncome / factor,
+      4,
+    );
+    expect(r.sustainableAnnualIncomeToday).toBeLessThan(
+      r.sustainableAnnualIncome,
+    );
   });
 
-  it('inflates the spending target to the retirement year', () => {
+  it("inflates the spending target to the retirement year", () => {
     const inflating: Assumptions = {
       ...FLAT,
       drawdown: { ...FLAT.drawdown, inflationAnnual: 0.03 },
     };
     const r = runDrawdown(project(), inflating);
-    expect(r.desiredAnnualSpendAtRetirement).toBeCloseTo(60_000 * Math.pow(1.03, 25), 4);
+    expect(r.desiredAnnualSpendAtRetirement).toBeCloseTo(
+      60_000 * Math.pow(1.03, 25),
+      4,
+    );
   });
 });
 
-describe('runDrawdown -- the simulation view', () => {
-  it('runs the money down at the spending rate and reports when it ends', () => {
+describe("runDrawdown -- the simulation view", () => {
+  it("runs the money down at the spending rate and reports when it ends", () => {
     const r = runDrawdown(project(), FLAT);
     // 1,303,500 at 5,000 a month with no growth: 261 months, so age 86.75.
     expect(r.depletionAge).toBeCloseTo(65 + 261 / 12, 6);
@@ -227,7 +253,7 @@ describe('runDrawdown -- the simulation view', () => {
     expect(r.yearsOfIncome).toBeCloseTo(261 / 12, 6);
   });
 
-  it('lasts the whole plan when spending is low enough', () => {
+  it("lasts the whole plan when spending is low enough", () => {
     const modest: Assumptions = {
       ...FLAT,
       drawdown: { ...FLAT.drawdown, desiredMonthlySpendToday: 2_000 },
@@ -239,7 +265,7 @@ describe('runDrawdown -- the simulation view', () => {
     expect(r.yearsOfIncome).toBe(30);
   });
 
-  it('lasts longer when the portfolio keeps earning', () => {
+  it("lasts longer when the portfolio keeps earning", () => {
     const growing: Assumptions = {
       ...FLAT,
       drawdown: { ...FLAT.drawdown, returnAnnual: 0.05 },
@@ -249,7 +275,7 @@ describe('runDrawdown -- the simulation view', () => {
     expect(grown.yearsOfIncome).toBeGreaterThan(flat.yearsOfIncome);
   });
 
-  it('never runs out at all once returns outpace the spending', () => {
+  it("never runs out at all once returns outpace the spending", () => {
     // 5% on 1,303,500 is 65,190 a year against 60,000 of spending, so the
     // balance grows rather than drains -- the classic 4%-rule situation.
     const growing: Assumptions = {
@@ -262,11 +288,15 @@ describe('runDrawdown -- the simulation view', () => {
     expect(r.yearsOfIncome).toBe(30);
   });
 
-  it('runs out sooner when spending inflates', () => {
+  it("runs out sooner when spending inflates", () => {
     const inflating: Assumptions = {
       ...FLAT,
       // Same starting spend in today's money, but rising each year.
-      drawdown: { ...FLAT.drawdown, inflationAnnual: 0.03, desiredMonthlySpendToday: 2_000 },
+      drawdown: {
+        ...FLAT.drawdown,
+        inflationAnnual: 0.03,
+        desiredMonthlySpendToday: 2_000,
+      },
     };
     const level: Assumptions = {
       ...FLAT,
@@ -277,7 +307,7 @@ describe('runDrawdown -- the simulation view', () => {
     expect(a.balanceAtPlanEnd).toBeLessThan(b.balanceAtPlanEnd);
   });
 
-  it('records one track point per year of the plan', () => {
+  it("records one track point per year of the plan", () => {
     const r = runDrawdown(project(), FLAT);
     expect(r.track).toHaveLength(30);
     expect(r.track[0]?.age).toBe(66);
@@ -286,13 +316,13 @@ describe('runDrawdown -- the simulation view', () => {
     expect(r.track.every((t) => t.balance >= 0)).toBe(true);
   });
 
-  it('never withdraws more than is left', () => {
+  it("never withdraws more than is left", () => {
     const r = runDrawdown(project(), FLAT);
     const totalWithdrawn = r.track.reduce((sum, t) => sum + t.withdrawal, 0);
     expect(totalWithdrawn).toBeLessThan(POT + 1);
   });
 
-  it('is unaffected by how the pot was accumulated, only by its size', () => {
+  it("is unaffected by how the pot was accumulated, only by its size", () => {
     // Two different routes to retirement, same drawdown maths.
     const r = runDrawdown(project(), FLAT);
     expect(r.portfolioAtRetirement * FLAT.drawdown.withdrawalRate).toBeCloseTo(
@@ -302,13 +332,16 @@ describe('runDrawdown -- the simulation view', () => {
   });
 });
 
-describe('requiredPortfolio', () => {
-  it('is the spending target divided by the withdrawal rate', () => {
+describe("requiredPortfolio", () => {
+  it("is the spending target divided by the withdrawal rate", () => {
     // 60,000 a year at 4% needs 1.5m.
-    expect(requiredPortfolio(FLAT, FLAT.drawdown, 25)).toBeCloseTo(1_500_000, 4);
+    expect(requiredPortfolio(FLAT, FLAT.drawdown, 25)).toBeCloseTo(
+      1_500_000,
+      4,
+    );
   });
 
-  it('grows with inflation between now and retirement', () => {
+  it("grows with inflation between now and retirement", () => {
     const inflating: Assumptions = {
       ...FLAT,
       drawdown: { ...FLAT.drawdown, inflationAnnual: 0.03 },
@@ -319,8 +352,11 @@ describe('requiredPortfolio', () => {
     );
   });
 
-  it('is unreachable when the withdrawal rate is zero', () => {
-    const zero: Assumptions = { ...FLAT, drawdown: { ...FLAT.drawdown, withdrawalRate: 0 } };
+  it("is unreachable when the withdrawal rate is zero", () => {
+    const zero: Assumptions = {
+      ...FLAT,
+      drawdown: { ...FLAT.drawdown, withdrawalRate: 0 },
+    };
     expect(requiredPortfolio(zero, zero.drawdown, 25)).toBe(Infinity);
   });
 });

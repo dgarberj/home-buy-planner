@@ -55,10 +55,14 @@ export const CLR_FACTORS: Record<string, number> = {
   philadelphia: 1.06,
 };
 
-/** Kept for callers that only ever look at Delaware County. */
+/**
+Kept for callers that only ever look at Delaware County.
+*/
 export const DELCO_CLR_FACTOR = CLR_FACTORS.delaware!;
 
-/** Assessed values run at roughly this share of today's market value. */
+/**
+Assessed values run at roughly this share of today's market value.
+*/
 export const DELCO_ASSESSMENT_RATIO = 1 / DELCO_CLR_FACTOR;
 
 export interface CountyInfo {
@@ -66,7 +70,9 @@ export interface CountyInfo {
   name: string;
   state: string;
   clrFactor: number;
-  /** Are the tiles laid out geographically, or just sorted by tax? */
+  /**
+  Are the tiles laid out geographically, or just sorted by tax?
+  */
   geographicLayout: boolean;
   note: string;
 }
@@ -99,19 +105,31 @@ export const COUNTY_INFO: CountyInfo[] = [
 ];
 
 export interface Municipality {
-  /** Which county's assessment base and CLR factor this sits on. */
+  /**
+  Which county's assessment base and CLR factor this sits on.
+  */
   countyKey: string;
   name: string;
   schoolDistrict: string;
-  /** County millage. Same across the county. */
+  /**
+  County millage. Same across the county.
+  */
   county: number;
-  /** Township or borough millage. */
+  /**
+  Township or borough millage.
+  */
   local: number;
-  /** School district millage -- almost always the largest slice. */
+  /**
+  School district millage -- almost always the largest slice.
+  */
   school: number;
-  /** Sum of the three. */
+  /**
+  Sum of the three.
+  */
   total: number;
-  /** Local earned income tax on wages, as a decimal. */
+  /**
+  Local earned income tax on wages, as a decimal.
+  */
   wageTax: number;
   /**
    * Typical home value, where I could source one. NULL means not sourced --
@@ -121,7 +139,9 @@ export interface Municipality {
    * Zillow ZHVI / Redfin, 2026. These move; re-check before acting.
    */
   medianPrice?: number | null;
-  /** Where the price came from, so it can be re-checked. */
+  /**
+  Where the price came from, so it can be re-checked.
+  */
   priceSource?: string;
 }
 
@@ -134,7 +154,7 @@ export const DELCO_MUNICIPALITIES: Municipality[] = [
   { countyKey: 'delaware', name: 'Aldan', schoolDistrict: 'William Penn', county: 4.609, local: 5.5, school: 32.86, total: 42.969, wageTax: 0.01 },
   { countyKey: 'delaware', name: 'Aston', schoolDistrict: 'Penn Delco', county: 4.609, local: 3.9199, school: 20.7365, total: 29.2654, wageTax: 0.01 , medianPrice: 303063, priceSource: 'Aston/Folsom, Zillow 2026'},
   { countyKey: 'delaware', name: 'Bethel', schoolDistrict: 'Garnet Valley', county: 4.609, local: 1.373, school: 20.1235, total: 26.1055, wageTax: 0 },
-  { countyKey: 'delaware', name: 'Brookhaven', schoolDistrict: 'Penn Delco', county: 4.609, local: 4.0, school: 20.7365, total: 29.3455, wageTax: 0.01 , medianPrice: 241515, priceSource: 'Zillow 2026'},
+  { countyKey: 'delaware', name: 'Brookhaven', schoolDistrict: 'Penn Delco', county: 4.609, local: 4, school: 20.7365, total: 29.3455, wageTax: 0.01 , medianPrice: 241515, priceSource: 'Zillow 2026'},
   { countyKey: 'delaware', name: 'Chadds Ford', schoolDistrict: 'Unionville/Chadds Ford', county: 4.609, local: 5.577, school: 19.24, total: 29.426, wageTax: 0 },
   { countyKey: 'delaware', name: 'Chester City', schoolDistrict: 'Chester/Upland', county: 4.609, local: 9.8058, school: 14.49, total: 28.9048, wageTax: 0.0375 },
   { countyKey: 'delaware', name: 'Chester Heights', schoolDistrict: 'Garnet Valley', county: 4.609, local: 0.5971, school: 19.908, total: 25.1141, wageTax: 0 },
@@ -157,9 +177,9 @@ export const DELCO_MUNICIPALITIES: Municipality[] = [
   { countyKey: 'delaware', name: 'Lansdowne', schoolDistrict: 'William Penn', county: 4.609, local: 7.3039, school: 32.86, total: 44.7729, wageTax: 0.01 },
   { countyKey: 'delaware', name: 'Marcus Hook', schoolDistrict: 'Chichester', county: 4.609, local: 11.71, school: 30.1106, total: 46.4296, wageTax: 0.01 },
   { countyKey: 'delaware', name: 'Marple', schoolDistrict: 'Marple Newtown', county: 4.609, local: 2.783, school: 12.4741, total: 19.8661, wageTax: 0 , medianPrice: 651500, priceSource: 'Marple/Newtown Square median sold, Jun 2026'},
-  { countyKey: 'delaware', name: 'Media', schoolDistrict: 'Rose Tree Media', county: 4.609, local: 2.0, school: 15.9417, total: 22.5507, wageTax: 0.01 , medianPrice: 634500, priceSource: 'Zillow 2026'},
+  { countyKey: 'delaware', name: 'Media', schoolDistrict: 'Rose Tree Media', county: 4.609, local: 2, school: 15.9417, total: 22.5507, wageTax: 0.01 , medianPrice: 634500, priceSource: 'Zillow 2026'},
   { countyKey: 'delaware', name: 'Middletown', schoolDistrict: 'Rose Tree Media', county: 4.609, local: 1.01, school: 15.9417, total: 21.5607, wageTax: 0 },
-  { countyKey: 'delaware', name: 'Millbourne', schoolDistrict: 'Upper Darby', county: 4.609, local: 12.0, school: 26.523, total: 43.132, wageTax: 0 },
+  { countyKey: 'delaware', name: 'Millbourne', schoolDistrict: 'Upper Darby', county: 4.609, local: 12, school: 26.523, total: 43.132, wageTax: 0 },
   { countyKey: 'delaware', name: 'Morton', schoolDistrict: 'Springfield', county: 4.609, local: 7.4, school: 22.1783, total: 34.1873, wageTax: 0 },
   { countyKey: 'delaware', name: 'Newtown', schoolDistrict: 'Marple Newtown', county: 4.609, local: 2.1658, school: 12.4741, total: 19.2489, wageTax: 0 , medianPrice: 579000, priceSource: 'Newtown Square, Zillow 2026'},
   { countyKey: 'delaware', name: 'Norwood', schoolDistrict: 'Interboro', county: 4.609, local: 8.91, school: 26.2302, total: 39.7492, wageTax: 0 , medianPrice: 263861, priceSource: 'Zillow 2026'},
@@ -175,10 +195,10 @@ export const DELCO_MUNICIPALITIES: Municipality[] = [
   { countyKey: 'delaware', name: 'Sharon Hill', schoolDistrict: 'Southeast Delco', county: 4.609, local: 9.5, school: 32.5341, total: 46.6431, wageTax: 0 },
   { countyKey: 'delaware', name: 'Springfield', schoolDistrict: 'Springfield', county: 4.609, local: 4.25, school: 22.1783, total: 31.0373, wageTax: 0 , medianPrice: 514489, priceSource: 'Zillow 2026'},
   { countyKey: 'delaware', name: 'Swarthmore', schoolDistrict: 'Wallingford/Swarthmore', county: 4.609, local: 4.446, school: 31.1711, total: 40.2261, wageTax: 0 , medianPrice: 365000, priceSource: 'Median list, Apr 2026'},
-  { countyKey: 'delaware', name: 'Thornbury', schoolDistrict: 'West Chester', county: 4.609, local: 0.0, school: 11.3681, total: 15.9771, wageTax: 0 },
-  { countyKey: 'delaware', name: 'Tinicum', schoolDistrict: 'Interboro', county: 4.609, local: 3.0, school: 26.2302, total: 33.8392, wageTax: 0.01 },
+  { countyKey: 'delaware', name: 'Thornbury', schoolDistrict: 'West Chester', county: 4.609, local: 0, school: 11.3681, total: 15.9771, wageTax: 0 },
+  { countyKey: 'delaware', name: 'Tinicum', schoolDistrict: 'Interboro', county: 4.609, local: 3, school: 26.2302, total: 33.8392, wageTax: 0.01 },
   { countyKey: 'delaware', name: 'Trainer', schoolDistrict: 'Chichester', county: 4.609, local: 10.65, school: 30.1106, total: 45.3696, wageTax: 0.01 },
-  { countyKey: 'delaware', name: 'Upland', schoolDistrict: 'Chester/Upland', county: 4.609, local: 2.0, school: 13.68, total: 20.289, wageTax: 0.01 },
+  { countyKey: 'delaware', name: 'Upland', schoolDistrict: 'Chester/Upland', county: 4.609, local: 2, school: 13.68, total: 20.289, wageTax: 0.01 },
   { countyKey: 'delaware', name: 'Yeadon', schoolDistrict: 'William Penn', county: 4.609, local: 10.932, school: 32.86, total: 48.401, wageTax: 0.01 },
 ];
 
@@ -270,7 +290,9 @@ export const PHILADELPHIA_MUNICIPALITIES: Municipality[] = [
   { countyKey: 'philadelphia', name: 'Philadelphia', schoolDistrict: 'School District of Philadelphia', county: 6.317, local: 0, school: 7.681, total: 13.998, wageTax: 0.0375 , medianPrice: 275000, priceSource: 'Redfin median sale, Mar 2026'},
 ];
 
-/** Everything, for the map and the comparison table. */
+/**
+Everything, for the map and the comparison table.
+*/
 export const ALL_MUNICIPALITIES: Municipality[] = [
   ...DELCO_MUNICIPALITIES,
   ...MONTCO_MUNICIPALITIES,
@@ -284,11 +306,17 @@ export function municipalitiesIn(countyKey: string): Municipality[] {
 export interface CountyMarket {
   name: string;
   state: string;
-  /** Median sale price, most recent figure found. */
+  /**
+  Median sale price, most recent figure found.
+  */
   medianPrice: number;
-  /** What that figure is and when, so it can be re-checked. */
+  /**
+  What that figure is and when, so it can be re-checked.
+  */
   priceNote: string;
-  /** Typical all-in effective property tax rate on MARKET value, as a decimal. */
+  /**
+  Typical all-in effective property tax rate on MARKET value, as a decimal.
+  */
   effectiveTaxRate: number;
   note: string;
 }
@@ -333,7 +361,9 @@ export const NEIGHBOURING_COUNTIES: CountyMarket[] = [
   },
 ];
 
-/** The CLR factor for whichever county a municipality sits in. */
+/**
+The CLR factor for whichever county a municipality sits in.
+*/
 export function clrFactorFor(m: Municipality): number {
   return CLR_FACTORS[m.countyKey] ?? DELCO_CLR_FACTOR;
 }
@@ -358,19 +388,25 @@ export function estimatedAnnualTax(marketPrice: number, m: Municipality): number
   return (estimatedAssessedValue(marketPrice, m) * m.total) / 1000;
 }
 
-/** The same figure per month, which is how it actually turns up in escrow. */
+/**
+The same figure per month, which is how it actually turns up in escrow.
+*/
 export function estimatedMonthlyTax(marketPrice: number, m: Municipality): number {
   return estimatedAnnualTax(marketPrice, m) / 12;
 }
 
-/** Effective tax rate on market value for a municipality, as a decimal. */
+/**
+Effective tax rate on market value for a municipality, as a decimal.
+*/
 export function effectiveRate(m: Municipality): number {
   return m.total / 1000 / clrFactorFor(m);
 }
 
-/** Cheapest and dearest places to own the same house, by tax alone. */
+/**
+Cheapest and dearest places to own the same house, by tax alone.
+*/
 export function rankedByTax(countyKey?: string): Municipality[] {
   const pool = countyKey ? municipalitiesIn(countyKey) : ALL_MUNICIPALITIES;
   // Sorted by EFFECTIVE rate, not raw millage, so counties can be compared.
-  return [...pool].sort((a, b) => effectiveRate(a) - effectiveRate(b));
+  return pool.toSorted((a, b) => effectiveRate(a) - effectiveRate(b));
 }

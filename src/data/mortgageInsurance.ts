@@ -13,18 +13,30 @@
  */
 
 export interface PmiTier {
-  /** Minimum credit score for this row. */
+  /**
+  Minimum credit score for this row.
+  */
   minScore: number;
   label: string;
-  /** Annual PMI rate by down payment, as a decimal of the original loan. */
+  /**
+  Annual PMI rate by down payment, as a decimal of the original loan.
+  */
   byDownPayment: {
-    /** 3% down -- a Conventional 97 loan. */
+    /**
+    3% down -- a Conventional 97 loan.
+    */
     three: number;
-    /** 5% down. */
+    /**
+    5% down.
+    */
     five: number;
-    /** 10% down. */
+    /**
+    10% down.
+    */
     ten: number;
-    /** 15% down. */
+    /**
+    15% down.
+    */
     fifteen: number;
   };
 }
@@ -38,11 +50,13 @@ export const PMI_TIERS: PmiTier[] = [
   { minScore: 620, label: '620-679', byDownPayment: { three: 0.0194, five: 0.0152, ten: 0.0111, fifteen: 0.0072 } },
 ];
 
-/** The indicative annual PMI rate for a given down payment and credit score. */
+/**
+The indicative annual PMI rate for a given down payment and credit score.
+*/
 export function pmiRateFor(downPaymentPct: number, creditScore: number): number {
-  const tier = PMI_TIERS.find((t) => creditScore >= t.minScore) ?? PMI_TIERS[PMI_TIERS.length - 1]!;
-  const dp = tier.byDownPayment;
   if (downPaymentPct >= 0.2) return 0;
+  const tier = PMI_TIERS.find((t) => creditScore >= t.minScore) ?? PMI_TIERS.at(-1)!;
+  const dp = tier.byDownPayment;
   if (downPaymentPct >= 0.15) return dp.fifteen;
   if (downPaymentPct >= 0.1) return dp.ten;
   if (downPaymentPct >= 0.05) return dp.five;

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from "react";
 
 /**
  * A collapsible page section. The page is one continuous scroll rather than a
@@ -29,7 +29,9 @@ export default function Section({
           <div className="text-xs font-semibold uppercase tracking-wider text-blue-600">
             {eyebrow}
           </div>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">{title}</h2>
+          <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-900">
+            {title}
+          </h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">{description}</p>
         </div>
         <button
@@ -38,7 +40,7 @@ export default function Section({
           aria-expanded={open}
           className="mt-1 shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
         >
-          {open ? 'Hide' : 'Show'}
+          {open ? "Hide" : "Show"}
         </button>
       </header>
       {open && children}

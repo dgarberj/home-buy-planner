@@ -1,6 +1,10 @@
-import type { Assumptions, DrawdownAssumptions, MonthlyResult } from '../model/types';
-import { monthlyGeometric } from './finance';
-import { monthForAge } from './projection';
+import type {
+  Assumptions,
+  DrawdownAssumptions,
+  MonthlyResult,
+} from "../model/types";
+import { monthlyGeometric } from "./finance";
+import { monthForAge } from "./projection";
 
 /**
  * ============================================================================
@@ -30,46 +34,80 @@ import { monthForAge } from './projection';
  * age as a rough marker, not a date.
  */
 
-/** One year of the drawdown, for charting. */
+/**
+One year of the drawdown, for charting.
+*/
 export interface DrawdownYear {
   age: number;
-  /** Balance at the end of this year. */
+  /**
+  Balance at the end of this year.
+  */
   balance: number;
-  /** Total withdrawn during the year. */
+  /**
+  Total withdrawn during the year.
+  */
   withdrawal: number;
 }
 
 export interface DrawdownResult {
-  /** Projection month the primary person retires, or null if outside the horizon. */
+  /**
+  Projection month the primary person retires, or null if outside the horizon.
+  */
   retirementMonth: number | null;
-  /** Everything spendable at retirement. */
+  /**
+  Everything spendable at retirement.
+  */
   portfolioAtRetirement: number;
-  /** Retirement accounts alone, for context. */
+  /**
+  Retirement accounts alone, for context.
+  */
   retirementAccountsAtRetirement: number;
-  /** Taxable investments + cash, for context. */
+  /**
+  Taxable investments + cash, for context.
+  */
   liquidAtRetirement: number;
-  /** Home equity, included in the pot only if the assumptions say so. */
+  /**
+  Home equity, included in the pot only if the assumptions say so.
+  */
   homeEquityAtRetirement: number;
 
-  /** Annual income the pot supports at the withdrawal rate, in retirement-year dollars. */
+  /**
+  Annual income the pot supports at the withdrawal rate, in retirement-year dollars.
+  */
   sustainableAnnualIncome: number;
-  /** The same figure translated back into today's money, which is easier to judge. */
+  /**
+  The same figure translated back into today's money, which is easier to judge.
+  */
   sustainableAnnualIncomeToday: number;
 
-  /** Desired spending, inflated from today to the retirement year. */
+  /**
+  Desired spending, inflated from today to the retirement year.
+  */
   desiredAnnualSpendAtRetirement: number;
-  /** Desired minus sustainable. Positive means a shortfall. */
+  /**
+  Desired minus sustainable. Positive means a shortfall.
+  */
   annualShortfall: number;
-  /** True when the pot supports the desired spending at the chosen withdrawal rate. */
+  /**
+  True when the pot supports the desired spending at the chosen withdrawal rate.
+  */
   meetsTargetAtWithdrawalRate: boolean;
 
-  /** Age the money runs out, or null if it lasts to `planToAge`. */
+  /**
+  Age the money runs out, or null if it lasts to `planToAge`.
+  */
   depletionAge: number | null;
-  /** What is left at `planToAge`. Zero if it ran out first. */
+  /**
+  What is left at `planToAge`. Zero if it ran out first.
+  */
   balanceAtPlanEnd: number;
-  /** How many years the money lasts from retirement. */
+  /**
+  How many years the money lasts from retirement.
+  */
   yearsOfIncome: number;
-  /** Yearly track of the drawdown, for the chart. */
+  /**
+  Yearly track of the drawdown, for the chart.
+  */
   track: DrawdownYear[];
 }
 
@@ -102,7 +140,11 @@ export function runDrawdown(
   assumptions: Assumptions,
   drawdown: DrawdownAssumptions = assumptions.drawdown,
 ): DrawdownResult {
-  const retirementMonth = monthForAge(assumptions, drawdown.retirementAge, months.length);
+  const retirementMonth = monthForAge(
+    assumptions,
+    drawdown.retirementAge,
+    months.length,
+  );
   if (retirementMonth === null) return { ...EMPTY, track: [] };
 
   const row = months[retirementMonth - 1];
@@ -112,17 +154,23 @@ export function runDrawdown(
   const retirementAccounts = row.retirementBalance;
   const liquid = row.liquidSavings;
   const homeEquity = row.homeEquity;
-  const portfolio = retirementAccounts + liquid + (drawdown.includeHomeEquity ? homeEquity : 0);
+  const portfolio =
+    retirementAccounts + liquid + (drawdown.includeHomeEquity ? homeEquity : 0);
 
   // --- The withdrawal-rate view -------------------------------------------
   const yearsToRetirement = (retirementMonth - 1) / 12;
-  const inflationFactor = Math.pow(1 + drawdown.inflationAnnual, yearsToRetirement);
+  const inflationFactor = Math.pow(
+    1 + drawdown.inflationAnnual,
+    yearsToRetirement,
+  );
   const sustainableAnnualIncome = portfolio * drawdown.withdrawalRate;
-  const sustainableAnnualIncomeToday = sustainableAnnualIncome / inflationFactor;
+  const sustainableAnnualIncomeToday =
+    sustainableAnnualIncome / inflationFactor;
 
   const desiredAnnualSpendAtRetirement =
     drawdown.desiredMonthlySpendToday * 12 * inflationFactor;
-  const annualShortfall = desiredAnnualSpendAtRetirement - sustainableAnnualIncome;
+  const annualShortfall =
+    desiredAnnualSpendAtRetirement - sustainableAnnualIncome;
 
   // --- The simulation view -------------------------------------------------
   const monthlyReturn = monthlyGeometric(drawdown.returnAnnual);
@@ -133,26 +181,32 @@ export function runDrawdown(
   let depletionAge: number | null = null;
   const track: DrawdownYear[] = [];
 
-  const totalMonths = Math.max(0, Math.round((drawdown.planToAge - drawdown.retirementAge) * 12));
+  const totalMonths = Math.max(
+    0,
+    Math.round((drawdown.planToAge - drawdown.retirementAge) * 12),
+  );
   let yearWithdrawal = 0;
 
-  for (let i = 1; i <= totalMonths; i++) {
+  for (let index = 1; index <= totalMonths; index++) {
     // Growth first, then this month's spending comes out.
-    balance = balance * (1 + monthlyReturn);
-    const taken = Math.min(balance > 0 ? monthlySpend : 0, Math.max(balance, 0));
+    balance *= 1 + monthlyReturn;
+    const taken = Math.min(
+      balance > 0 ? monthlySpend : 0,
+      Math.max(balance, 0),
+    );
     balance -= monthlySpend;
     yearWithdrawal += taken;
 
-    if (balance <= 0 && depletionAge === null) {
+    if (depletionAge === null && balance <= 0) {
       balance = 0;
-      depletionAge = drawdown.retirementAge + i / 12;
+      depletionAge = drawdown.retirementAge + index / 12;
     }
 
     monthlySpend *= 1 + monthlyInflation;
 
-    if (i % 12 === 0) {
+    if (index % 12 === 0) {
       track.push({
-        age: drawdown.retirementAge + i / 12,
+        age: drawdown.retirementAge + index / 12,
         balance: Math.max(balance, 0),
         withdrawal: yearWithdrawal,
       });
@@ -162,9 +216,8 @@ export function runDrawdown(
 
   const balanceAtPlanEnd = Math.max(balance, 0);
   const yearsOfIncome =
-    depletionAge === null
-      ? drawdown.planToAge - drawdown.retirementAge
-      : depletionAge - drawdown.retirementAge;
+    (depletionAge === null ? drawdown.planToAge : depletionAge) -
+    drawdown.retirementAge;
 
   return {
     retirementMonth,
@@ -194,6 +247,12 @@ export function requiredPortfolio(
   yearsToRetirement: number,
 ): number {
   if (drawdown.withdrawalRate <= 0) return Infinity;
-  const inflationFactor = Math.pow(1 + drawdown.inflationAnnual, yearsToRetirement);
-  return (drawdown.desiredMonthlySpendToday * 12 * inflationFactor) / drawdown.withdrawalRate;
+  const inflationFactor = Math.pow(
+    1 + drawdown.inflationAnnual,
+    yearsToRetirement,
+  );
+  return (
+    (drawdown.desiredMonthlySpendToday * 12 * inflationFactor) /
+    drawdown.withdrawalRate
+  );
 }

@@ -21,16 +21,28 @@ export interface LayoutOffence {
   text: string;
 }
 
-/** Tailwind utilities (and raw CSS) that pin an element horizontally. */
-const HORIZONTAL_ANCHOR = /\b(?:left|right|inset|start|end)-|\b(?:left|right|inset)\s*:/;
+/**
+Tailwind utilities (and raw CSS) that pin an element horizontally.
+*/
+const HORIZONTAL_ANCHOR =
+  /\b(?:left|right|inset|start|end)-|\b(?:left|right|inset)\s*:/;
 
-/** `absolute` as a Tailwind class, not the word inside prose or an identifier. */
+/**
+`absolute` as a Tailwind class, not the word inside prose or an identifier.
+*/
 const ABSOLUTE_CLASS = /(?:^|['"`\s{])absolute(?:['"`\s}]|$)/;
 
-/** Lines that are clearly comments rather than markup. */
+/**
+Lines that are clearly comments rather than markup.
+*/
 function isComment(line: string): boolean {
   const t = line.trim();
-  return t.startsWith('//') || t.startsWith('*') || t.startsWith('/*') || t.startsWith('{/*');
+  return (
+    t.startsWith("//") ||
+    t.startsWith("*") ||
+    t.startsWith("/*") ||
+    t.startsWith("{/*")
+  );
 }
 
 /**
@@ -58,15 +70,15 @@ export function findUnanchoredAbsolutes(
   source: string,
   lookahead = LOOKAHEAD_LINES,
 ): LayoutOffence[] {
-  const lines = source.split('\n');
+  const lines = source.split("\n");
 
   return lines
-    .map((text, i) => ({ line: i + 1, text, index: i }))
+    .map((text, index) => ({ line: index + 1, text, index: index }))
     .filter(({ text }) => ABSOLUTE_CLASS.test(text) && !isComment(text))
     .filter(({ index }) => {
       // Look at the declaration and the lines the formatter may have wrapped
       // it onto.
-      const window = lines.slice(index, index + 1 + lookahead).join('\n');
+      const window = lines.slice(index, index + 1 + lookahead).join("\n");
       return !HORIZONTAL_ANCHOR.test(window);
     })
     .map(({ line, text }) => ({ line, text }));

@@ -16,7 +16,9 @@ import type { Assumptions, BalanceSnapshot, BudgetItem, ScenarioConfig } from '.
  * Never edit this file with actual balances -- use the app's forms instead.
  */
 
-/** Bump when the figures below change; see seed.ts for why. */
+/**
+Bump when the figures below change; see seed.ts for why.
+*/
 export const SEED_VERSION = 'example';
 
 export const SEED_ASSUMPTIONS: Assumptions = {
@@ -245,13 +247,19 @@ export const SEED_SCENARIOS: ScenarioConfig[] = [
   },
 ];
 
-/** Ages the dashboard reports net worth at. */
+/**
+Ages the dashboard reports net worth at.
+*/
 export const DEFAULT_MILESTONE_AGES = [55, 60, 65, 67, 70];
 
-/** The projection runs until the primary person reaches this age. */
+/**
+The projection runs until the primary person reaches this age.
+*/
 export const DEFAULT_PROJECT_TO_AGE = 70;
 
-/** Five years -- the window the house decision actually lives in. */
+/**
+Five years -- the window the house decision actually lives in.
+*/
 export const SHORT_HORIZON_MONTHS = 60;
 
 /**
@@ -262,7 +270,9 @@ export const SHORT_HORIZON_MONTHS = 60;
 export const DEFAULT_HORIZON_MONTHS =
   (DEFAULT_PROJECT_TO_AGE - SEED_ASSUMPTIONS.household.primaryAge) * 12 + 1;
 
-/** Non-model defaults: framing, targets and shortlists. */
+/**
+Non-model defaults: framing, targets and shortlists.
+*/
 export const SEED_SETTINGS = {
   grossAnnualSalary: 100_000,
   paychecksPerYear: 26,

@@ -1,4 +1,4 @@
-# Household Financial Health
+# Home Buy Planner
 
 A private, local-only planning tool for one question: **when and how should we buy a
 house, and would we still be okay if one of us lost a job along the way?**
@@ -97,22 +97,22 @@ it knows nothing about React, so it can be tested hard and reused elsewhere.
 
 Conventions the tests pin down:
 
-| Thing | Rule |
-| --- | --- |
-| Month numbering | Month 1 is *this* month, with no growth applied yet. Month 13 has had one full year of raises, inflation and returns. |
-| Growth rates | Converted geometrically: `(1 + annual)^(1/12) - 1`, so "7% a year" really is 7% a year. |
-| Mortgage rate | The one exception — US lending convention of `annual / 12`, so the payment matches a real quote. |
-| Target house | Appreciates *while you save for it*. Waiting means a bigger down payment — that's the core buy-early vs buy-later trade-off. |
-| Rent | Inflates at the general expense inflation rate, then disappears at the buy month. |
-| Escrow (tax/insurance/HOA) | Held flat in nominal terms. It's an estimate anyway, and flat is easier to explain. |
-| Job loss | Income drops to the replacement %, expenses drop by the cut %, and retirement contributions (employee *and* employer match) optionally pause. Housing is never cut. |
-| Negative cash | **Not clamped.** If savings go below zero the model is telling you the plan doesn't fund itself. The UI flags it in red rather than hiding it. |
-| Two savings pools | Cash is held to a buffer of N months of total outgoings; surplus above that is swept into investments at the higher return, and shortfalls sell investments before cash is allowed to go negative. Over five years this barely moves the answer; over thirty it dominates it. |
-| Retirement contributions | Grow with income by default. A flat contribution across thirty years of raises is a materially wrong model. |
-| Mortgage payoff | Once the last scheduled payment is made, the housing payment drops to escrow only. Only visible on horizons long enough to outlive the loan. |
-| Upkeep | Accrues monthly as a share of the home's current value (1%/yr by default) and comes straight out of cash flow. You never get a bill for it, which is why omitting it flatters buying. Tracked separately from the housing payment. |
-| Mortgage insurance | Charged as a share of the *original* loan while loan-to-value sits above the threshold (80% by default), so a 20% down payment never pays any. Falls away through paydown, appreciation, or both. Included inside the housing payment. An optional upfront premium is added to the cash needed at closing. |
-| Commitments | Support payments and anything else with an end date are modelled apart from ordinary expenses: they **never inflate** (a court order is a fixed amount) and they are **never cut during a job loss** (you cannot unilaterally stop paying). The month one ends, cash flow steps up for good. |
+| Thing                      | Rule                                                                                                                                                                                                                                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Month numbering            | Month 1 is _this_ month, with no growth applied yet. Month 13 has had one full year of raises, inflation and returns.                                                                                                                                                                                      |
+| Growth rates               | Converted geometrically: `(1 + annual)^(1/12) - 1`, so "7% a year" really is 7% a year.                                                                                                                                                                                                                    |
+| Mortgage rate              | The one exception — US lending convention of `annual / 12`, so the payment matches a real quote.                                                                                                                                                                                                           |
+| Target house               | Appreciates _while you save for it_. Waiting means a bigger down payment — that's the core buy-early vs buy-later trade-off.                                                                                                                                                                               |
+| Rent                       | Inflates at the general expense inflation rate, then disappears at the buy month.                                                                                                                                                                                                                          |
+| Escrow (tax/insurance/HOA) | Held flat in nominal terms. It's an estimate anyway, and flat is easier to explain.                                                                                                                                                                                                                        |
+| Job loss                   | Income drops to the replacement %, expenses drop by the cut %, and retirement contributions (employee _and_ employer match) optionally pause. Housing is never cut.                                                                                                                                        |
+| Negative cash              | **Not clamped.** If savings go below zero the model is telling you the plan doesn't fund itself. The UI flags it in red rather than hiding it.                                                                                                                                                             |
+| Two savings pools          | Cash is held to a buffer of N months of total outgoings; surplus above that is swept into investments at the higher return, and shortfalls sell investments before cash is allowed to go negative. Over five years this barely moves the answer; over thirty it dominates it.                              |
+| Retirement contributions   | Grow with income by default. A flat contribution across thirty years of raises is a materially wrong model.                                                                                                                                                                                                |
+| Mortgage payoff            | Once the last scheduled payment is made, the housing payment drops to escrow only. Only visible on horizons long enough to outlive the loan.                                                                                                                                                               |
+| Upkeep                     | Accrues monthly as a share of the home's current value (1%/yr by default) and comes straight out of cash flow. You never get a bill for it, which is why omitting it flatters buying. Tracked separately from the housing payment.                                                                         |
+| Mortgage insurance         | Charged as a share of the _original_ loan while loan-to-value sits above the threshold (80% by default), so a 20% down payment never pays any. Falls away through paydown, appreciation, or both. Included inside the housing payment. An optional upfront premium is added to the cash needed at closing. |
+| Commitments                | A fixed obligation with an end date is modelled apart from ordinary expenses: it **never inflates** (a court order or contract is a fixed amount) and it is **never cut during a job loss** (you cannot unilaterally stop paying). The month it ends, cash flow steps up for good.                         |
 
 ## Drawdown — will the money last?
 
@@ -127,7 +127,7 @@ question the accumulation model can't, from two directions:
 
 They disagree often, and the gap is the interesting part.
 
-### What the model does *not* do
+### What the model does _not_ do
 
 No taxes on withdrawal (which differ by account type), no Social Security or pension
 income, no required minimum distributions, no healthcare shocks — and a single smooth

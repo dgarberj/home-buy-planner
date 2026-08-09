@@ -3,7 +3,7 @@ import type {
   BalanceSnapshot,
   BudgetItem,
   TimedObligation,
-} from '../model/types';
+} from "../model/types";
 
 /**
  * Roll the itemised budget up into the four totals the engine consumes.
@@ -28,10 +28,12 @@ export function isObligation(item: BudgetItem): boolean {
   return Boolean(item.startsOn || item.endsOn);
 }
 
-/** Months between the projection start and an ISO "YYYY-MM", 1-based. */
+/**
+Months between the projection start and an ISO "YYYY-MM", 1-based.
+*/
 export function monthIndexFor(startDate: string, isoMonth: string): number {
-  const [sy, sm] = startDate.split('-').map(Number);
-  const [ty, tm] = isoMonth.split('-').map(Number);
+  const [sy, sm] = startDate.split("-").map(Number);
+  const [ty, tm] = isoMonth.split("-").map(Number);
   return ((ty ?? 0) - (sy ?? 0)) * 12 + ((tm ?? 1) - (sm ?? 1)) + 1;
 }
 
@@ -40,11 +42,16 @@ export function monthIndexFor(startDate: string, isoMonth: string): number {
  * Anything before the projection starts is clamped to month 1; anything that
  * ended before it starts is dropped entirely.
  */
-export function deriveObligations(items: BudgetItem[], startDate: string): TimedObligation[] {
+export function deriveObligations(
+  items: BudgetItem[],
+  startDate: string,
+): TimedObligation[] {
   const out: TimedObligation[] = [];
   for (const item of items) {
     if (!isObligation(item)) continue;
-    const startMonth = item.startsOn ? monthIndexFor(startDate, item.startsOn) : 1;
+    const startMonth = item.startsOn
+      ? monthIndexFor(startDate, item.startsOn)
+      : 1;
     const endMonth = item.endsOn ? monthIndexFor(startDate, item.endsOn) : null;
     // Already finished before the projection begins.
     if (endMonth !== null && endMonth < 1) continue;
@@ -68,24 +75,32 @@ export function deriveBudgetTotals(items: BudgetItem[]): BudgetTotals {
       totals.rent += item.amount;
       continue;
     }
-    if (item.type === 'income') totals.income += item.amount;
-    else if (item.type === 'fixed') totals.fixed += item.amount;
+    if (item.type === "income") totals.income += item.amount;
+    else if (item.type === "fixed") totals.fixed += item.amount;
     else totals.variable += item.amount;
   }
   return totals;
 }
 
-/** Money left over each month before any retirement contribution. */
+/**
+Money left over each month before any retirement contribution.
+*/
 export function budgetSurplus(totals: BudgetTotals): number {
   return totals.income - totals.fixed - totals.variable - totals.rent;
 }
 
 export interface StartingBalances {
-  /** Checking + savings/HYSA -- the near-term buffer. */
+  /**
+  Checking + savings/HYSA -- the near-term buffer.
+  */
   cash: number;
-  /** Taxable brokerage -- the invested pool. */
+  /**
+  Taxable brokerage -- the invested pool.
+  */
   investments: number;
-  /** cash + investments. What could be handed over at a closing table. */
+  /**
+  cash + investments. What could be handed over at a closing table.
+  */
   liquid: number;
   retirement: number;
   debt: number;
@@ -97,11 +112,22 @@ export interface StartingBalances {
  * "Liquid" is checking + savings/HYSA + investments -- everything that could
  * actually be handed over at a closing table.
  */
-export function deriveStartingBalances(snapshots: BalanceSnapshot[]): StartingBalances {
+export function deriveStartingBalances(
+  snapshots: BalanceSnapshot[],
+): StartingBalances {
   if (snapshots.length === 0) {
-    return { cash: 0, investments: 0, liquid: 0, retirement: 0, debt: 0, asOf: null };
+    return {
+      cash: 0,
+      investments: 0,
+      liquid: 0,
+      retirement: 0,
+      debt: 0,
+      asOf: null,
+    };
   }
-  const latest = [...snapshots].sort((a, b) => a.date.localeCompare(b.date))[snapshots.length - 1]!;
+  const latest = snapshots.toSorted((a, b) => a.date.localeCompare(b.date))[
+    snapshots.length - 1
+  ]!;
   const cash = latest.checking + latest.savings;
   return {
     cash,
@@ -124,18 +150,22 @@ export function resolveAssumptions(
   assumptions: Assumptions,
   budget: BudgetItem[],
   balances: BalanceSnapshot[],
-  opts: { useBudgetTotals: boolean; useLatestBalances: boolean; startDate: string },
+  options: {
+    useBudgetTotals: boolean;
+    useLatestBalances: boolean;
+    startDate: string;
+  },
 ): Assumptions {
   let resolved = assumptions;
 
   // The engine needs to know which projection months are Januaries.
-  const startCalendarMonth = Number(opts.startDate.split('-')[1] ?? 1);
+  const startCalendarMonth = Number(options.startDate.split("-", 2)[1] ?? 1);
   resolved = {
     ...resolved,
     income: { ...resolved.income, calendarStartMonth: startCalendarMonth },
   };
 
-  if (opts.useBudgetTotals) {
+  if (options.useBudgetTotals) {
     const t = deriveBudgetTotals(budget);
     resolved = {
       ...resolved,
@@ -146,11 +176,11 @@ export function resolveAssumptions(
         variableMonthly: t.variable,
         currentRentMonthly: t.rent,
       },
-      obligations: deriveObligations(budget, opts.startDate),
+      obligations: deriveObligations(budget, options.startDate),
     };
   }
 
-  if (opts.useLatestBalances) {
+  if (options.useLatestBalances) {
     const b = deriveStartingBalances(balances);
     if (b.asOf !== null) {
       resolved = {
