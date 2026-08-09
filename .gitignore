@@ -1,0 +1,20 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vite
+
+# ---- REAL HOUSEHOLD DATA -- never commit ----
+# Exported snapshots of our actual numbers live here.
+/data/*
+!/data/README.md
+*.household.json
+
+# Personal financial notes with real figures -- never commit.
+/STRATEGY.md
+/HSA-REIMBURSEMENT.md
+
+
+# local editor/agent settings
+.claude/settings.local.json
