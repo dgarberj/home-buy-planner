@@ -4,6 +4,7 @@ dist-ssr
 *.local
 .DS_Store
 .vite
+*.tsbuildinfo
 
 # ---- REAL HOUSEHOLD DATA -- never commit ----
 # Exported snapshots of our actual numbers live here.
