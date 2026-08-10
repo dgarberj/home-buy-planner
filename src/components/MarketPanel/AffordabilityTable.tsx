@@ -11,7 +11,19 @@ import {
 } from "../../engine/affordability";
 import { money, pct } from "../../lib/format";
 import { useStore } from "../../store/useStore";
-import { Button, Callout, Card, Field, InfoTip, MoneyInput, SectionTitle, Toggle } from "../ui";
+import {
+  Button,
+  Callout,
+  Card,
+  Field,
+  InfoTip,
+  MoneyInput,
+  SectionTitle,
+  Table,
+  Td,
+  Th,
+  Toggle,
+} from "../ui";
 
 const REACH_LABEL: Record<Reach, string> = {
   comfortable: "Comfortable",
@@ -130,127 +142,125 @@ export default function AffordabilityTable() {
         worth nothing.
       </Callout>
 
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[980px] text-sm">
-          <thead>
-            <tr className="border-b border-slate-200">
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Town
-              </th>
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                County
-              </th>
-              <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <span className="inline-flex items-center">
-                  Median price
-                  <InfoTip
-                    placement="bottom"
-                    text="Typical home value from Zillow or Redfin, 2026. Towns with no sourced price are listed at the bottom rather than guessed at."
-                  />
-                </span>
-              </th>
-              <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Tax rate
-              </th>
-              <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <span className="inline-flex items-center">
-                  All-in / month
-                  <InfoTip
-                    placement="bottom"
-                    text="What the typical house here would cost you monthly: loan, property and school tax, insurance, mortgage insurance and upkeep."
-                  />
-                </span>
-              </th>
-              <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Cash to close
-              </th>
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Reach
-              </th>
-              <th className="pb-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Schools
-              </th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((row) => (
+      <Table minWidthClassName="min-w-[980px]" className="mt-4">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <Th sticky className="bg-white pb-2 pr-4">
+              Town
+            </Th>
+            <Th className="pb-2 pr-4">County</Th>
+            <Th align="right" className="pb-2 pr-4">
+              <span className="inline-flex items-center">
+                Median price
+                <InfoTip
+                  placement="bottom"
+                  text="Typical home value from Zillow or Redfin, 2026. Towns with no sourced price are listed at the bottom rather than guessed at."
+                />
+              </span>
+            </Th>
+            <Th align="right" className="pb-2 pr-4">
+              Tax rate
+            </Th>
+            <Th align="right" className="pb-2 pr-4">
+              <span className="inline-flex items-center">
+                All-in / month
+                <InfoTip
+                  placement="bottom"
+                  text="What the typical house here would cost you monthly: loan, property and school tax, insurance, mortgage insurance and upkeep."
+                />
+              </span>
+            </Th>
+            <Th align="right" className="pb-2 pr-4">
+              Cash to close
+            </Th>
+            <Th className="pb-2 pr-4">Reach</Th>
+            <Th className="pb-2">Schools</Th>
+            <Th />
+          </tr>
+        </thead>
+        <tbody>
+          {visible.map((row) => {
+            const isShortlisted = settings.shortlist.includes(row.m.name);
+            const rowTint = isShortlisted ? "bg-blue-50/50" : "";
+            return (
               <tr
                 key={`${row.m.countyKey}-${row.m.name}`}
-                className={`border-b border-slate-100 last:border-0 ${
-                  settings.shortlist.includes(row.m.name) ? "bg-blue-50/50" : ""
-                }`}
+                className={`border-b border-slate-100 last:border-0 ${rowTint}`}
               >
-                <td className="py-2 pr-4 font-medium text-slate-900">
+                <Td
+                  sticky
+                  className={`py-2 pr-4 font-medium text-slate-900 ${rowTint || "bg-white"}`}
+                >
                   {row.m.name}
                   {row.m.wageTax >= 0.02 && (
                     <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
                       {pct(row.m.wageTax, 2)} wage tax
                     </span>
                   )}
-                </td>
-                <td className="py-2 pr-4 capitalize text-slate-500">
+                </Td>
+                <Td className="py-2 pr-4 capitalize text-slate-500">
                   {row.m.countyKey}
-                </td>
-                <td
-                  className={`py-2 pr-4 text-right tabular-nums ${
+                </Td>
+                <Td
+                  align="right"
+                  className={`py-2 pr-4 tabular-nums ${
                     row.m.medianPrice ? "text-slate-900" : "text-slate-300"
                   }`}
                 >
                   {row.m.medianPrice ? money(row.m.medianPrice) : "—"}
-                </td>
-                <td className="py-2 pr-4 text-right tabular-nums text-slate-600">
+                </Td>
+                <Td align="right" className="py-2 pr-4 tabular-nums text-slate-600">
                   {pct(row.rate, 2)}
-                </td>
-                <td
-                  className={`py-2 pr-4 text-right font-semibold tabular-nums ${
+                </Td>
+                <Td
+                  align="right"
+                  className={`py-2 pr-4 font-semibold tabular-nums ${
                     row.cost ? "text-slate-900" : "text-slate-300"
                   }`}
                 >
                   {row.cost ? money(row.cost.total) : "—"}
-                </td>
-                <td
-                  className={`py-2 pr-4 text-right tabular-nums ${
+                </Td>
+                <Td
+                  align="right"
+                  className={`py-2 pr-4 tabular-nums ${
                     row.m.medianPrice ? "text-slate-600" : "text-slate-300"
                   }`}
                 >
                   {row.m.medianPrice
                     ? money(cashToClose(assumptions, row.m.medianPrice))
                     : "—"}
-                </td>
-                <td className="py-2 pr-4">
+                </Td>
+                <Td className="py-2 pr-4">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${REACH_STYLE[row.reach]}`}
                   >
                     {REACH_LABEL[row.reach]}
                   </span>
-                </td>
-                <td className="py-2 pr-4 text-xs text-slate-500">
+                </Td>
+                <Td className="py-2 pr-4 text-xs text-slate-500">
                   {ratingSummary(row.m.schoolDistrict) ?? (
                     <span className="text-slate-300">not sourced</span>
                   )}
-                </td>
-                <td className="py-2 text-right">
+                </Td>
+                <Td align="right" className="py-2">
                   <Button
                     size="sm"
                     onClick={() =>
                       setSettings({
-                        shortlist: settings.shortlist.includes(row.m.name)
+                        shortlist: isShortlisted
                           ? settings.shortlist.filter((n) => n !== row.m.name)
                           : [...settings.shortlist, row.m.name],
                       })
                     }
                   >
-                    {settings.shortlist.includes(row.m.name)
-                      ? "Listed"
-                      : "Shortlist"}
+                    {isShortlisted ? "Listed" : "Shortlist"}
                   </Button>
-                </td>
+                </Td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            );
+          })}
+        </tbody>
+      </Table>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <Toggle

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { money, monthLabel } from "../../lib/format";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
-import { Callout, Card, InfoTip } from "../ui";
+import { Callout, Card, InfoTip, Table, Td, Th } from "../ui";
 
 /**
  * Where each scenario lands at retirement age.
@@ -114,71 +114,65 @@ export default function RetirementMilestones() {
         </div>
       }
     >
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[880px] text-sm">
-          <thead>
-            <tr className="border-b border-slate-200">
-              <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Scenario
-              </th>
-              {ages.map((age) => (
-                <th
-                  key={age}
-                  className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
-                >
-                  <div>Age {age}</div>
-                  <div className="font-normal normal-case tracking-normal text-slate-400">
-                    partner {partnerAgeAt(age)}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {summaries.map((s) => (
-              <tr
-                key={s.scenarioId}
-                className="border-b border-slate-100 last:border-0"
-              >
-                <td className="py-3 pr-4">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: s.color }}
-                    />
-                    <span className="font-medium text-slate-900">
-                      {s.scenarioName}
-                    </span>
-                  </div>
-                  {s.mortgagePaidOffMonth && (
-                    <div className="ml-4.5 mt-0.5 text-xs text-slate-400">
-                      mortgage clear{" "}
-                      {monthLabel(settings.startDate, s.mortgagePaidOffMonth)}
-                    </div>
-                  )}
-                </td>
-                {ages.map((age) => {
-                  const value = s[metric][age];
-                  const isBest =
-                    value !== undefined && value === bestByAge[age];
-                  return (
-                    <td
-                      key={age}
-                      className={`py-3 pr-4 text-right tabular-nums ${
-                        isBest
-                          ? "font-semibold text-emerald-700"
-                          : "text-slate-900"
-                      }`}
-                    >
-                      {value === undefined ? "—" : money(value)}
-                    </td>
-                  );
-                })}
-              </tr>
+      <Table minWidthClassName="min-w-[880px]">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <Th sticky className="bg-white pb-2 pr-4">
+              Scenario
+            </Th>
+            {ages.map((age) => (
+              <Th key={age} align="right" className="pb-2 pr-4">
+                <div>Age {age}</div>
+                <div className="font-normal normal-case tracking-normal text-slate-400">
+                  partner {partnerAgeAt(age)}
+                </div>
+              </Th>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </tr>
+        </thead>
+        <tbody>
+          {summaries.map((s) => (
+            <tr
+              key={s.scenarioId}
+              className="border-b border-slate-100 last:border-0"
+            >
+              <Td sticky className="bg-white py-3 pr-4">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: s.color }}
+                  />
+                  <span className="font-medium text-slate-900">
+                    {s.scenarioName}
+                  </span>
+                </div>
+                {s.mortgagePaidOffMonth && (
+                  <div className="ml-4.5 mt-0.5 text-xs text-slate-400">
+                    mortgage clear{" "}
+                    {monthLabel(settings.startDate, s.mortgagePaidOffMonth)}
+                  </div>
+                )}
+              </Td>
+              {ages.map((age) => {
+                const value = s[metric][age];
+                const isBest =
+                  value !== undefined && value === bestByAge[age];
+                return (
+                  <Td
+                    key={age}
+                    align="right"
+                    className={`py-3 pr-4 tabular-nums ${
+                      isBest ? "font-semibold text-emerald-700" : "text-slate-900"
+                    }`}
+                  >
+                    {value === undefined ? "—" : money(value)}
+                  </Td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </Table>
 
       <p className="mt-3 text-xs text-slate-500">
         Best value in each column is highlighted.

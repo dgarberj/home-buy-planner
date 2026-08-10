@@ -1,6 +1,6 @@
 import type { DTI_LIMITS } from "../../engine/lending";
 import { money, pct } from "../../lib/format";
-import { Callout, Card } from "../ui";
+import { Callout, Card, Table, Td, Th } from "../ui";
 
 export default function CeilingsCard({
   limits,
@@ -18,48 +18,44 @@ export default function CeilingsCard({
       title="Two different ceilings"
       subtitle="Yours is about what you can live on. Theirs is about gross income. The smaller one governs."
     >
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
-          <thead>
-            <tr className="border-b border-slate-200">
-              <th className="pb-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Ceiling
-              </th>
-              <th className="pb-2 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Buys
-              </th>
-              <th className="pb-2 pl-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Which binds
-              </th>
+      <Table minWidthClassName="min-w-[560px]">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <Th className="pb-2">Ceiling</Th>
+            <Th align="right" className="pb-2">
+              Buys
+            </Th>
+            <Th className="pb-2 pl-4">Which binds</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {limits.map((l) => (
+            <tr key={l.key} className="border-b border-slate-100">
+              <Td className="py-2 capitalize text-slate-700">
+                Lender at {pct(l.limit, 0)}{" "}
+                <span className="text-slate-400">({l.key})</span>
+              </Td>
+              <Td align="right" className="py-2 tabular-nums">
+                {money(l.price)}
+              </Td>
+              <Td className="py-2 pl-4 text-xs">
+                {l.price < byBudget ? (
+                  <span className="font-medium text-amber-700">the lender</span>
+                ) : (
+                  <span className="text-slate-500">your budget</span>
+                )}
+              </Td>
             </tr>
-          </thead>
-          <tbody>
-            {limits.map((l) => (
-              <tr key={l.key} className="border-b border-slate-100">
-                <td className="py-2 capitalize text-slate-700">
-                  Lender at {pct(l.limit, 0)}{" "}
-                  <span className="text-slate-400">({l.key})</span>
-                </td>
-                <td className="py-2 text-right tabular-nums">{money(l.price)}</td>
-                <td className="py-2 pl-4 text-xs">
-                  {l.price < byBudget ? (
-                    <span className="font-medium text-amber-700">the lender</span>
-                  ) : (
-                    <span className="text-slate-500">your budget</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-            <tr>
-              <td className="py-2 font-medium text-slate-900">Your own budget</td>
-              <td className="py-2 text-right font-semibold tabular-nums">
-                {money(byBudget)}
-              </td>
-              <td className="py-2 pl-4" />
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          ))}
+          <tr>
+            <Td className="py-2 font-medium text-slate-900">Your own budget</Td>
+            <Td align="right" className="py-2 font-semibold tabular-nums">
+              {money(byBudget)}
+            </Td>
+            <Td className="py-2 pl-4" />
+          </tr>
+        </tbody>
+      </Table>
 
       {withoutInstalments > withInstalments + 1_000 && (
         <Callout tone="good">

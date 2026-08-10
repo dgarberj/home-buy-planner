@@ -18,6 +18,9 @@ import {
   MoneyInput,
   NumberInput,
   SectionTitle,
+  Table,
+  Td,
+  Th,
 } from "../ui";
 
 /**
@@ -140,78 +143,72 @@ export default function WaitingPanel() {
         title="When each town comes within reach"
         subtitle="Both constraints have to clear. The later of the two is what actually gates you."
       >
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-sm">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Town
-                </th>
-                <th className="pb-2 pr-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Median today
-                </th>
-                <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <span className="inline-flex items-center">
-                    Payment works from
-                    <InfoTip
-                      placement="bottom"
-                      text="When your budget could carry the monthly cost. Driven by pay rises and commitments ending — not by saving."
-                    />
-                  </span>
-                </th>
-                <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  <span className="inline-flex items-center">
-                    Cash ready
-                    <InfoTip
-                      placement="bottom"
-                      text="When you would have the deposit, closing costs and your chosen buffer. This is the part saving actually fixes."
-                    />
-                  </span>
-                </th>
-                <th className="pb-2 pr-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Buyable
-                </th>
-                <th className="pb-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Schools
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {verdicts.map(({ m, verdict }) => {
-                const isNever = verdict.affordableFrom === null;
-                return (
-                  <tr
-                    key={`${m.countyKey}-${m.name}`}
-                    className="border-b border-slate-100 last:border-0"
+        <Table minWidthClassName="min-w-[900px]">
+          <thead>
+            <tr className="border-b border-slate-200">
+              <Th sticky className="bg-white pb-2 pr-4">
+                Town
+              </Th>
+              <Th align="right" className="pb-2 pr-4">
+                Median today
+              </Th>
+              <Th className="pb-2 pr-4">
+                <span className="inline-flex items-center">
+                  Payment works from
+                  <InfoTip
+                    placement="bottom"
+                    text="When your budget could carry the monthly cost. Driven by pay rises and commitments ending — not by saving."
+                  />
+                </span>
+              </Th>
+              <Th className="pb-2 pr-4">
+                <span className="inline-flex items-center">
+                  Cash ready
+                  <InfoTip
+                    placement="bottom"
+                    text="When you would have the deposit, closing costs and your chosen buffer. This is the part saving actually fixes."
+                  />
+                </span>
+              </Th>
+              <Th className="pb-2 pr-4">Buyable</Th>
+              <Th className="pb-2">Schools</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {verdicts.map(({ m, verdict }) => {
+              const isNever = verdict.affordableFrom === null;
+              return (
+                <tr
+                  key={`${m.countyKey}-${m.name}`}
+                  className="border-b border-slate-100 last:border-0"
+                >
+                  <Td sticky className="bg-white py-2 pr-4 font-medium text-slate-900">
+                    {m.name}
+                  </Td>
+                  <Td align="right" className="py-2 pr-4 tabular-nums text-slate-600">
+                    {money(m.medianPrice!)}
+                  </Td>
+                  <Td className="py-2 pr-4 text-slate-600">
+                    {monthCell(verdict.monthlyGapClosesAt)}
+                  </Td>
+                  <Td className="py-2 pr-4 text-slate-600">
+                    {monthCell(verdict.cashReadyAt)}
+                  </Td>
+                  <Td
+                    className={`py-2 pr-4 font-semibold ${isNever ? "text-red-600" : "text-emerald-700"}`}
                   >
-                    <td className="py-2 pr-4 font-medium text-slate-900">
-                      {m.name}
-                    </td>
-                    <td className="py-2 pr-4 text-right tabular-nums text-slate-600">
-                      {money(m.medianPrice!)}
-                    </td>
-                    <td className="py-2 pr-4 text-slate-600">
-                      {monthCell(verdict.monthlyGapClosesAt)}
-                    </td>
-                    <td className="py-2 pr-4 text-slate-600">
-                      {monthCell(verdict.cashReadyAt)}
-                    </td>
-                    <td
-                      className={`py-2 pr-4 font-semibold ${isNever ? "text-red-600" : "text-emerald-700"}`}
-                    >
-                      {monthCell(verdict.affordableFrom)}
-                    </td>
-                    <td className="py-2 text-xs text-slate-500">
-                      {ratingSummary(m.schoolDistrict) ?? (
-                        <span className="text-slate-300">not sourced</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    {monthCell(verdict.affordableFrom)}
+                  </Td>
+                  <Td className="py-2 text-xs text-slate-500">
+                    {ratingSummary(m.schoolDistrict) ?? (
+                      <span className="text-slate-300">not sourced</span>
+                    )}
+                  </Td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
 
         {soonest && (
           <Callout tone="good">

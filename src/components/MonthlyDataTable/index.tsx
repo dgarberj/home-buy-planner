@@ -4,7 +4,7 @@ import { downloadText, projectionToCsv } from "../../lib/csv";
 import { money, monthLabel } from "../../lib/format";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
-import { Button, Card, InfoTip, Select } from "../ui";
+import { Button, Card, InfoTip, Select, Table, Td, Th } from "../ui";
 
 /**
  * The raw month-by-month output of the engine, with nothing rounded away.
@@ -13,10 +13,16 @@ import { Button, Card, InfoTip, Select } from "../ui";
  * turn.
  */
 
-function rowHighlightClass(row: MonthlyResult): string {
+/**
+Computed from the row index rather than the CSS `odd:` pseudo-class, because
+this same string is reused as the sticky first cell's own background --
+`odd:` there would key off the cell's position among its row's *columns*
+(always the 1st, so always "odd"), not the row's position in the table.
+*/
+function rowHighlightClass(row: MonthlyResult, index: number): string {
   if (row.jobLossActive) return "bg-amber-50/70";
   if (row.purchaseOutflow > 0) return "bg-blue-50/70";
-  return "odd:bg-slate-50/40";
+  return index % 2 === 1 ? "bg-slate-50/40" : "";
 }
 
 function cellEmphasisClass(
@@ -216,33 +222,38 @@ export default function MonthlyDataTable() {
         </div>
       </div>
 
-      <div className="max-h-[560px] overflow-auto rounded-xl border border-slate-200">
-        <table className="w-full min-w-[1500px] text-sm">
-          <thead className="sticky top-0 z-10 bg-slate-50 shadow-[0_1px_0_0_#e2e8f0]">
-            <tr>
-              <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Month
-              </th>
-              {COLUMNS.map((c) => (
-                <th
-                  key={String(c.key)}
-                  className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
-                >
-                  <span className="inline-flex items-center">
-                    {c.label}
-                    {c.hint && <InfoTip text={c.hint} placement="bottom" />}
-                  </span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
+      <Table
+        minWidthClassName="min-w-[1500px]"
+        scroll="both"
+        className="max-h-[560px] rounded-xl border border-slate-200"
+      >
+        <thead className="sticky top-0 z-10 bg-slate-50 shadow-[0_1px_0_0_#e2e8f0]">
+          <tr>
+            <Th sticky className="bg-slate-50 px-3 py-2">
+              Month
+            </Th>
+            {COLUMNS.map((c) => (
+              <Th key={String(c.key)} align="right" className="px-3 py-2">
+                <span className="inline-flex items-center">
+                  {c.label}
+                  {c.hint && <InfoTip text={c.hint} placement="bottom" />}
+                </span>
+              </Th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => {
+            const rowTint = rowHighlightClass(row, index);
+            return (
               <tr
                 key={row.month}
-                className={`border-b border-slate-100 last:border-0 ${rowHighlightClass(row)}`}
+                className={`border-b border-slate-100 last:border-0 ${rowTint}`}
               >
-                <td className="whitespace-nowrap px-3 py-1.5">
+                <Td
+                  sticky
+                  className={`whitespace-nowrap px-3 py-1.5 ${rowTint || "bg-white"}`}
+                >
                   <span className="font-medium text-slate-900">
                     {monthLabel(settings.startDate, row.month)}
                   </span>
@@ -259,24 +270,25 @@ export default function MonthlyDataTable() {
                       No job
                     </span>
                   )}
-                </td>
+                </Td>
                 {COLUMNS.map((c) => {
                   const value = row[c.key] as number;
                   const isNegative = value < 0;
                   return (
-                    <td
+                    <Td
                       key={String(c.key)}
-                      className={`whitespace-nowrap px-3 py-1.5 text-right tabular-nums ${cellEmphasisClass(isNegative, c.emphasis)} ${value === 0 && !c.emphasis ? "text-slate-300" : ""}`}
+                      align="right"
+                      className={`whitespace-nowrap px-3 py-1.5 tabular-nums ${cellEmphasisClass(isNegative, c.emphasis)} ${value === 0 && !c.emphasis ? "text-slate-300" : ""}`}
                     >
                       {money(value)}
-                    </td>
+                    </Td>
                   );
                 })}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            );
+          })}
+        </tbody>
+      </Table>
 
       <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500">
         <span className="flex items-center gap-1.5">
