@@ -23,7 +23,7 @@ export default function Section({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section id={id} className="scroll-mt-20">
+    <section id={id} className="scroll-mt-8">
       <header className="mb-4 flex items-start justify-between gap-4">
         <div>
           <div className="text-xs font-semibold uppercase tracking-wider text-blue-600">

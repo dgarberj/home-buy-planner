@@ -4,6 +4,7 @@ import { runAllScenarios } from "../../engine/projection";
 import { money } from "../../lib/format";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
+import { Toggle } from "../ui";
 
 /**
  * The handful of switches that actually change the answer, pinned to the top.
@@ -151,75 +152,68 @@ export default function LeversBar() {
   }, [assumptions, scenarios, settings.horizonMonths, settings.milestoneAges]);
 
   return (
-    <div className="border-b border-slate-200 bg-slate-50/95 backdrop-blur">
-      <div className="mx-auto max-w-7xl px-6 py-2.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="mr-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Levers
-          </span>
-          {impacts.map(({ lever, isOn, bufferDelta, netWorthDelta }) => (
-            <button
-              key={lever.key}
-              type="button"
-              onClick={() => setAssumptions(lever.flip(assumptions, !isOn))}
-              title={`${lever.hint}\n\nHaving this ON versus off:\n  thinnest cash ${
-                bufferDelta >= 0 ? "+" : ""
-              }${Math.round(bufferDelta).toLocaleString()}\n  net worth at the horizon ${
-                netWorthDelta >= 0 ? "+" : ""
-              }${Math.round(netWorthDelta).toLocaleString()}`}
-              className={`group flex items-center gap-2 rounded-full border py-1.5 pl-2 pr-3 text-xs font-medium transition ${
-                isOn
-                  ? "border-blue-300 bg-blue-50 text-blue-900 hover:bg-blue-100"
-                  : "border-slate-300 bg-white text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              {/* A small track and knob, anchored so it cannot drift. */}
-              <span
-                className={`relative h-4 w-7 shrink-0 overflow-hidden rounded-full transition-colors ${
-                  isOn ? "bg-blue-600" : "bg-slate-300"
-                }`}
-              >
-                <span
-                  className={`absolute left-0.5 top-0.5 h-3 w-3 rounded-full bg-white transition-transform ${
-                    isOn ? "translate-x-3" : "translate-x-0"
-                  }`}
-                />
-              </span>
-              <span className="whitespace-nowrap">{lever.short}</span>
-              {/* Both numbers describe the lever being ON, so the sign never
-                  depends on where the switch currently sits. */}
-              {Math.abs(bufferDelta) >= 500 && (
-                <span
-                  className={`whitespace-nowrap tabular-nums ${
-                    bufferDelta > 0 ? "text-emerald-600" : "text-red-500"
-                  }`}
-                  title="Effect on your thinnest cash of having this ON"
-                >
-                  {bufferDelta > 0 ? "+" : ""}
-                  {money(bufferDelta)} cash
-                </span>
-              )}
-              {Math.abs(netWorthDelta) >= 5_000 && (
-                <span
-                  className={`whitespace-nowrap tabular-nums ${
-                    netWorthDelta > 0 ? "text-emerald-600" : "text-red-500"
-                  }`}
-                  title="Effect on net worth at the horizon of having this ON"
-                >
-                  {netWorthDelta > 0 ? "+" : ""}
-                  {money(netWorthDelta)} long run
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-        <p className="mt-1.5 text-[11px] text-slate-400">
-          Every figure is the effect of that lever being <strong>ON</strong>, so
-          the sign does not change when you flip the switch. Green helps, red
-          costs. Several help one and cost the other — that is the trade, not a
-          mistake.
-        </p>
+    <div className="border-t border-slate-200 pt-4">
+      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Levers
+      </span>
+      <div className="mt-3 flex flex-col gap-3">
+        {impacts.map(({ lever, isOn, bufferDelta, netWorthDelta }) => (
+          <div
+            key={lever.key}
+            title={`${lever.hint}\n\nHaving this ON versus off:\n  thinnest cash ${
+              bufferDelta >= 0 ? "+" : ""
+            }${Math.round(bufferDelta).toLocaleString()}\n  net worth at the horizon ${
+              netWorthDelta >= 0 ? "+" : ""
+            }${Math.round(netWorthDelta).toLocaleString()}`}
+            className={`rounded-xl border px-3 py-2 text-xs transition ${
+              isOn ? "border-blue-300 bg-blue-50" : "border-slate-200 bg-white"
+            }`}
+          >
+            <Toggle
+              checked={isOn}
+              onChange={(isChecked) =>
+                setAssumptions(lever.flip(assumptions, isChecked))
+              }
+              label={lever.short}
+            />
+            {/* Both numbers describe the lever being ON, so the sign never
+                depends on where the switch currently sits. */}
+            {(Math.abs(bufferDelta) >= 500 ||
+              Math.abs(netWorthDelta) >= 5_000) && (
+              <div className="mt-1.5 flex flex-col gap-0.5 pl-14">
+                {Math.abs(bufferDelta) >= 500 && (
+                  <span
+                    className={`tabular-nums ${
+                      bufferDelta > 0 ? "text-emerald-600" : "text-red-500"
+                    }`}
+                    title="Effect on your thinnest cash of having this ON"
+                  >
+                    {bufferDelta > 0 ? "+" : ""}
+                    {money(bufferDelta)} cash
+                  </span>
+                )}
+                {Math.abs(netWorthDelta) >= 5_000 && (
+                  <span
+                    className={`tabular-nums ${
+                      netWorthDelta > 0 ? "text-emerald-600" : "text-red-500"
+                    }`}
+                    title="Effect on net worth at the horizon of having this ON"
+                  >
+                    {netWorthDelta > 0 ? "+" : ""}
+                    {money(netWorthDelta)} long run
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
+      <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
+        Every figure is the effect of that lever being <strong>ON</strong>, so
+        the sign does not change when you flip the switch. Green helps, red
+        costs. Several help one and cost the other — that is the trade, not a
+        mistake.
+      </p>
     </div>
   );
 }

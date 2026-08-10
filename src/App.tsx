@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AppSidebar from "./components/AppSidebar";
 import AssumptionsPanel from "./components/AssumptionsPanel";
 import BalancesPanel from "./components/BalancesPanel";
 import BudgetPanel from "./components/BudgetPanel";
@@ -17,25 +18,45 @@ import SourcesPanel from "./components/SourcesPanel";
 import { Button, Modal, Section } from "./components/ui";
 import { SEED_VERSION } from "./data/seed";
 import { decodeShareHash, isShareHash } from "./lib/share";
+import { NAV } from "./nav";
 import { useStore } from "./store/useStore";
 
-// "share" is a reserved hash key (see ShareImportHandler / src/lib/share.ts)
-// -- no Section id below may ever be "share".
-const NAV = [
-  { id: "budget", label: "Budget" },
-  { id: "assumptions", label: "Assumptions" },
-  { id: "balances", label: "Balances" },
-  { id: "contributions", label: "Contributions" },
-  { id: "market", label: "Where to buy" },
-  { id: "lender", label: "Lender view" },
-  { id: "waiting", label: "Worth waiting?" },
-  { id: "scenarios", label: "Scenarios" },
-  { id: "dashboard", label: "Dashboard" },
-  { id: "retirement", label: "Retirement" },
-  { id: "drawdown", label: "Will it last?" },
-  { id: "detail", label: "Month by month" },
-  { id: "sources", label: "Sources" },
-];
+/**
+A compact, always-in-flow nav + levers strip for below `md:`, where
+`AppSidebar` renders nothing. Mirrors the pre-redesign horizontal layout so
+narrow screens keep the same reachable controls without a second component
+tree or any fixed/absolute overlay.
+*/
+function MobileNav() {
+  const [leversOpen, setLeversOpen] = useState(false);
+  return (
+    <div className="border-b border-slate-200 bg-slate-50 md:hidden">
+      <nav className="flex flex-wrap gap-1 px-6 py-2">
+        {NAV.map((n) => (
+          <a
+            key={n.id}
+            href={`#${n.id}`}
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+            {n.label}
+          </a>
+        ))}
+      </nav>
+      <button
+        type="button"
+        onClick={() => setLeversOpen((v) => !v)}
+        className="w-full border-t border-slate-200 px-6 py-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+      >
+        {leversOpen ? "Hide levers" : "Show levers"}
+      </button>
+      {leversOpen && (
+        <div className="border-t border-slate-200 px-6 py-3">
+          <LeversBar />
+        </div>
+      )}
+    </div>
+  );
+}
 
 /**
 A short, non-technical explainer, folded away until someone wants it.
@@ -130,8 +151,7 @@ decoding either way, so the payload never lingers in the address bar and a
 reload can't re-trigger the import.
 */
 type ShareImportState =
-  | { kind: "confirm"; json: string }
-  | { kind: "error"; message: string };
+  { kind: "confirm"; json: string } | { kind: "error"; message: string };
 
 function ShareImportHandler() {
   const importData = useStore((s) => s.importData);
@@ -220,7 +240,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <ShareImportHandler />
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
           <div className="mr-auto">
             <h1 className="text-base font-semibold tracking-tight">
@@ -230,155 +250,146 @@ export default function App() {
               Runs entirely on this computer. Nothing is sent anywhere.
             </p>
           </div>
-          <nav className="flex flex-wrap gap-1">
-            {NAV.map((n) => (
-              <a
-                key={n.id}
-                href={`#${n.id}`}
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-              >
-                {n.label}
-              </a>
-            ))}
-          </nav>
           <DataToolbar />
         </div>
-        {/* The switches worth flipping repeatedly, so they follow you down. */}
-        <LeversBar />
       </header>
+      <MobileNav />
 
-      <main className="mx-auto max-w-7xl space-y-12 px-6 py-8">
-        <HowToRead />
+      <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 md:grid-cols-[280px_1fr]">
+        <AppSidebar />
+        <main className="min-w-0 space-y-12">
+          <HowToRead />
 
-        <Section
-          id="budget"
-          eyebrow="Step 1"
-          title="What comes in and what goes out"
-          description="Your actual budget. Anything marked ESTIMATE is still a guess — fixing those, starting with take-home, makes everything downstream more honest."
-        >
-          <BudgetPanel />
-        </Section>
+          <Section
+            id="budget"
+            eyebrow="Step 1"
+            title="What comes in and what goes out"
+            description="Your actual budget. Anything marked ESTIMATE is still a guess — fixing those, starting with take-home, makes everything downstream more honest."
+          >
+            <BudgetPanel />
+          </Section>
 
-        <Section
-          id="assumptions"
-          eyebrow="Step 2"
-          title="Assumptions"
-          description="The rates and terms behind the projection: raises, inflation, investment returns, and the house we're aiming at. Hover any ? for what it means."
-        >
-          <AssumptionsPanel />
-        </Section>
+          <Section
+            id="assumptions"
+            eyebrow="Step 2"
+            title="Assumptions"
+            description="The rates and terms behind the projection: raises, inflation, investment returns, and the house we're aiming at. Hover any ? for what it means."
+          >
+            <AssumptionsPanel />
+          </Section>
 
-        <Section
-          id="balances"
-          eyebrow="Step 3"
-          title="What we actually have"
-          description="A snapshot of real balances, logged every month or quarter. The newest one is where the projection starts."
-          defaultOpen={false}
-        >
-          <BalancesPanel />
-        </Section>
+          <Section
+            id="balances"
+            eyebrow="Step 3"
+            title="What we actually have"
+            description="A snapshot of real balances, logged every month or quarter. The newest one is where the projection starts."
+            defaultOpen={false}
+          >
+            <BalancesPanel />
+          </Section>
 
-        <Section
-          id="contributions"
-          eyebrow="Step 4"
-          title="Retirement contributions"
-          description="What you are putting away each year, against the targets — and what that leaves for a deposit."
-        >
-          <ContributionGauges />
-        </Section>
+          <Section
+            id="contributions"
+            eyebrow="Step 4"
+            title="Retirement contributions"
+            description="What you are putting away each year, against the targets — and what that leaves for a deposit."
+          >
+            <ContributionGauges />
+          </Section>
 
-        <Section
-          id="market"
-          eyebrow="Step 5"
-          title="Where to buy"
-          description="Real 2026 Delaware County tax rates. The same house can cost several hundred a month more depending only on which township line it sits behind."
-        >
-          <MarketPanel />
-        </Section>
+          <Section
+            id="market"
+            eyebrow="Step 5"
+            title="Where to buy"
+            description="Real 2026 Delaware County tax rates. The same house can cost several hundred a month more depending only on which township line it sits behind."
+          >
+            <MarketPanel />
+          </Section>
 
-        <Section
-          id="lender"
-          eyebrow="The hard gate"
-          title="What a lender will allow"
-          description="A different calculation from yours — gross income, fixed obligations counted as debt, upkeep ignored. The smaller of the two ceilings is the one that governs."
-        >
-          <LenderPanel />
-        </Section>
+          <Section
+            id="lender"
+            eyebrow="The hard gate"
+            title="What a lender will allow"
+            description="A different calculation from yours — gross income, fixed obligations counted as debt, upkeep ignored. The smaller of the two ceilings is the one that governs."
+          >
+            <LenderPanel />
+          </Section>
 
-        <Section
-          id="waiting"
-          eyebrow="The trade-off"
-          title="Is it worth waiting?"
-          description="Whether saving longer actually puts a better house in reach — and which of the two constraints is really holding you back."
-        >
-          <WaitingPanel />
-        </Section>
+          <Section
+            id="waiting"
+            eyebrow="The trade-off"
+            title="Is it worth waiting?"
+            description="Whether saving longer actually puts a better house in reach — and which of the two constraints is really holding you back."
+          >
+            <WaitingPanel />
+          </Section>
 
-        <Section
-          id="scenarios"
-          eyebrow="Step 6"
-          title="Scenarios to compare"
-          description="Buy early or buy later, with or without a job loss. Add as many as you like."
-        >
-          <ScenarioBuilder />
-        </Section>
+          <Section
+            id="scenarios"
+            eyebrow="Step 6"
+            title="Scenarios to compare"
+            description="Buy early or buy later, with or without a job loss. Add as many as you like."
+          >
+            <ScenarioBuilder />
+          </Section>
 
-        <Section
-          id="dashboard"
-          eyebrow="The answer"
-          title="Dashboard"
-          description="How the scenarios diverge over the next few years, and whether each one holds up."
-        >
-          <Dashboard />
-        </Section>
+          <Section
+            id="dashboard"
+            eyebrow="The answer"
+            title="Dashboard"
+            description="How the scenarios diverge over the next few years, and whether each one holds up."
+          >
+            <Dashboard />
+          </Section>
 
-        <Section
-          id="retirement"
-          eyebrow="The long view"
-          title="Impact at retirement"
-          description="How the buy-early decision compounds by the time you stop working — and, just as importantly, where it doesn't."
-        >
-          <RetirementMilestones />
-        </Section>
+          <Section
+            id="retirement"
+            eyebrow="The long view"
+            title="Impact at retirement"
+            description="How the buy-early decision compounds by the time you stop working — and, just as importantly, where it doesn't."
+          >
+            <RetirementMilestones />
+          </Section>
 
-        <Section
-          id="drawdown"
-          eyebrow="The real question"
-          title="Will the money last?"
-          description="A pot of money at 65 means nothing on its own. This is what it actually supports, and when it runs out."
-        >
-          <DrawdownPanel />
-        </Section>
+          <Section
+            id="drawdown"
+            eyebrow="The real question"
+            title="Will the money last?"
+            description="A pot of money at 65 means nothing on its own. This is what it actually supports, and when it runs out."
+          >
+            <DrawdownPanel />
+          </Section>
 
-        <Section
-          id="detail"
-          eyebrow="The receipts"
-          title="Month by month"
-          description="The raw output of the projection, one row per month, for checking the model's working."
-          defaultOpen={false}
-        >
-          <MonthlyDataTable />
-        </Section>
+          <Section
+            id="detail"
+            eyebrow="The receipts"
+            title="Month by month"
+            description="The raw output of the projection, one row per month, for checking the model's working."
+            defaultOpen={false}
+          >
+            <MonthlyDataTable />
+          </Section>
 
-        <Section
-          id="sources"
-          eyebrow="The receipts"
-          title="Where the numbers came from"
-          description="Every external figure in this app, with a link, what it covers, and how far to trust it."
-          defaultOpen={false}
-        >
-          <SourcesPanel />
-        </Section>
+          <Section
+            id="sources"
+            eyebrow="The receipts"
+            title="Where the numbers came from"
+            description="Every external figure in this app, with a link, what it covers, and how far to trust it."
+            defaultOpen={false}
+          >
+            <SourcesPanel />
+          </Section>
 
-        <footer className="border-t border-slate-200 pt-6 text-xs text-slate-400">
-          Your numbers are saved in this browser only. Use Export to keep a
-          backup in the gitignored{" "}
-          <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-500">
-            data/
-          </code>{" "}
-          folder.
-        </footer>
-      </main>
+          <footer className="border-t border-slate-200 pt-6 text-xs text-slate-400">
+            Your numbers are saved in this browser only. Use Export to keep a
+            backup in the gitignored{" "}
+            <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-500">
+              data/
+            </code>{" "}
+            folder.
+          </footer>
+        </main>
+      </div>
     </div>
   );
 }
