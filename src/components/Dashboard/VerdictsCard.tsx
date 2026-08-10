@@ -7,7 +7,7 @@ import { Callout, Card } from "../ui";
 /**
 Plain-English verdict for one scenario.
 */
-function verdict(
+export function verdict(
   s: ScenarioSummary,
   startDate: string,
 ): { tone: "good" | "warn" | "bad"; text: string } {
@@ -50,6 +50,26 @@ function verdict(
     tone: isThin ? "warn" : "good",
     text: `${parts.join(", ")}.${isThin ? " That is a thin cushion — worth a closer look." : ""}`,
   };
+}
+
+/**
+ * Picks the single worst-tone verdict across all currently-enabled
+ * scenarios, for a one-line headline. "Worst" means bad > warn > good --
+ * consistent with LeversBar's `measure()`: the buffer is a risk measure, so
+ * the weakest one is what matters.
+ */
+export function worstVerdict(
+  summaries: ScenarioSummary[],
+  startDate: string,
+): { tone: "good" | "warn" | "bad"; text: string; scenarioName: string; color: string } | null {
+  if (summaries.length === 0) return null;
+  const tonesRank = { bad: 0, warn: 1, good: 2 } as const;
+  const ranked = summaries
+    .map((s) => ({ s, v: verdict(s, startDate) }))
+    .toSorted((a, b) => tonesRank[a.v.tone] - tonesRank[b.v.tone]);
+  const worst = ranked[0];
+  if (!worst) return null;
+  return { ...worst.v, scenarioName: worst.s.scenarioName, color: worst.s.color };
 }
 
 export default function VerdictsCard() {

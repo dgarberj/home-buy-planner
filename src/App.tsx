@@ -22,6 +22,7 @@ import RetirementMilestones from "./components/RetirementMilestones";
 import ScenarioBuilder from "./components/ScenarioBuilder";
 import SourcesPanel from "./components/SourcesPanel";
 import { Button, Modal, Section } from "./components/ui";
+import VerdictStrip from "./components/VerdictStrip";
 import { SEED_VERSION } from "./data/seed";
 import { decodeShareHash, isShareHash } from "./lib/share";
 import { NAV } from "./nav";
@@ -345,6 +346,8 @@ export default function App() {
       <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 md:grid-cols-[280px_1fr]">
         <AppSidebar onNavigate={handleNavigate} />
         <main className="min-w-0 space-y-12">
+          <VerdictStrip />
+
           <HowToRead />
 
           <ClusterTabs cluster={cluster} onSelect={setCluster} />
