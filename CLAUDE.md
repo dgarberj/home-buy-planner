@@ -27,9 +27,9 @@ tracked by git.**
 - `src/data/seed.ts` is the app's default data and **must stay generic** —
   round, invented placeholder figures only. It ships in git and is what a
   fresh clone opens with. Real household numbers, if needed locally, go
-  through the app's own forms (saved to localStorage) or a gitignored file,
-  never into `seed.ts` itself. `src/data/seed.example.ts` documents the
-  expected shape.
+  through the app's own forms (saved to localStorage) or a gitignored file
+  (`/data/household.json`, see `/data/README.md`), never into `seed.ts`
+  itself.
 - `/data/` is also gitignored (exported real balance snapshots), except
   `/data/README.md`.
 - Reference data that is generic/public — county tax tables, school stats,

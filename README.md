@@ -26,8 +26,7 @@ src/store/useStore.ts     Zustand state, persisted to localStorage
 src/store/useProjections.ts  The single place the UI meets the engine
 src/components/           UI panels -- one file per section of the page
 src/store/migrate.ts      Saved-state migration -- stops old localStorage blanking the app
-src/data/seed.ts          The real household figures (the app's starting state)
-src/data/seed.example.ts  Scrubbed placeholder template
+src/data/seed.ts          Generic placeholder starting state (committed, no real numbers)
 src/data/sources.ts       Every external source, what it covers, how far to trust it
 src/data/localMarket.ts   Millage for 112 municipalities across three counties (real, sourced)
 src/data/schools.ts       District performance, only where sourced
@@ -59,18 +58,16 @@ the top of Assumptions turn that off if you'd rather type totals directly.
 
 ## Where the real numbers live
 
-This repo stays on one machine, so the real figures are committed rather than kept in a
-gitignored side file.
+This repo is public, so no real household data is committed — see `CLAUDE.md` for the
+full rule.
 
-- **`src/data/seed.ts`** holds the actual household data. The app opens with it — there is
-  nothing to import before it is useful.
-- **`src/data/seed.example.ts`** is a scrubbed template with placeholder numbers, kept in
-  case this ever needs to be shared. To switch back to that posture: add
-  `/src/data/seed.ts` to `.gitignore`, run `git rm --cached src/data/seed.ts`, and copy the
-  example over it.
-- **`data/`** is still gitignored, and is where the app's **Export** writes JSON backups.
-- Anything in `seed.ts` labelled `ESTIMATE` is still a guess. Take-home pay is the one that
-  moves everything else.
+- **`src/data/seed.ts`** holds only generic, round, invented placeholder figures. It ships
+  in git and is what a fresh clone opens with.
+- Real numbers, if needed locally, go through the app's own forms (saved to
+  `localStorage`) or a gitignored `data/household.json` snapshot (see `data/README.md`),
+  which the app deep-merges over the seed on load — never into `seed.ts` itself.
+- **`data/`** is gitignored (except its `README.md`), and is where the app's **Export**
+  writes/reads that JSON snapshot.
 
 ## Where the numbers came from
 
@@ -157,5 +154,5 @@ out as a rough marker, not a date.**
 - [x] Home upkeep and mortgage insurance
 - [x] Time-limited commitments, upfront mortgage insurance
 - [x] Retirement drawdown engine and panel
-- [ ] Set the real ages (placeholders in `seed.example.ts`)
-- [ ] Refine the placeholder budget into our real numbers
+- [ ] Set the real ages via `data/household.json`
+- [ ] Refine the placeholder budget into the real numbers, locally

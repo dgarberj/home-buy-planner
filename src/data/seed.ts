@@ -22,7 +22,7 @@ import type {
 /**
 Bump when the figures below change; see the store's migration logic.
 */
-export const SEED_VERSION = 'generic-4';
+export const SEED_VERSION = 'generic-5';
 
 export const SEED_ASSUMPTIONS: Assumptions = {
   household: {
@@ -48,12 +48,12 @@ export const SEED_ASSUMPTIONS: Assumptions = {
     endMonth: null,
   },
 
-  // A second household income. OFF by default -- flip it on to see the effect.
+  // A second household income.
   secondIncome: {
-    enabled: false,
+    enabled: true,
     label: 'Second income',
-    monthlyTakeHome: 2_500,
-    startMonth: 12,
+    monthlyTakeHome: 4_000,
+    startMonth: 1,
     additionalCostsMonthly: 0,
     additionalCostsEndMonth: null,
     dependentCareFsaAnnual: 0,
@@ -74,7 +74,7 @@ export const SEED_ASSUMPTIONS: Assumptions = {
   },
 
   income: {
-    monthlyTakeHome: 7_000,
+    monthlyTakeHome: 6_500,
     growthAnnual: 0.03,
     annualBonusNet: 4_000,
     annualBonusMonth: 1,
@@ -90,7 +90,7 @@ export const SEED_ASSUMPTIONS: Assumptions = {
   },
 
   retirement: {
-    currentBalance: 90_000,
+    currentBalance: 200_000,
     k401Monthly: 400,
     hsaMonthly: 500,
     hasHsaPlan: true,
@@ -112,8 +112,8 @@ export const SEED_ASSUMPTIONS: Assumptions = {
   },
 
   savings: {
-    cashBalance: 25_000,
-    investmentBalance: 5_000,
+    cashBalance: 35_000,
+    investmentBalance: 15_000,
     cashReturnAnnual: 0.04,
     investmentReturnAnnual: 0.06,
     cashBufferMonths: 6,
@@ -151,7 +151,7 @@ export const SEED_ASSUMPTIONS: Assumptions = {
 
 export const SEED_BUDGET: BudgetItem[] = [
   // --- Money in -----------------------------------------------------------
-  { id: 'inc-1', label: 'Paycheck A', category: 'Income', type: 'income', amount: 4_000 },
+  { id: 'inc-1', label: 'Paycheck A', category: 'Income', type: 'income', amount: 3_500 },
   { id: 'inc-2', label: 'Paycheck B', category: 'Income', type: 'income', amount: 3_000 },
 
   // --- Housing (rent disappears at the buy month) -------------------------
@@ -190,9 +190,9 @@ export const SEED_BALANCES: BalanceSnapshot[] = [
     id: 'snap-2026-08',
     date: '2026-08-01',
     checking: 0,
-    savings: 25_000,
-    investments: 5_000,
-    retirement: 90_000,
+    savings: 35_000,
+    investments: 15_000,
+    retirement: 200_000,
     debt: 0,
     note: 'Starting point -- replace with your own numbers',
   },
@@ -235,7 +235,7 @@ export const SEED_SETTINGS = {
   /**
   Base salary before bonus. The 401(k) target is a share of this.
   */
-  grossAnnualSalary: 90_000,
+  grossAnnualSalary: 100_000,
   /**
   Single or married filing jointly, for the federal marginal-rate lookup.
   */

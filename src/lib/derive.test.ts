@@ -379,16 +379,18 @@ describe("the placeholder seed data is internally consistent", () => {
     expect(dueNow).toBeGreaterThan(0);
   });
 
-  it("runs a MONTHLY DEFICIT on regular pay alone", () => {
-    // Not a bug in the data -- the actual situation, and the reason the bonus
-    // is modelled as a lump rather than smeared. Eleven months a year the
-    // contributions cost more than the paycheques leave over.
+  it("runs a MONTHLY DEFICIT on the primary paycheque alone", () => {
+    // Not a bug in the data -- the budget only carries the primary earner's
+    // paycheques (see the seed-consistency test above), so the second income
+    // sits outside this total by design, same as the January bonus.
     expect(monthlyAfterContributions).toBeLessThan(0);
   });
 
-  it("is covered across the year once the January bonus lands", () => {
+  it("is covered across the year by the second income and the January bonus", () => {
     const annual =
-      monthlyAfterContributions * 12 + SEED_ASSUMPTIONS.income.annualBonusNet;
+      monthlyAfterContributions * 12 +
+      SEED_ASSUMPTIONS.income.annualBonusNet +
+      SEED_ASSUMPTIONS.secondIncome.monthlyTakeHome * 12;
     expect(annual).toBeGreaterThan(0);
   });
 

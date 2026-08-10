@@ -32,6 +32,7 @@ const SIMPLE: Assumptions = {
     },
   ],
   coResident: { ...base.coResident, enabled: true, monthlyAmount: 800 },
+  secondIncome: { ...base.secondIncome, enabled: false },
   home: {
     ...base.home,
     downPaymentPct: 0.2,
