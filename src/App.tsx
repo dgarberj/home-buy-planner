@@ -318,9 +318,6 @@ export default function App() {
             <h1 className="text-base font-semibold tracking-tight">
               Home Buy Planner
             </h1>
-            <p className="text-xs text-slate-500">
-              Runs entirely on this computer. Nothing is sent anywhere.
-            </p>
           </div>
           <DataToolbar />
         </div>
@@ -470,11 +467,7 @@ export default function App() {
 
           <footer className="border-t border-slate-200 pt-6 text-xs text-slate-400">
             Your numbers are saved in this browser only. Use Export to keep a
-            backup in the gitignored{" "}
-            <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-500">
-              data/
-            </code>{" "}
-            folder.
+            backup.
           </footer>
         </main>
       </div>

@@ -18,10 +18,10 @@ export default function AppSidebar({
 }) {
   return (
     <Sidebar>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-0.5">
         <NavLinks
           onNavigate={onNavigate}
-          linkClassName="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          linkClassName="rounded-lg px-2 py-1 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
         />
       </div>
       <LeversBar />
