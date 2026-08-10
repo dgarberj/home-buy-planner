@@ -92,11 +92,13 @@ export const SEED_ASSUMPTIONS: Assumptions = {
   retirement: {
     currentBalance: 200_000,
     k401Monthly: 400,
+    hasK401Plan: true,
     hsaMonthly: 500,
     hasHsaPlan: true,
     hsaCoverageTier: 'family',
     employerMatchMonthly: 400,
     employerAnnualLump: 1_500,
+    employerHsaAnnualBonus: 500,
     employerAnnualLumpMonth: 1,
 
     hsaPayMedical: true,

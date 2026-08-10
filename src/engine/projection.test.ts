@@ -73,9 +73,11 @@ const FLAT: Assumptions = {
   retirement: {
     currentBalance: 100_000,
     k401Monthly: 400,
+    hasK401Plan: true,
     hsaMonthly: 600,
     employerMatchMonthly: 500,
     employerAnnualLump: 0,
+    employerHsaAnnualBonus: 0,
     employerAnnualLumpMonth: 1,
     returnAnnual: 0,
     hsaPayMedical: true,

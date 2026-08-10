@@ -407,7 +407,9 @@ function computeRetirementContribution(
     ? compound(1, incomeGrowth, m - 1)
     : 1;
   // Diverting the HSA to the deposit zeroes it out; the 401(k) keeps going.
-  const employeeK401 = retirement.k401Monthly * contributionScale;
+  const employeeK401 = retirement.hasK401Plan
+    ? retirement.k401Monthly * contributionScale
+    : 0;
   const employeeHsa =
     retirement.pauseHsaMax || !retirement.hasHsaPlan
       ? 0
@@ -415,17 +417,25 @@ function computeRetirementContribution(
   const employeeContribution = isContributionsPaused
     ? 0
     : employeeK401 + employeeHsa;
-  const employerMatch = isContributionsPaused
-    ? 0
-    : retirement.employerMatchMonthly * contributionScale;
+  const employerMatch =
+    isContributionsPaused || !retirement.hasK401Plan
+      ? 0
+      : retirement.employerMatchMonthly * contributionScale;
 
   // Employer money that arrives once a year -- profit share, HSA seed. Lands
   // in one calendar month, not smeared, and stops if you are not there.
+  const employerAnnualLump = retirement.hasK401Plan
+    ? retirement.employerAnnualLump
+    : 0;
+  const employerHsaBonus = retirement.hasHsaPlan
+    ? retirement.employerHsaAnnualBonus
+    : 0;
+  const employerLumpTotal = employerAnnualLump + employerHsaBonus;
   const employerLump =
     !isContributionsPaused &&
-    retirement.employerAnnualLump > 0 &&
+    employerLumpTotal > 0 &&
     calendarMonth === retirement.employerAnnualLumpMonth
-      ? retirement.employerAnnualLump * contributionScale
+      ? employerLumpTotal * contributionScale
       : 0;
 
   return {

@@ -72,8 +72,9 @@ export const RETIREMENT_TARGETS = {
  */
 export function employeeHsaRoom(
   coverage: "selfOnly" | "family" = "family",
+  employerSeed: number = RETIREMENT_TARGETS.employerAnnualHsaSeed,
 ): number {
   const limit =
     coverage === "selfOnly" ? HSA_LIMITS.selfOnly2026 : HSA_LIMITS.family2026;
-  return Math.max(0, limit - RETIREMENT_TARGETS.employerAnnualHsaSeed);
+  return Math.max(0, limit - employerSeed);
 }

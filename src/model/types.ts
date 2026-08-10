@@ -72,6 +72,12 @@ export interface RetirementAssumptions {
    */
   k401Monthly: number;
   /**
+   * Whether this household has a 401(k) at all. Off zeroes the employee
+   * 401(k) contribution and employer match in the projection and hides the
+   * 401(k) target/gauge/inputs in the UI.
+   */
+  hasK401Plan: boolean;
+  /**
    * What YOU put into the HSA each month, out of your own pay. Deducted
    * from cash flow like the 401(k) contribution, but capped by a much
    * smaller family/self-only limit that the employer seed also counts
@@ -102,6 +108,13 @@ export interface RetirementAssumptions {
    * Also free money, and easy to forget precisely because it arrives once.
    */
   employerAnnualLump: number;
+  /**
+   * The one-time employer HSA seed/bonus, if any -- kept apart from
+   * `employerAnnualLump` so it can be netted against the employee's own HSA
+   * room (`HSA_LIMITS` counts employer and employee money together).
+   * Lands the same month as `employerAnnualLump`.
+   */
+  employerHsaAnnualBonus: number;
   /**
   Calendar month the employer lump lands. 1 = January.
   */
