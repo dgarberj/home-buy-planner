@@ -1,9 +1,17 @@
 # Home Buy Planner
 
+[![Deploy](https://github.com/dgarberj/home-buy-planner/actions/workflows/deploy.yml/badge.svg)](https://github.com/dgarberj/home-buy-planner/actions/workflows/deploy.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+**[Live demo →](https://dgarberj.github.io/home-buy-planner/)**
+
 A private, local-only planning tool for one question: **when and how should we buy a
 house, and would we still be okay if one of us lost a job along the way?**
 
 No backend, no accounts, no telemetry. Everything runs in the browser on this machine.
+The live demo opens with generic, invented placeholder numbers (see
+[Where the real numbers live](#where-the-real-numbers-live)) -- nothing entered there
+ever leaves your browser.
 
 ## Getting started
 

@@ -22,7 +22,7 @@ import type {
 /**
 Bump when the figures below change; see the store's migration logic.
 */
-export const SEED_VERSION = 'generic-5';
+export const SEED_VERSION = 'generic-6';
 
 export const SEED_ASSUMPTIONS: Assumptions = {
   household: {
@@ -33,8 +33,8 @@ export const SEED_ASSUMPTIONS: Assumptions = {
   // Commitments with an end date. Derived from the dated budget lines below,
   // so keep the two in step.
   obligations: [
-    { id: 'obligation-a', label: 'Fixed-term obligation A', monthlyAmount: 500, startMonth: 1, endMonth: 24 },
-    { id: 'obligation-b', label: 'Fixed-term obligation B', monthlyAmount: 1_000, startMonth: 1, endMonth: 60 },
+    { id: 'obligation-a', label: 'Car loan', monthlyAmount: 500, startMonth: 1, endMonth: 24 },
+    { id: 'obligation-b', label: 'Student loan', monthlyAmount: 1_000, startMonth: 1, endMonth: 60 },
   ],
 
   // A relative contributing once there is room for them.
@@ -183,8 +183,8 @@ export const SEED_BUDGET: BudgetItem[] = [
   // --- Commitments with an end date ---------------------------------------
   // A start or end date turns a line into an obligation: it stops inflating,
   // stops being cut during a job loss, and ends on the date you set.
-  { id: 'obligation-a', label: 'Fixed-term obligation A', category: 'Debt', type: 'fixed', amount: 500, endsOn: '2028-08' },
-  { id: 'obligation-b', label: 'Fixed-term obligation B', category: 'Debt', type: 'fixed', amount: 1_000, endsOn: '2031-08' },
+  { id: 'obligation-a', label: 'Car loan', category: 'Debt', type: 'fixed', amount: 500, endsOn: '2028-08' },
+  { id: 'obligation-b', label: 'Student loan', category: 'Debt', type: 'fixed', amount: 1_000, endsOn: '2031-08' },
 ];
 
 export const SEED_BALANCES: BalanceSnapshot[] = [
