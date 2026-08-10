@@ -66,10 +66,18 @@ Retirement account assumptions.
 export interface RetirementAssumptions {
   currentBalance: number;
   /**
-   * What YOU put in each month, out of your own pay -- 401(k) plus any HSA
-   * contribution. Deducted from cash flow, because it is.
+   * What YOU put into your 401(k) each month, out of your own pay. Deducted
+   * from cash flow, because it is. Well inside the IRS elective-deferral
+   * limit (`K401_LIMITS.employeeDeferral2026`) for almost every household.
    */
-  employeeMonthly: number;
+  k401Monthly: number;
+  /**
+   * What YOU put into the HSA each month, out of your own pay. Deducted
+   * from cash flow like the 401(k) contribution, but capped by a much
+   * smaller family/self-only limit that the employer seed also counts
+   * against (`HSA_LIMITS`, `employeeHsaRoom()`).
+   */
+  hsaMonthly: number;
   /**
    * What your employer puts in each month, typically a percentage-of-salary
    * match. Free money: it grows the balance without touching take-home.
@@ -98,13 +106,10 @@ export interface RetirementAssumptions {
    *
    * The HSA is the most tax-efficient account available, but it cannot buy a
    * house. While the buffer is the thing blocking you, redirecting some of it
-   * is often the single fastest lever you have.
+   * is often the single fastest lever you have. `hsaMonthly` drops to zero
+   * while this is on; `k401Monthly` keeps running unchanged.
    */
   pauseHsaMax: boolean;
-  /**
-  Employee contribution while paused -- typically 401(k) plus expected medical only.
-  */
-  pausedEmployeeMonthly: number;
   /**
    * Medical spending paid FROM the HSA each month instead of out of cash.
    *

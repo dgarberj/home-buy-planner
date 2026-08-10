@@ -314,7 +314,8 @@ describe("resolveAssumptions", () => {
     expect(r.savings.cashBalance).toBe(35000);
     expect(r.savings.investmentBalance).toBe(9000);
     expect(r.retirement.currentBalance).toBe(90000);
-    expect(r.retirement.employeeMonthly).toBe(base.retirement.employeeMonthly);
+    expect(r.retirement.k401Monthly).toBe(base.retirement.k401Monthly);
+    expect(r.retirement.hsaMonthly).toBe(base.retirement.hsaMonthly);
   });
 
   it("falls back to the typed-in balances when nothing has been logged", () => {
@@ -371,7 +372,8 @@ describe("the placeholder seed data is internally consistent", () => {
   const monthlyAfterContributions =
     budgetSurplus(totals) -
     dueNow -
-    SEED_ASSUMPTIONS.retirement.employeeMonthly;
+    (SEED_ASSUMPTIONS.retirement.k401Monthly +
+      SEED_ASSUMPTIONS.retirement.hsaMonthly);
 
   it("has commitments due right now", () => {
     expect(dueNow).toBeGreaterThan(0);

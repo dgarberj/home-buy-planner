@@ -22,7 +22,7 @@ import type {
 /**
 Bump when the figures below change; see the store's migration logic.
 */
-export const SEED_VERSION = 'generic-2';
+export const SEED_VERSION = 'generic-3';
 
 export const SEED_ASSUMPTIONS: Assumptions = {
   household: {
@@ -90,7 +90,8 @@ export const SEED_ASSUMPTIONS: Assumptions = {
 
   retirement: {
     currentBalance: 90_000,
-    employeeMonthly: 900,
+    k401Monthly: 400,
+    hsaMonthly: 500,
     employerMatchMonthly: 400,
     employerAnnualLump: 1_500,
     employerAnnualLumpMonth: 1,
@@ -98,7 +99,6 @@ export const SEED_ASSUMPTIONS: Assumptions = {
     hsaPayMedical: true,
     hsaTakeReimbursement: true,
     pauseHsaMax: false,
-    pausedEmployeeMonthly: 700,
     hsaMedicalMonthly: 250,
     hsaReimbursement: 3_000,
     hsaReimbursementMonth: 1,
@@ -233,6 +233,10 @@ export const SEED_SETTINGS = {
   Base salary before bonus. The 401(k) target is a share of this.
   */
   grossAnnualSalary: 90_000,
+  /**
+  Single or married filing jointly, for the federal marginal-rate lookup.
+  */
+  filingStatus: 'marriedJoint' as const,
   /**
   Biweekly. Two months a year carry three paycheques.
   */

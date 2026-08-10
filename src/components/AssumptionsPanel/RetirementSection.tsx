@@ -1,3 +1,9 @@
+import {
+  HSA_LIMITS,
+  K401_LIMITS,
+  employeeHsaRoom,
+} from "../../data/contributionLimits";
+import { money } from "../../lib/format";
 import { deriveStartingBalances } from "../../lib/derive";
 import { useStore } from "../../store/useStore";
 import { Card, Field, MoneyInput, PercentInput, Toggle } from "../ui";
@@ -37,14 +43,21 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label="Your contribution / month"
-          hint="What you put in each month. This comes out of your take-home cash, so it reduces what's left to save for the house."
+          label="401(k) contribution / month"
+          hint={`What you put into your 401(k) each month. Comes out of take-home cash. Elective-deferral limit for 2026 is ${money(K401_LIMITS.employeeDeferral2026)}/yr.`}
         >
           <MoneyInput
-            value={a.retirement.employeeMonthly}
-            onChange={(v) =>
-              setAssumptions({ retirement: { employeeMonthly: v } })
-            }
+            value={a.retirement.k401Monthly}
+            onChange={(v) => setAssumptions({ retirement: { k401Monthly: v } })}
+          />
+        </Field>
+        <Field
+          label="HSA contribution / month"
+          hint={`What you put into the HSA each month, on top of any employer seed. Family limit for 2026 is ${money(HSA_LIMITS.family2026)}/yr; your own room after the employer seed is ${money(employeeHsaRoom())}/yr.`}
+        >
+          <MoneyInput
+            value={a.retirement.hsaMonthly}
+            onChange={(v) => setAssumptions({ retirement: { hsaMonthly: v } })}
           />
         </Field>
         <Field

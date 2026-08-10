@@ -290,6 +290,20 @@ export const SOURCES: Source[] = [
     refresh: 'Annually.',
   },
 
+  // ---- Federal income tax ------------------------------------------------
+  {
+    id: 'irs-2026-brackets',
+    title: 'IRS releases tax inflation adjustments for tax year 2026',
+    publisher: 'Internal Revenue Service',
+    url: 'https://www.irs.gov/newsroom/irs-releases-tax-inflation-adjustments-for-tax-year-2026-including-amendments-from-the-one-big-beautiful-bill',
+    covers:
+      '2026 federal income tax brackets (all seven rates) and standard deduction, single and married filing jointly, cross-checked against the Tax Foundation\'s published table.',
+    retrieved: '2026-08-09',
+    reliability: 'official',
+    refresh: 'Every January.',
+    note: 'Federal income tax only — excludes FICA and state tax, neither of which this app models.',
+  },
+
   // ---- Social Security and wages ---------------------------------------
   {
     id: 'ssa-noncitizens',
@@ -404,6 +418,14 @@ export const SOURCE_TOPICS: SourceTopic[] = [
     description: 'Contribution limits and withdrawal rules for HSAs and dependent care accounts.',
     usedBy: 'Contribution targets, the childcare cost of a second income, and the HSA drawdown options.',
     sourceIds: ['irs-hsa-2026', 'dcfsa-2026', 'hsa-reimbursement', 'irs-8889'],
+  },
+  {
+    key: 'federal-tax',
+    label: 'Federal income tax',
+    description:
+      'Federal income tax brackets and standard deduction, single and married filing jointly. Excludes FICA and state tax.',
+    usedBy: 'The marginal-rate lookup for pre-tax retirement contributions.',
+    sourceIds: ['irs-2026-brackets'],
   },
   {
     key: 'income',

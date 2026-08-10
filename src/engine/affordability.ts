@@ -82,6 +82,7 @@ export function housingBudget(
   const secondNet = secondRunning ? second.monthlyTakeHome - secondCosts : 0;
 
   const livingCosts = expenses.fixedMonthly + expenses.variableMonthly;
+  const retirementContributions = retirement.k401Monthly + retirement.hsaMonthly;
 
   const monthlyBudget =
     income.monthlyTakeHome +
@@ -89,7 +90,7 @@ export function housingBudget(
     secondNet -
     livingCosts -
     obligationsDue -
-    retirement.employeeMonthly -
+    retirementContributions -
     options.reserveForSavings;
 
   return {
@@ -100,7 +101,7 @@ export function housingBudget(
       secondIncome: secondNet,
       livingCosts,
       obligations: obligationsDue,
-      retirementContributions: retirement.employeeMonthly,
+      retirementContributions,
       reserveForSavings: options.reserveForSavings,
     },
   };

@@ -21,7 +21,7 @@ const SIMPLE: Assumptions = {
   ...base,
   income: { ...base.income, monthlyTakeHome: 10_000 },
   expenses: { ...base.expenses, fixedMonthly: 1_000, variableMonthly: 2_000 },
-  retirement: { ...base.retirement, employeeMonthly: 1_000 },
+  retirement: { ...base.retirement, k401Monthly: 400, hsaMonthly: 600 },
   obligations: [
     {
       id: "a",

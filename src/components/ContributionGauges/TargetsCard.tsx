@@ -4,11 +4,30 @@ import {
   RETIREMENT_TARGETS,
   employeeHsaRoom,
 } from "../../data/contributionLimits";
+import {
+  STANDARD_DEDUCTION_2026,
+  federalTaxOn,
+  marginalRate,
+  type FilingStatus,
+} from "../../data/taxBrackets";
 import { money, pct } from "../../lib/format";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
-import { Callout, Card, Field, InfoTip, MoneyInput, SectionTitle } from "../ui";
+import {
+  Callout,
+  Card,
+  Field,
+  InfoTip,
+  MoneyInput,
+  SectionTitle,
+  Select,
+} from "../ui";
 import Gauge from "./Gauge";
+
+const FILING_STATUS_LABEL: Record<FilingStatus, string> = {
+  single: "Single",
+  marriedJoint: "Married filing jointly",
+};
 
 function toneForLeftAfterTargets(
   leftAfterTargets: number,
@@ -38,11 +57,32 @@ export default function TargetsCard() {
     RETIREMENT_TARGETS.employerAnnualHsaSeed;
   const targetEmployerTotal = targetMatch + targetEmployerLump;
 
-  const actualAnnual = assumptions.retirement.employeeMonthly * 12;
+  const actual401k = assumptions.retirement.k401Monthly * 12;
+  const actualHsa = assumptions.retirement.hsaMonthly * 12;
   const actualMatch =
     assumptions.retirement.employerMatchMonthly * 12 +
     assumptions.retirement.employerAnnualLump;
   const monthlyTarget = targetTotal / 12;
+
+  // ---- Federal tax savings from pre-tax contributions -------------------
+  // Display only: derived from gross salary + filing status, does not touch
+  // income.monthlyTakeHome or any projection maths. Cumulative, not a flat
+  // rate x contribution, so it stays correct when a contribution straddles
+  // a bracket boundary.
+  const filingStatus = settings.filingStatus;
+  const taxableIncome = Math.max(
+    0,
+    gross - STANDARD_DEDUCTION_2026[filingStatus],
+  );
+  const taxableAfter401k = Math.max(0, taxableIncome - actual401k);
+  const taxableAfterHsa = Math.max(0, taxableAfter401k - actualHsa);
+  const savings401k =
+    federalTaxOn(taxableIncome, filingStatus) -
+    federalTaxOn(taxableAfter401k, filingStatus);
+  const savingsHsa =
+    federalTaxOn(taxableAfter401k, filingStatus) -
+    federalTaxOn(taxableAfterHsa, filingStatus);
+  const yourMarginalRate = marginalRate(gross, filingStatus);
 
   const obligationsNow = assumptions.obligations
     .filter(
@@ -67,10 +107,16 @@ export default function TargetsCard() {
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-6">
             <Gauge
-              label="Your contribution (401k + HSA)"
-              hint="What comes out of your own pay. The model deducts this from take-home before anything reaches savings, so it competes directly with the deposit."
-              actual={actualAnnual}
-              target={targetTotal}
+              label="Your 401(k) contribution"
+              hint={`What comes out of your own pay for the 401(k). The model deducts this from take-home before anything reaches savings. Legal ceiling for 2026: ${money(K401_LIMITS.employeeDeferral2026)}/yr. Pre-tax, so at your ${pct(yourMarginalRate, 0)} federal marginal rate (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}) it saves about ${money(savings401k)}/yr in federal tax.`}
+              actual={actual401k}
+              target={target401k}
+            />
+            <Gauge
+              label="Your HSA contribution"
+              hint={`What comes out of your own pay for the HSA, on top of any employer seed. Legal ceiling for 2026: ${money(HSA_LIMITS.family2026)}/yr family, counting employer money. Also pre-tax, saving about ${money(savingsHsa)}/yr in federal tax at your ${pct(yourMarginalRate, 0)} marginal rate.`}
+              actual={actualHsa}
+              target={targetHsa}
             />
             <Gauge
               label="Employer money (match + January lump)"
@@ -185,13 +231,43 @@ export default function TargetsCard() {
             />
           </Field>
           <Field
-            label="Your contribution / month"
-            hint="401(k) and HSA combined, since both come out pre-tax and both land in the retirement balance in this model."
+            label="Filing status"
+            hint="Single or married filing jointly. Used only to look up your federal marginal tax rate below — it does not change your take-home pay elsewhere in the app."
+          >
+            <Select
+              value={filingStatus}
+              onChange={(v) =>
+                setSettings({ filingStatus: v as FilingStatus })
+              }
+            >
+              {(Object.keys(FILING_STATUS_LABEL) as FilingStatus[]).map(
+                (status) => (
+                  <option key={status} value={status}>
+                    {FILING_STATUS_LABEL[status]}
+                  </option>
+                ),
+              )}
+            </Select>
+          </Field>
+          <Field
+            label="401(k) contribution / month"
+            hint="Comes out pre-tax and lands in the retirement balance in this model."
           >
             <MoneyInput
-              value={assumptions.retirement.employeeMonthly}
+              value={assumptions.retirement.k401Monthly}
               onChange={(v) =>
-                setAssumptions({ retirement: { employeeMonthly: v } })
+                setAssumptions({ retirement: { k401Monthly: v } })
+              }
+            />
+          </Field>
+          <Field
+            label="HSA contribution / month"
+            hint="Comes out pre-tax too, on top of any employer seed, and lands in the retirement balance in this model."
+          >
+            <MoneyInput
+              value={assumptions.retirement.hsaMonthly}
+              onChange={(v) =>
+                setAssumptions({ retirement: { hsaMonthly: v } })
               }
             />
           </Field>

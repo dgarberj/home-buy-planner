@@ -71,7 +71,8 @@ const FLAT: Assumptions = {
   },
   retirement: {
     currentBalance: 100_000,
-    employeeMonthly: 1_000,
+    k401Monthly: 400,
+    hsaMonthly: 600,
     employerMatchMonthly: 500,
     employerAnnualLump: 0,
     employerAnnualLumpMonth: 1,
@@ -79,7 +80,6 @@ const FLAT: Assumptions = {
     hsaPayMedical: true,
     hsaTakeReimbursement: true,
     pauseHsaMax: false,
-    pausedEmployeeMonthly: 0,
     hsaMedicalMonthly: 0,
     hsaReimbursement: 0,
     hsaReimbursementMonth: 1,
@@ -1885,7 +1885,6 @@ describe("diverting the HSA to the deposit", () => {
     retirement: {
       ...FLAT.retirement,
       pauseHsaMax: true,
-      pausedEmployeeMonthly: 400,
     },
   };
 

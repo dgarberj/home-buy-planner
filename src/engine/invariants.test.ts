@@ -56,7 +56,7 @@ const CASES: { name: string; assumptions: Assumptions }[] = [
     name: "contributions larger than income",
     assumptions: {
       ...base,
-      retirement: { ...base.retirement, employeeMonthly: 20_000 },
+      retirement: { ...base.retirement, k401Monthly: 20_000, hsaMonthly: 0 },
     },
   },
   {

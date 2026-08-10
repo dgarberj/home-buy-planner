@@ -406,13 +406,14 @@ function computeRetirementContribution(
   const contributionScale = retirement.contributionsGrowWithIncome
     ? compound(1, incomeGrowth, m - 1)
     : 1;
-  // Diverting the HSA to the deposit lowers what goes in each month.
-  const baseEmployee = retirement.pauseHsaMax
-    ? retirement.pausedEmployeeMonthly
-    : retirement.employeeMonthly;
+  // Diverting the HSA to the deposit zeroes it out; the 401(k) keeps going.
+  const employeeK401 = retirement.k401Monthly * contributionScale;
+  const employeeHsa = retirement.pauseHsaMax
+    ? 0
+    : retirement.hsaMonthly * contributionScale;
   const employeeContribution = isContributionsPaused
     ? 0
-    : baseEmployee * contributionScale;
+    : employeeK401 + employeeHsa;
   const employerMatch = isContributionsPaused
     ? 0
     : retirement.employerMatchMonthly * contributionScale;

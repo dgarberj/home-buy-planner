@@ -4,6 +4,7 @@ import type {
   BudgetItem,
   ScenarioConfig,
 } from "../model/types";
+import type { FilingStatus } from "../data/taxBrackets";
 import {
   DEFAULT_HORIZON_MONTHS,
   DEFAULT_MILESTONE_AGES,
@@ -53,6 +54,12 @@ export interface Settings {
   Base salary before bonus. The 401(k) contribution target is a share of this.
   */
   grossAnnualSalary: number;
+  /**
+   * Single or married filing jointly. Paired with `grossAnnualSalary` to
+   * look up a federal marginal tax rate -- display only, does not change
+   * `income.monthlyTakeHome` or any projection maths.
+   */
+  filingStatus: FilingStatus;
   /**
   Credit score, which sets the mortgage-insurance rate on a low deposit.
   */

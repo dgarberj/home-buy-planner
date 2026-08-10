@@ -80,7 +80,8 @@ export const SEED_ASSUMPTIONS: Assumptions = {
   },
   retirement: {
     currentBalance: 120000,
-    employeeMonthly: 1000,
+    k401Monthly: 450,
+    hsaMonthly: 550,
     employerMatchMonthly: 400,
     employerAnnualLump: 0,
     employerAnnualLumpMonth: 1,
@@ -88,7 +89,6 @@ export const SEED_ASSUMPTIONS: Assumptions = {
     hsaPayMedical: true,
     hsaTakeReimbursement: true,
     pauseHsaMax: false,
-    pausedEmployeeMonthly: 0,
     hsaMedicalMonthly: 0,
     hsaReimbursement: 0,
     hsaReimbursementMonth: 1,
@@ -273,6 +273,7 @@ Non-model defaults: framing, targets and shortlists.
 */
 export const SEED_SETTINGS = {
   grossAnnualSalary: 100_000,
+  filingStatus: 'single' as const,
   paychecksPerYear: 26,
   creditScore: 740,
   shortlist: [] as string[],
