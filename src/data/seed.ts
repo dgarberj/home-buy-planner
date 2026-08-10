@@ -52,7 +52,7 @@ export const SEED_ASSUMPTIONS: Assumptions = {
   secondIncome: {
     enabled: false,
     label: 'Second income',
-    monthlyTakeHome: 0,
+    monthlyTakeHome: 2_500,
     startMonth: 12,
     additionalCostsMonthly: 0,
     additionalCostsEndMonth: null,
@@ -100,9 +100,9 @@ export const SEED_ASSUMPTIONS: Assumptions = {
     pauseHsaMax: false,
     pausedEmployeeMonthly: 700,
     hsaMedicalMonthly: 250,
-    hsaReimbursement: 0,
+    hsaReimbursement: 3_000,
     hsaReimbursementMonth: 1,
-    hsaReimbursementAtPurchase: false,
+    hsaReimbursementAtPurchase: true,
 
     returnAnnual: 0.07,
     contributionsGrowWithIncome: true,
@@ -129,10 +129,11 @@ export const SEED_ASSUMPTIONS: Assumptions = {
     pmiRemovedAtLtv: 0.8,
     pmiUpfrontPct: 0,
 
+    // Modelled on K-FIT: 5% of price, no cap, forgiven over ten years.
     assistanceEnabled: false,
-    assistancePctOfPrice: 0,
+    assistancePctOfPrice: 0.05,
     assistanceMaxAmount: null,
-    assistanceRepayment: 'none',
+    assistanceRepayment: 'forgiven',
     assistanceTermYears: 10,
   },
 
