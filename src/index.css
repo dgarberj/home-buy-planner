@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+Absolutely-positioned elements near the left/right edge (e.g. InfoTip
+tooltips, which are fixed-width and centered on a small icon) can extend
+past the viewport even while invisible, which otherwise puts a horizontal
+scrollbar on the whole page. Nothing in this layout is meant to scroll
+horizontally at the document level -- individual wide tables/charts handle
+their own overflow-x-auto -- so clip it here instead.
+*/
+html,
+body {
+  overflow-x: hidden;
+}

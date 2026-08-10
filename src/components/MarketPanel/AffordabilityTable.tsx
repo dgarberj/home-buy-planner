@@ -95,7 +95,7 @@ export default function AffordabilityTable() {
   }, [assumptions, budget.monthlyBudget]);
 
   const pricedCount = affordability.filter((r) => r.cost).length;
-  const [pricedOnly, setPricedOnly] = useState(false);
+  const [pricedOnly, setPricedOnly] = useState(true);
   const visible = pricedOnly
     ? affordability.filter((r) => r.cost)
     : affordability;
@@ -267,7 +267,7 @@ export default function AffordabilityTable() {
           checked={pricedOnly}
           onChange={setPricedOnly}
           label="Only show towns with a sourced price"
-          hint="Off by default. The other towns still have complete tax and school data — a missing price is a gap in what I could source, not a reason to hide them."
+          hint="On by default to keep the table to towns you can actually compare by cost. The rest still have complete tax and school data — a missing price is a gap in what I could source, not a reason to hide them for good."
         />
         <p className="text-xs text-slate-500">
           Showing {visible.length} of {ALL_MUNICIPALITIES.length} municipalities
