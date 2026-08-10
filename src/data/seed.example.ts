@@ -64,6 +64,8 @@ export const SEED_ASSUMPTIONS: Assumptions = {
     inflationAnnual: 0.03,
     includeHomeEquity: false,
     planToAge: 95,
+    // Effective, not marginal, rate -- applies only to 401(k)/IRA withdrawals.
+    taxRateOnWithdrawal: 0.15,
   },
   income: {
     monthlyTakeHome: 9000,
@@ -82,6 +84,8 @@ export const SEED_ASSUMPTIONS: Assumptions = {
     currentBalance: 120000,
     k401Monthly: 450,
     hsaMonthly: 550,
+    hasHsaPlan: true,
+    hsaCoverageTier: 'family',
     employerMatchMonthly: 400,
     employerAnnualLump: 0,
     employerAnnualLumpMonth: 1,

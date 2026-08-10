@@ -27,11 +27,14 @@ import { monthForAge } from "./projection";
  *
  * Like the projection engine, this is pure: no React, no state, no randomness.
  *
- * What it deliberately does NOT model: taxes on withdrawal (which differ by
- * account type), Social Security or any other pension income, required minimum
- * distributions, healthcare cost shocks, or sequence-of-returns risk. A single
- * fixed return is a smooth fiction; real markets are not. Treat the depletion
- * age as a rough marker, not a date.
+ * Tax on withdrawal is modeled as a single flat effective rate applied only to
+ * money drawn from tax-deferred retirement accounts (liquid savings are drawn
+ * first, untaxed, since that money was already taxed on the way in). What it
+ * still deliberately does NOT model: tax brackets, filing status, state tax,
+ * capital-gains treatment, Social Security or any other pension income,
+ * required minimum distributions, healthcare cost shocks, or sequence-of-
+ * returns risk. A single fixed return is a smooth fiction; real markets are
+ * not. Treat the depletion age as a rough marker, not a date.
  */
 
 /**
@@ -44,9 +47,13 @@ export interface DrawdownYear {
   */
   balance: number;
   /**
-  Total withdrawn during the year.
+  Total withdrawn during the year, net of any tax paid.
   */
   withdrawal: number;
+  /**
+  Tax paid this year on retirement-account withdrawals.
+  */
+  taxPaid: number;
 }
 
 export interface DrawdownResult {
@@ -109,6 +116,10 @@ export interface DrawdownResult {
   Yearly track of the drawdown, for the chart.
   */
   track: DrawdownYear[];
+  /**
+  Total tax paid on retirement-account withdrawals over the whole plan.
+  */
+  lifetimeTaxPaid: number;
 }
 
 const EMPTY: DrawdownResult = {
@@ -126,7 +137,53 @@ const EMPTY: DrawdownResult = {
   balanceAtPlanEnd: 0,
   yearsOfIncome: 0,
   track: [],
+  lifetimeTaxPaid: 0,
 };
+
+interface WithdrawalStep {
+  liquidBalance: number;
+  retirementBalance: number;
+  homeEquityBalance: number;
+  taken: number;
+  taxPaid: number;
+}
+
+/**
+Draw `need` out of the three pools in order: liquid savings first (already
+taxed), then retirement accounts (grossed up so the after-tax amount covers
+what's left), then home equity last (only nonzero when counted as spendable).
+*/
+function withdrawMonth(
+  liquidBalance: number,
+  retirementBalance: number,
+  homeEquityBalance: number,
+  need: number,
+  taxRate: number,
+): WithdrawalStep {
+  const fromLiquid = Math.min(Math.max(liquidBalance, 0), need);
+  let remaining = need - fromLiquid;
+
+  let grossFromRetirement = 0;
+  let netFromRetirement = 0;
+  let taxPaid = 0;
+  if (remaining > 0 && retirementBalance > 0) {
+    const grossNeeded = remaining / (1 - taxRate);
+    grossFromRetirement = Math.min(retirementBalance, grossNeeded);
+    netFromRetirement = grossFromRetirement * (1 - taxRate);
+    taxPaid = grossFromRetirement - netFromRetirement;
+    remaining -= netFromRetirement;
+  }
+
+  const fromHome = remaining > 0 ? Math.min(homeEquityBalance, remaining) : 0;
+
+  return {
+    liquidBalance: liquidBalance - fromLiquid,
+    retirementBalance: retirementBalance - grossFromRetirement,
+    homeEquityBalance: homeEquityBalance - fromHome,
+    taken: fromLiquid + netFromRetirement + fromHome,
+    taxPaid,
+  };
+}
 
 /**
  * Work out what the accumulated pot actually supports.
@@ -163,7 +220,12 @@ export function runDrawdown(
     1 + drawdown.inflationAnnual,
     yearsToRetirement,
   );
-  const sustainableAnnualIncome = portfolio * drawdown.withdrawalRate;
+  // Only the tax-deferred share of the pot takes the haircut -- liquid
+  // savings were already taxed on the way in.
+  const taxableShare = portfolio > 0 ? retirementAccounts / portfolio : 0;
+  const blendedTaxRate = drawdown.taxRateOnWithdrawal * taxableShare;
+  const sustainableAnnualIncome =
+    portfolio * drawdown.withdrawalRate * (1 - blendedTaxRate);
   const sustainableAnnualIncomeToday =
     sustainableAnnualIncome / inflationFactor;
 
@@ -176,7 +238,12 @@ export function runDrawdown(
   const monthlyReturn = monthlyGeometric(drawdown.returnAnnual);
   const monthlyInflation = monthlyGeometric(drawdown.inflationAnnual);
 
-  let balance = portfolio;
+  // Three pools, drawn in order: liquid savings (already taxed) first, then
+  // retirement accounts (grossed up for tax), then home equity last (only
+  // nonzero when `includeHomeEquity` is on).
+  let liquidBalance = liquid;
+  let retirementBalanceSim = retirementAccounts;
+  let homeEquityBalance = drawdown.includeHomeEquity ? homeEquity : 0;
   let monthlySpend = desiredAnnualSpendAtRetirement / 12;
   let depletionAge: number | null = null;
   const track: DrawdownYear[] = [];
@@ -186,19 +253,37 @@ export function runDrawdown(
     Math.round((drawdown.planToAge - drawdown.retirementAge) * 12),
   );
   let yearWithdrawal = 0;
+  let yearTaxPaid = 0;
 
   for (let index = 1; index <= totalMonths; index++) {
     // Growth first, then this month's spending comes out.
-    balance *= 1 + monthlyReturn;
-    const taken = Math.min(
-      balance > 0 ? monthlySpend : 0,
-      Math.max(balance, 0),
-    );
-    balance -= monthlySpend;
-    yearWithdrawal += taken;
+    liquidBalance *= 1 + monthlyReturn;
+    retirementBalanceSim *= 1 + monthlyReturn;
+    homeEquityBalance *= 1 + monthlyReturn;
 
-    if (depletionAge === null && balance <= 0) {
-      balance = 0;
+    const totalBeforeSpend =
+      liquidBalance + retirementBalanceSim + homeEquityBalance;
+    const need = totalBeforeSpend > 0 ? monthlySpend : 0;
+    const step = withdrawMonth(
+      liquidBalance,
+      retirementBalanceSim,
+      homeEquityBalance,
+      need,
+      drawdown.taxRateOnWithdrawal,
+    );
+    liquidBalance = step.liquidBalance;
+    retirementBalanceSim = step.retirementBalance;
+    homeEquityBalance = step.homeEquityBalance;
+    yearWithdrawal += step.taken;
+    yearTaxPaid += step.taxPaid;
+
+    if (
+      depletionAge === null &&
+      liquidBalance + retirementBalanceSim + homeEquityBalance <= 0
+    ) {
+      liquidBalance = 0;
+      retirementBalanceSim = 0;
+      homeEquityBalance = 0;
       depletionAge = drawdown.retirementAge + index / 12;
     }
 
@@ -207,17 +292,24 @@ export function runDrawdown(
     if (index % 12 === 0) {
       track.push({
         age: drawdown.retirementAge + index / 12,
-        balance: Math.max(balance, 0),
+        balance: Math.max(
+          liquidBalance + retirementBalanceSim + homeEquityBalance,
+          0,
+        ),
         withdrawal: yearWithdrawal,
+        taxPaid: yearTaxPaid,
       });
       yearWithdrawal = 0;
+      yearTaxPaid = 0;
     }
   }
 
+  const balance = liquidBalance + retirementBalanceSim + homeEquityBalance;
   const balanceAtPlanEnd = Math.max(balance, 0);
   const yearsOfIncome =
     (depletionAge === null ? drawdown.planToAge : depletionAge) -
     drawdown.retirementAge;
+  const lifetimeTaxPaid = track.reduce((sum, year) => sum + year.taxPaid, 0);
 
   return {
     retirementMonth,
@@ -234,6 +326,7 @@ export function runDrawdown(
     balanceAtPlanEnd,
     yearsOfIncome,
     track,
+    lifetimeTaxPaid,
   };
 }
 

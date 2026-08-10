@@ -53,7 +53,7 @@ export default function RetirementSection() {
         </Field>
         <Field
           label="HSA contribution / month"
-          hint={`What you put into the HSA each month, on top of any employer seed. Family limit for 2026 is ${money(HSA_LIMITS.family2026)}/yr; your own room after the employer seed is ${money(employeeHsaRoom())}/yr.`}
+          hint={`What you put into the HSA each month, on top of any employer seed. ${a.retirement.hsaCoverageTier === "selfOnly" ? "Self-only" : "Family"} limit for 2026 is ${money(a.retirement.hsaCoverageTier === "selfOnly" ? HSA_LIMITS.selfOnly2026 : HSA_LIMITS.family2026)}/yr; your own room after the employer seed is ${money(employeeHsaRoom(a.retirement.hsaCoverageTier))}/yr.`}
         >
           <MoneyInput
             value={a.retirement.hsaMonthly}

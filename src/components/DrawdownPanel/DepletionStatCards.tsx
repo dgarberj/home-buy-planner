@@ -88,6 +88,14 @@ export default function DepletionStatCards({
                     : `${money(result.annualShortfall)} a year short of the target.`}
                 </span>
               </div>
+              {result.lifetimeTaxPaid > 0 && (
+                <div className="border-t border-slate-100 pt-3 text-xs text-slate-500">
+                  <strong className="text-slate-700">
+                    {money(result.lifetimeTaxPaid)}
+                  </strong>{" "}
+                  goes to tax on retirement-account withdrawals over the plan.
+                </div>
+              )}
             </div>
           </div>
         );

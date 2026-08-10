@@ -43,9 +43,11 @@ export default function DrawdownPanel() {
           />
 
           <Callout tone="warn">
-            <strong>What this leaves out.</strong> No taxes on withdrawal (which
-            differ by account type), no Social Security or pension income, no
-            required minimum distributions, no healthcare shocks — and, most
+            <strong>What this leaves out.</strong> Tax on withdrawal is a
+            single flat effective rate on retirement-account money only — no
+            brackets, filing status, state tax, or capital-gains treatment.
+            There is also no Social Security or pension income, no required
+            minimum distributions, no healthcare shocks — and, most
             importantly, a single smooth return every year. Real markets deliver
             their bad years in clumps, and a crash early in retirement does far
             more damage than the same crash later. Treat the age the money runs

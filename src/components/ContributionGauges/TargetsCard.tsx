@@ -21,12 +21,18 @@ import {
   MoneyInput,
   SectionTitle,
   Select,
+  Toggle,
 } from "../ui";
 import Gauge from "./Gauge";
 
 const FILING_STATUS_LABEL: Record<FilingStatus, string> = {
   single: "Single",
   marriedJoint: "Married filing jointly",
+};
+
+const HSA_COVERAGE_LABEL: Record<"selfOnly" | "family", string> = {
+  selfOnly: "Self-only",
+  family: "Family",
 };
 
 function toneForLeftAfterTargets(
@@ -44,21 +50,23 @@ export default function TargetsCard() {
   const settings = useStore((s) => s.settings);
 
   const gross = settings.grossAnnualSalary;
+  const hasHsaPlan = assumptions.retirement.hasHsaPlan;
+  const hsaCoverageTier = assumptions.retirement.hsaCoverageTier;
 
   // ---- Your money ------------------------------------------------------
   const target401k = gross * RETIREMENT_TARGETS.employeeSharePct;
-  const targetHsa = employeeHsaRoom(); // family limit LESS the employer seed
+  const targetHsa = hasHsaPlan ? employeeHsaRoom(hsaCoverageTier) : 0;
   const targetTotal = target401k + targetHsa;
 
   // ---- Employer money --------------------------------------------------
   const targetMatch = gross * RETIREMENT_TARGETS.employerMatchPct;
   const targetEmployerLump =
     gross * RETIREMENT_TARGETS.employerAnnual401kPct +
-    RETIREMENT_TARGETS.employerAnnualHsaSeed;
+    (hasHsaPlan ? RETIREMENT_TARGETS.employerAnnualHsaSeed : 0);
   const targetEmployerTotal = targetMatch + targetEmployerLump;
 
   const actual401k = assumptions.retirement.k401Monthly * 12;
-  const actualHsa = assumptions.retirement.hsaMonthly * 12;
+  const actualHsa = hasHsaPlan ? assumptions.retirement.hsaMonthly * 12 : 0;
   const actualMatch =
     assumptions.retirement.employerMatchMonthly * 12 +
     assumptions.retirement.employerAnnualLump;
@@ -102,22 +110,32 @@ export default function TargetsCard() {
     <>
       <Card
         title="Yearly contribution targets"
-        subtitle={`A ${pct(RETIREMENT_TARGETS.employeeSharePct, 0)} 401(k) contribution plus a fully funded family HSA.`}
+        subtitle={
+          hasHsaPlan
+            ? `A ${pct(RETIREMENT_TARGETS.employeeSharePct, 0)} 401(k) contribution plus a fully funded ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()} HSA.`
+            : `A ${pct(RETIREMENT_TARGETS.employeeSharePct, 0)} 401(k) contribution. No HSA plan.`
+        }
       >
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-6">
             <Gauge
               label="Your 401(k) contribution"
-              hint={`What comes out of your own pay for the 401(k). The model deducts this from take-home before anything reaches savings. Legal ceiling for 2026: ${money(K401_LIMITS.employeeDeferral2026)}/yr. Pre-tax, so at your ${pct(yourMarginalRate, 0)} federal marginal rate (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}) it saves about ${money(savings401k)}/yr in federal tax.`}
+              hint={`What comes out of your own pay for the 401(k). The model deducts this from take-home before anything reaches savings. Legal ceiling for 2026: ${money(K401_LIMITS.employeeDeferral2026)}/yr — fixed by law regardless of filing status. Pre-tax, so at your ${pct(yourMarginalRate, 0)} federal marginal rate (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}) it saves about ${money(savings401k)}/yr in federal tax.`}
               actual={actual401k}
               target={target401k}
+              redBelow={0.3}
+              greenAbove={0.7}
             />
-            <Gauge
-              label="Your HSA contribution"
-              hint={`What comes out of your own pay for the HSA, on top of any employer seed. Legal ceiling for 2026: ${money(HSA_LIMITS.family2026)}/yr family, counting employer money. Also pre-tax, saving about ${money(savingsHsa)}/yr in federal tax at your ${pct(yourMarginalRate, 0)} marginal rate.`}
-              actual={actualHsa}
-              target={targetHsa}
-            />
+            {hasHsaPlan && (
+              <Gauge
+                label="Your HSA contribution"
+                hint={`What comes out of your own pay for the HSA, on top of any employer seed. Legal ceiling for 2026: ${money(HSA_LIMITS[hsaCoverageTier === "selfOnly" ? "selfOnly2026" : "family2026"])}/yr ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()}, counting employer money — set by HDHP coverage tier, not filing status. Also pre-tax, saving about ${money(savingsHsa)}/yr in federal tax at your ${pct(yourMarginalRate, 0)} marginal rate.`}
+                actual={actualHsa}
+                target={targetHsa}
+                redBelow={0.5}
+                greenAbove={0.9}
+              />
+            )}
             <Gauge
               label="Employer money (match + January lump)"
               hint="Free money, and it arrives in two shapes: a monthly match on your salary, and a lump every January. Never leave any of it unclaimed — nothing else in this plan returns as much."
@@ -141,17 +159,19 @@ export default function TargetsCard() {
                   {money(target401k)}
                 </dd>
               </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-slate-600">
-                  HSA room left to you
-                  <InfoTip
-                    text={`The ${money(HSA_LIMITS.family2026)} family limit counts employer and employee money together, so your employer's ${money(RETIREMENT_TARGETS.employerAnnualHsaSeed)} seed reduces your own room rather than adding to it. Putting in the full limit yourself on top of the seed would be an excess contribution, and penalised.`}
-                  />
-                </dt>
-                <dd className="whitespace-nowrap font-medium tabular-nums">
-                  {money(targetHsa)}
-                </dd>
-              </div>
+              {hasHsaPlan && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-600">
+                    HSA room left to you
+                    <InfoTip
+                      text={`The ${money(HSA_LIMITS[hsaCoverageTier === "selfOnly" ? "selfOnly2026" : "family2026"])} ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()} limit counts employer and employee money together, so your employer's ${money(RETIREMENT_TARGETS.employerAnnualHsaSeed)} seed reduces your own room rather than adding to it. Putting in the full limit yourself on top of the seed would be an excess contribution, and penalised.`}
+                    />
+                  </dt>
+                  <dd className="whitespace-nowrap font-medium tabular-nums">
+                    {money(targetHsa)}
+                  </dd>
+                </div>
+              )}
               <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
                 <dt className="font-medium text-slate-900">
                   Your total a year
@@ -182,8 +202,9 @@ export default function TargetsCard() {
               <div className="flex justify-between gap-4">
                 <dt className="text-slate-600">
                   January lump —{" "}
-                  {pct(RETIREMENT_TARGETS.employerAnnual401kPct, 1)} 401(k) +{" "}
-                  {money(RETIREMENT_TARGETS.employerAnnualHsaSeed)} HSA
+                  {pct(RETIREMENT_TARGETS.employerAnnual401kPct, 1)} 401(k)
+                  {hasHsaPlan &&
+                    ` + ${money(RETIREMENT_TARGETS.employerAnnualHsaSeed)} HSA`}
                 </dt>
                 <dd className="whitespace-nowrap font-medium tabular-nums">
                   {money(targetEmployerLump)}
@@ -213,8 +234,10 @@ export default function TargetsCard() {
             </dl>
             <p className="mt-3 border-t border-slate-200 pt-3 text-xs leading-relaxed text-slate-500">
               Well inside the legal ceilings:{" "}
-              {money(K401_LIMITS.employeeDeferral2026)} for a 401(k) and{" "}
-              {money(HSA_LIMITS.family2026)} for a family HSA in 2026.
+              {money(K401_LIMITS.employeeDeferral2026)} for a 401(k)
+              {hasHsaPlan &&
+                ` and ${money(HSA_LIMITS[hsaCoverageTier === "selfOnly" ? "selfOnly2026" : "family2026"])} for a ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()} HSA`}{" "}
+              in 2026.
             </p>
           </div>
         </div>
@@ -260,17 +283,44 @@ export default function TargetsCard() {
               }
             />
           </Field>
-          <Field
-            label="HSA contribution / month"
-            hint="Comes out pre-tax too, on top of any employer seed, and lands in the retirement balance in this model."
-          >
-            <MoneyInput
-              value={assumptions.retirement.hsaMonthly}
-              onChange={(v) =>
-                setAssumptions({ retirement: { hsaMonthly: v } })
-              }
-            />
-          </Field>
+          {hasHsaPlan && (
+            <>
+              <Field
+                label="HSA coverage"
+                hint="Self-only vs. family HDHP coverage sets the IRS contribution ceiling above -- not filing status. A married couple can carry self-only coverage, and vice versa."
+              >
+                <Select
+                  value={hsaCoverageTier}
+                  onChange={(v) =>
+                    setAssumptions({
+                      retirement: {
+                        hsaCoverageTier: v as "selfOnly" | "family",
+                      },
+                    })
+                  }
+                >
+                  {(
+                    Object.keys(HSA_COVERAGE_LABEL) as ("selfOnly" | "family")[]
+                  ).map((tier) => (
+                    <option key={tier} value={tier}>
+                      {HSA_COVERAGE_LABEL[tier]}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field
+                label="HSA contribution / month"
+                hint="Comes out pre-tax too, on top of any employer seed, and lands in the retirement balance in this model."
+              >
+                <MoneyInput
+                  value={assumptions.retirement.hsaMonthly}
+                  onChange={(v) =>
+                    setAssumptions({ retirement: { hsaMonthly: v } })
+                  }
+                />
+              </Field>
+            </>
+          )}
           <Field
             label="Employer match / month"
             hint="The regular monthly match only. The January lump is separate."
@@ -295,11 +345,22 @@ export default function TargetsCard() {
             />
           </Field>
         </div>
+        <div className="mt-4 border-t border-slate-100 pt-4">
+          <Toggle
+            checked={hasHsaPlan}
+            onChange={(v) =>
+              setAssumptions({ retirement: { hasHsaPlan: v } })
+            }
+            label="HSA plan"
+            hint="Off if your employer doesn't offer an HSA-eligible health plan. Zeroes the HSA target, gauge, and contribution everywhere in this model."
+          />
+        </div>
       </Card>
 
       <Callout tone={toneForLeftAfterTargets(leftAfterTargets)}>
         <strong>The trade-off, stated plainly.</strong> Before any contributions
-        there is {money(surplusBefore)} a month spare. Funding both targets
+        there is {money(surplusBefore)} a month spare.{" "}
+        {hasHsaPlan ? "Funding both targets" : "Funding the 401(k) target"}{" "}
         takes {money(monthlyTarget)} of it, leaving{" "}
         <strong>{money(leftAfterTargets)} a month</strong> towards a deposit.
         {leftAfterTargets < 500 && (
@@ -307,10 +368,12 @@ export default function TargetsCard() {
             {" "}
             At that rate the house is a long way off. The order that usually
             makes sense: capture the full employer match first, because nothing
-            else returns as much; then fund the HSA to whatever the family will
-            actually spend on healthcare that year; then put the rest towards
-            the deposit. The HSA is excellent money, but it cannot be spent on a
-            down payment.
+            else returns as much;{" "}
+            {hasHsaPlan &&
+              "then fund the HSA to whatever the family will actually spend on healthcare that year; "}
+            then put the rest towards the deposit.
+            {hasHsaPlan &&
+              " The HSA is excellent money, but it cannot be spent on a down payment."}
           </>
         )}
       </Callout>

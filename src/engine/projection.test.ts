@@ -55,6 +55,7 @@ const FLAT: Assumptions = {
     inflationAnnual: 0,
     includeHomeEquity: false,
     planToAge: 95,
+    taxRateOnWithdrawal: 0,
   },
   income: {
     monthlyTakeHome: 10_000,
@@ -80,6 +81,8 @@ const FLAT: Assumptions = {
     hsaPayMedical: true,
     hsaTakeReimbursement: true,
     pauseHsaMax: false,
+    hasHsaPlan: true,
+    hsaCoverageTier: "family",
     hsaMedicalMonthly: 0,
     hsaReimbursement: 0,
     hsaReimbursementMonth: 1,

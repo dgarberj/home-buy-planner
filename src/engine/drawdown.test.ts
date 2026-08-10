@@ -44,6 +44,7 @@ const FLAT: Assumptions = {
     inflationAnnual: 0,
     includeHomeEquity: false,
     planToAge: 95,
+    taxRateOnWithdrawal: 0,
   },
   income: {
     monthlyTakeHome: 10_000,
@@ -69,6 +70,8 @@ const FLAT: Assumptions = {
     hsaPayMedical: true,
     hsaTakeReimbursement: true,
     pauseHsaMax: false,
+    hasHsaPlan: true,
+    hsaCoverageTier: "family",
     hsaMedicalMonthly: 0,
     hsaReimbursement: 0,
     hsaReimbursementMonth: 1,
@@ -329,6 +332,81 @@ describe("runDrawdown -- the simulation view", () => {
       r.sustainableAnnualIncome,
       6,
     );
+  });
+});
+
+describe("runDrawdown -- tax on withdrawals", () => {
+  it("reduces sustainable income by the tax-deferred share of the pot", () => {
+    const taxed: Assumptions = {
+      ...FLAT,
+      drawdown: { ...FLAT.drawdown, taxRateOnWithdrawal: 0.2 },
+    };
+    const untaxed = runDrawdown(project(), FLAT);
+    const r = runDrawdown(project(), taxed);
+    const taxableShare =
+      r.retirementAccountsAtRetirement / r.portfolioAtRetirement;
+    expect(r.sustainableAnnualIncome).toBeCloseTo(
+      untaxed.sustainableAnnualIncome * (1 - 0.2 * taxableShare),
+      4,
+    );
+  });
+
+  it("leaves a 100%-liquid pot unaffected by a nonzero tax rate", () => {
+    const allLiquid: Assumptions = {
+      ...FLAT,
+      retirement: {
+        ...FLAT.retirement,
+        currentBalance: 0,
+        k401Monthly: 0,
+        hsaMonthly: 0,
+        employerMatchMonthly: 0,
+        employerAnnualLump: 0,
+      },
+    };
+    const noTax = runDrawdown(project(allLiquid), allLiquid);
+    const heavyTax = runDrawdown(project(allLiquid), {
+      ...allLiquid,
+      drawdown: { ...allLiquid.drawdown, taxRateOnWithdrawal: 0.5 },
+    });
+    expect(heavyTax.retirementAccountsAtRetirement).toBe(0);
+    expect(heavyTax.sustainableAnnualIncome).toBeCloseTo(
+      noTax.sustainableAnnualIncome,
+      6,
+    );
+    expect(heavyTax.balanceAtPlanEnd).toBeCloseTo(noTax.balanceAtPlanEnd, 4);
+    expect(heavyTax.lifetimeTaxPaid).toBe(0);
+  });
+
+  it("grosses up retirement withdrawals, draining the pot faster once liquid savings run out", () => {
+    // Liquid savings (752,000) alone cover ~17.9 years at 42,000/yr, so both
+    // scenarios tap the taxed retirement account for the remaining ~12 years.
+    // Net demand from retirement over that stretch (~508k) fits inside the
+    // 551,500 balance untaxed, but grossed up by tax it does not.
+    const modest: Assumptions = {
+      ...FLAT,
+      drawdown: { ...FLAT.drawdown, desiredMonthlySpendToday: 3_500 },
+    };
+    const noTax = runDrawdown(project(), modest);
+    const taxed = runDrawdown(project(), {
+      ...modest,
+      drawdown: { ...modest.drawdown, taxRateOnWithdrawal: 0.2 },
+    });
+    expect(noTax.depletionAge).toBeNull();
+    expect(noTax.balanceAtPlanEnd).toBeGreaterThan(0);
+    expect(taxed.balanceAtPlanEnd).toBeLessThan(noTax.balanceAtPlanEnd);
+    expect(taxed.lifetimeTaxPaid).toBeGreaterThan(0);
+  });
+
+  it("reports zero lifetime tax at a zero rate and a positive figure once retirement funds are tapped", () => {
+    const noTax = runDrawdown(project(), FLAT);
+    expect(noTax.lifetimeTaxPaid).toBe(0);
+
+    const taxed: Assumptions = {
+      ...FLAT,
+      drawdown: { ...FLAT.drawdown, taxRateOnWithdrawal: 0.2 },
+    };
+    const r = runDrawdown(project(), taxed);
+    expect(r.lifetimeTaxPaid).toBeGreaterThan(0);
   });
 });
 

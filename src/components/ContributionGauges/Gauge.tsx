@@ -1,10 +1,14 @@
 import { money } from "../../lib/format";
 import { InfoTip } from "../ui";
 
-function colourForGaugeShare(isMet: boolean, share: number): string {
-  if (isMet) return "bg-emerald-500";
-  if (share > 0.6) return "bg-amber-500";
-  return "bg-red-500";
+function colourForShare(
+  share: number,
+  redBelow: number,
+  greenAbove: number,
+): string {
+  if (share >= greenAbove) return "bg-emerald-500";
+  if (share < redBelow) return "bg-red-500";
+  return "bg-amber-500";
 }
 
 export default function Gauge({
@@ -12,15 +16,26 @@ export default function Gauge({
   hint,
   actual,
   target,
+  redBelow = 0.6,
+  greenAbove = 1,
 }: {
   label: string;
   hint: string;
   actual: number;
   target: number;
+  /**
+  Share of target below which the bar shows red. Defaults reproduce the
+  gauge's old behaviour (amber past 60%, green only once met).
+  */
+  redBelow?: number;
+  /**
+  Share of target at or above which the bar shows green.
+  */
+  greenAbove?: number;
 }) {
   const share = target > 0 ? actual / target : 0;
   const isMet = actual >= target - 1;
-  const barColour = colourForGaugeShare(isMet, share);
+  const barColour = colourForShare(share, redBelow, greenAbove);
 
   return (
     <div>

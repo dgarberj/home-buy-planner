@@ -59,8 +59,12 @@ export default function BudgetPanel() {
       }
     >
       <div>
-        <Button size="sm" variant="ghost" onClick={() => setIsDrawerOpen(true)}>
-          Edit line items
+        <Button
+          size="md"
+          variant="primary"
+          onClick={() => setIsDrawerOpen(true)}
+        >
+          Start here — edit your line items →
         </Button>
       </div>
       <BudgetDrawer

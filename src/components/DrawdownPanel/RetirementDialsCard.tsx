@@ -47,6 +47,18 @@ export default function RetirementDialsCard() {
           />
         </Field>
         <Field
+          label="Tax rate on retirement withdrawals"
+          hint="Applied only to money drawn from 401(k)/IRA balances — not your taxable savings and investments, which are already after-tax. A flat effective rate, not your marginal bracket."
+        >
+          <PercentInput
+            value={d.taxRateOnWithdrawal}
+            step={0.25}
+            onChange={(v) =>
+              setAssumptions({ drawdown: { taxRateOnWithdrawal: v } })
+            }
+          />
+        </Field>
+        <Field
           label="Return once retired"
           hint="Usually lower than while working, since portfolios get more conservative when you are living off them."
         >

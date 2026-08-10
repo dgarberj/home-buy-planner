@@ -63,8 +63,17 @@ export const RETIREMENT_TARGETS = {
 };
 
 /**
-Your own HSA room once the employer seed is counted against the limit.
-*/
-export function employeeHsaRoom(): number {
-  return HSA_LIMITS.family2026 - RETIREMENT_TARGETS.employerAnnualHsaSeed;
+ * Your own HSA room once the employer seed is counted against the limit.
+ *
+ * The limit depends on HDHP coverage tier (self-only vs. family), not filing
+ * status -- a married couple can carry self-only coverage and a single
+ * person can carry family coverage. `coverage` defaults to `"family"` to
+ * match this household's plan.
+ */
+export function employeeHsaRoom(
+  coverage: "selfOnly" | "family" = "family",
+): number {
+  const limit =
+    coverage === "selfOnly" ? HSA_LIMITS.selfOnly2026 : HSA_LIMITS.family2026;
+  return Math.max(0, limit - RETIREMENT_TARGETS.employerAnnualHsaSeed);
 }

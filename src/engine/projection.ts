@@ -408,9 +408,10 @@ function computeRetirementContribution(
     : 1;
   // Diverting the HSA to the deposit zeroes it out; the 401(k) keeps going.
   const employeeK401 = retirement.k401Monthly * contributionScale;
-  const employeeHsa = retirement.pauseHsaMax
-    ? 0
-    : retirement.hsaMonthly * contributionScale;
+  const employeeHsa =
+    retirement.pauseHsaMax || !retirement.hasHsaPlan
+      ? 0
+      : retirement.hsaMonthly * contributionScale;
   const employeeContribution = isContributionsPaused
     ? 0
     : employeeK401 + employeeHsa;

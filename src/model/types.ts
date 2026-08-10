@@ -79,6 +79,19 @@ export interface RetirementAssumptions {
    */
   hsaMonthly: number;
   /**
+   * Whether this household has an HSA at all -- some employer plans don't
+   * offer one. Off zeroes the employee HSA contribution in the projection
+   * (mirrors `pauseHsaMax`) and hides the HSA target/gauge in the UI.
+   */
+  hasHsaPlan: boolean;
+  /**
+   * HDHP coverage tier, which sets the IRS contribution ceiling
+   * (`HSA_LIMITS`, `employeeHsaRoom()`). Depends on the health plan you
+   * carry, not on `Settings.filingStatus` -- a married couple can carry
+   * self-only coverage and vice versa.
+   */
+  hsaCoverageTier: "selfOnly" | "family";
+  /**
    * What your employer puts in each month, typically a percentage-of-salary
    * match. Free money: it grows the balance without touching take-home.
    */
@@ -489,6 +502,14 @@ export interface DrawdownAssumptions {
   Age to simulate to. Running out before this is the failure case.
   */
   planToAge: number;
+  /**
+   * Flat effective tax rate applied to withdrawals from tax-deferred
+   * retirement accounts (401(k)/IRA). Withdrawals from the taxable liquid
+   * pool (cash + brokerage) are not taxed here -- that money was already
+   * taxed on the way in. A single flat rate: it does not model tax
+   * brackets, filing status, state tax, or capital-gains treatment.
+   */
+  taxRateOnWithdrawal: number;
 }
 
 export interface Assumptions {
