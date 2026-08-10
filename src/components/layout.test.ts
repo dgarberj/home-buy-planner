@@ -9,7 +9,7 @@ import { findUnanchoredAbsolutes } from "../lib/layoutGuard";
  * node types and runs in the same environment as everything else.
  * See `layoutGuard.ts` for why this check exists at all.
  */
-const sources = import.meta.glob("./*.tsx", {
+const sources = import.meta.glob("./**/*.tsx", {
   eager: true,
   query: "?raw",
   import: "default",
@@ -34,7 +34,7 @@ describe("every absolutely positioned element is anchored horizontally", () => {
 });
 
 describe("the toggle knob stays inside its track", () => {
-  const ui = sources["./ui.tsx"] ?? "";
+  const ui = sources["./ui/feedback.tsx"] ?? "";
 
   it("anchors the knob to the left edge rather than the static position", () => {
     expect(ui).toContain("absolute left-0.5 top-0.5");
