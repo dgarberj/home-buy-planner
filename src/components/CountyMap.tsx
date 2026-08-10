@@ -3,6 +3,7 @@ import {
   COUNTY_INFO,
   clrFactorFor,
   effectiveRate,
+  estimatedMonthlyOwnershipCost,
   estimatedMonthlyTax,
   municipalitiesIn,
   rankedByTax,
@@ -14,7 +15,6 @@ import {
   ratingSummary,
   PA_AVERAGE,
 } from "../data/schools";
-import { monthlyNominal, monthlyPayment } from "../engine/finance";
 import { money, moneyShort, pct } from "../lib/format";
 import { useStore } from "../store/useStore";
 import { Button, InfoTip, Modal } from "./ui";
@@ -244,26 +244,8 @@ export default function CountyMap({
   /**
   Full monthly cost of owning here, for the modal.
   */
-  const costOf = (m: Municipality, atPrice: number) => {
-    const home = assumptions.home;
-    const loan = atPrice * (1 - home.downPaymentPct);
-    const pi = monthlyPayment(
-      loan,
-      monthlyNominal(home.mortgageRateAnnual),
-      home.mortgageTermYears * 12,
-    );
-    const tax = estimatedMonthlyTax(atPrice, m);
-    const pmi = home.downPaymentPct < 0.2 ? (loan * home.pmiAnnualPct) / 12 : 0;
-    const upkeep = (atPrice * home.maintenanceAnnualPct) / 12;
-    return {
-      pi,
-      tax,
-      pmi,
-      upkeep,
-      insurance: 150,
-      total: pi + tax + pmi + upkeep + 150,
-    };
-  };
+  const costOf = (m: Municipality, atPrice: number) =>
+    estimatedMonthlyOwnershipCost(m, atPrice, assumptions.home);
 
   return (
     <div className="relative">

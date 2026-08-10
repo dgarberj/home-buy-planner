@@ -7,9 +7,11 @@ import type {
 } from "../model/types";
 import {
   compound,
+  computeAssistanceAmount,
   monthlyGeometric,
   monthlyNominal,
   monthlyPayment,
+  isPmiRequired,
   remainingBalance,
 } from "./finance";
 
@@ -166,19 +168,13 @@ export function cashRequiredToBuy(assumptions: Assumptions, m: number): number {
   const price = homePriceAtMonth(assumptions, m);
   const loanShare = 1 - downPaymentPct;
   // A big enough deposit avoids mortgage insurance entirely.
-  const isNeedsMortgageInsurance = loanShare > pmiRemovedAtLtv;
-  const upfront = isNeedsMortgageInsurance ? loanShare * pmiUpfrontPct : 0;
+  const upfront = isPmiRequired(loanShare, pmiRemovedAtLtv)
+    ? loanShare * pmiUpfrontPct
+    : 0;
   const gross = price * (downPaymentPct + closingCostPct + upfront);
 
   // Assistance is money you do not have to bring on the day.
-  const { assistanceRepayment, assistancePctOfPrice, assistanceMaxAmount } =
-    assumptions.home;
-  const assistanceRaw =
-    assistanceRepayment === "none" ? 0 : price * assistancePctOfPrice;
-  const assistance =
-    assistanceMaxAmount === null
-      ? assistanceRaw
-      : Math.min(assistanceRaw, assistanceMaxAmount);
+  const assistance = computeAssistanceAmount(price, assumptions.home);
 
   return Math.max(0, gross - assistance);
 }
@@ -350,7 +346,7 @@ function computeHousing(
   // PMI falls away once enough of the house is actually yours. Note this
   // happens sooner when the home appreciates, not just as you pay down.
   const ltv = homeValue > 0 ? mortgageBalance / homeValue : 0;
-  const pmiPayment = ltv > home.pmiRemovedAtLtv ? pmiFullMonthly : 0;
+  const pmiPayment = isPmiRequired(ltv, home.pmiRemovedAtLtv) ? pmiFullMonthly : 0;
 
   return {
     housingPayment:
@@ -533,21 +529,15 @@ export function runProjection(
   const pmiFullMonthly = (loanAmount * home.pmiAnnualPct) / 12;
   // A small down payment can also carry a one-off premium at closing.
   const isNeedsMortgageInsurance =
-    purchasePrice > 0 && loanAmount / purchasePrice > home.pmiRemovedAtLtv;
+    purchasePrice > 0 &&
+    isPmiRequired(loanAmount / purchasePrice, home.pmiRemovedAtLtv);
   const upfrontPmi = isNeedsMortgageInsurance
     ? loanAmount * home.pmiUpfrontPct
     : 0;
 
   // Down-payment assistance reduces the cash you need on the day, but until it
   // is forgiven it is a lien -- so it does NOT add to net worth at closing.
-  const assistanceRaw =
-    !home.assistanceEnabled || home.assistanceRepayment === "none"
-      ? 0
-      : purchasePrice * home.assistancePctOfPrice;
-  const assistanceAmount =
-    home.assistanceMaxAmount === null
-      ? assistanceRaw
-      : Math.min(assistanceRaw, home.assistanceMaxAmount);
+  const assistanceAmount = computeAssistanceAmount(purchasePrice, home);
   const assistanceTermMonths = Math.max(
     1,
     Math.round(home.assistanceTermYears * 12),

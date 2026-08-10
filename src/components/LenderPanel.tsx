@@ -249,13 +249,18 @@ export default function LenderPanel() {
         </div>
 
         <Callout tone={TONE[dti.verdict]}>
-          <strong>
-            Support payments alone uses {pct(dti.supportShare, 1)} of your ratio
-          </strong>{" "}
-          before a mortgage is even considered. That leaves{" "}
-          {money(dti.headroomAt.conservative)} of housing payment at the
-          comfortable 36% limit, {money(dti.headroomAt.manual)} at 45%, and{" "}
-          {money(dti.headroomAt.automated)} at the 50% automated ceiling.
+          {dti.supportShare > 0 && (
+            <>
+              <strong>
+                Support payments alone use {pct(dti.supportShare, 1)} of your
+                ratio
+              </strong>{" "}
+              before a mortgage is even considered.{" "}
+            </>
+          )}
+          That leaves {money(dti.headroomAt.conservative)} of housing payment
+          at the comfortable 36% limit, {money(dti.headroomAt.manual)} at 45%,
+          and {money(dti.headroomAt.automated)} at the 50% automated ceiling.
         </Callout>
       </Card>
 

@@ -82,3 +82,36 @@ export function remainingBalance(
   const balance = principal * growth - payment * ((growth - 1) / monthlyRate);
   return Math.max(0, balance);
 }
+
+/**
+ * Whether a loan-to-value ratio is high enough to require mortgage insurance.
+ * `ratio` can be the loan share at issuance (upfront premium) or the current
+ * balance-to-value ratio during amortisation (ongoing monthly premium) -- both
+ * use the same threshold comparison.
+ */
+export function isPmiRequired(ratio: number, pmiRemovedAtLtv: number): boolean {
+  return ratio > pmiRemovedAtLtv;
+}
+
+/**
+ * Down-payment assistance actually available at closing: zero unless
+ * assistance is enabled and repaid in some form, otherwise a percentage of
+ * price capped at the program's max amount (if any).
+ */
+export function computeAssistanceAmount(
+  price: number,
+  home: {
+    assistanceEnabled: boolean;
+    assistanceRepayment: "forgiven" | "deferred" | "amortised" | "none";
+    assistancePctOfPrice: number;
+    assistanceMaxAmount: number | null;
+  },
+): number {
+  const raw =
+    !home.assistanceEnabled || home.assistanceRepayment === "none"
+      ? 0
+      : price * home.assistancePctOfPrice;
+  return home.assistanceMaxAmount === null
+    ? raw
+    : Math.min(raw, home.assistanceMaxAmount);
+}

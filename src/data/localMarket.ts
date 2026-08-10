@@ -1,3 +1,6 @@
+import type { HomePurchaseAssumptions } from "../model/types";
+import { monthlyNominal, monthlyPayment, isPmiRequired } from "../engine/finance";
+
 /**
  * ============================================================================
  *  Delaware County, PA -- real market and tax data.
@@ -59,11 +62,6 @@ export const CLR_FACTORS: Record<string, number> = {
 Kept for callers that only ever look at Delaware County.
 */
 export const DELCO_CLR_FACTOR = CLR_FACTORS.delaware!;
-
-/**
-Assessed values run at roughly this share of today's market value.
-*/
-export const DELCO_ASSESSMENT_RATIO = 1 / DELCO_CLR_FACTOR;
 
 export interface CountyInfo {
   key: string;
@@ -400,6 +398,47 @@ Effective tax rate on market value for a municipality, as a decimal.
 */
 export function effectiveRate(m: Municipality): number {
   return m.total / 1000 / clrFactorFor(m);
+}
+
+/**
+ * All-in monthly cost of owning a house at `price` in municipality `m`:
+ * principal & interest, this town's property tax, PMI (if the down payment
+ * is thin enough), maintenance, and a flat insurance estimate.
+ */
+export function estimatedMonthlyOwnershipCost(
+  m: Municipality,
+  price: number,
+  home: Pick<
+    HomePurchaseAssumptions,
+    | "downPaymentPct"
+    | "mortgageRateAnnual"
+    | "mortgageTermYears"
+    | "pmiAnnualPct"
+    | "pmiRemovedAtLtv"
+    | "maintenanceAnnualPct"
+  >,
+): {
+  pi: number;
+  tax: number;
+  pmi: number;
+  upkeep: number;
+  insurance: number;
+  total: number;
+} {
+  const insurance = 150; // rough homeowner's premium; excluded from the tax figures
+  const loanShare = 1 - home.downPaymentPct;
+  const loan = price * loanShare;
+  const pi = monthlyPayment(
+    loan,
+    monthlyNominal(home.mortgageRateAnnual),
+    home.mortgageTermYears * 12,
+  );
+  const tax = estimatedMonthlyTax(price, m);
+  const pmi = isPmiRequired(loanShare, home.pmiRemovedAtLtv)
+    ? (loan * home.pmiAnnualPct) / 12
+    : 0;
+  const upkeep = (price * home.maintenanceAnnualPct) / 12;
+  return { pi, tax, pmi, upkeep, insurance, total: pi + tax + pmi + upkeep + insurance };
 }
 
 /**

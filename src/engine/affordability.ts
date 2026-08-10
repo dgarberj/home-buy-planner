@@ -1,5 +1,10 @@
 import type { Assumptions } from "../model/types";
-import { monthlyNominal, monthlyPayment } from "./finance";
+import {
+  computeAssistanceAmount,
+  monthlyNominal,
+  monthlyPayment,
+  isPmiRequired,
+} from "./finance";
 
 /**
  * ============================================================================
@@ -138,8 +143,9 @@ export function maxAffordablePrice(
     termMonths,
   );
 
-  const isNeedsPmi = loanShare > home.pmiRemovedAtLtv;
-  const pmiPerDollar = isNeedsPmi ? (loanShare * home.pmiAnnualPct) / 12 : 0;
+  const pmiPerDollar = isPmiRequired(loanShare, home.pmiRemovedAtLtv)
+    ? (loanShare * home.pmiAnnualPct) / 12
+    : 0;
 
   const costPerDollarOfPrice =
     loanShare * pmtPerDollar +
@@ -180,8 +186,9 @@ export function monthlyCostOfHouse(
     monthlyNominal(home.mortgageRateAnnual),
     termMonths,
   );
-  const isNeedsPmi = 1 - home.downPaymentPct > home.pmiRemovedAtLtv;
-  const pmi = isNeedsPmi ? (loan * home.pmiAnnualPct) / 12 : 0;
+  const pmi = isPmiRequired(1 - home.downPaymentPct, home.pmiRemovedAtLtv)
+    ? (loan * home.pmiAnnualPct) / 12
+    : 0;
   const tax = (options.price * options.effectiveTaxRate) / 12;
   const maintenance = (options.price * home.maintenanceAnnualPct) / 12;
 
@@ -222,19 +229,13 @@ export function classifyReach(
 export function cashToClose(assumptions: Assumptions, price: number): number {
   const { home } = assumptions;
   const loanShare = 1 - home.downPaymentPct;
-  const upfrontPmi =
-    loanShare > home.pmiRemovedAtLtv ? loanShare * home.pmiUpfrontPct : 0;
+  const upfrontPmi = isPmiRequired(loanShare, home.pmiRemovedAtLtv)
+    ? loanShare * home.pmiUpfrontPct
+    : 0;
   const gross =
     price * (home.downPaymentPct + home.closingCostPct + upfrontPmi);
 
-  const raw =
-    !home.assistanceEnabled || home.assistanceRepayment === "none"
-      ? 0
-      : price * home.assistancePctOfPrice;
-  const assistance =
-    home.assistanceMaxAmount === null
-      ? raw
-      : Math.min(raw, home.assistanceMaxAmount);
+  const assistance = computeAssistanceAmount(price, home);
 
   return Math.max(0, gross - assistance);
 }
