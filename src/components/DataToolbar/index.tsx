@@ -35,10 +35,9 @@ export default function DataToolbar() {
     setShareLink(`${location.origin}${location.pathname}#${hash}`);
   };
 
-  // Only one of {Modal, Drawer} may be open at once, since both lock body
-  // scroll on mount and restore it on unmount -- if the Modal opened while
-  // the Drawer was still open, the two could unlock out of order. Close the
-  // Data drawer in the same click handler that opens the share-link Modal.
+  // Close the drawer before showing the share-link Modal on top of it --
+  // purely so the two don't visually stack; the shared scroll lock is
+  // reference-counted, so nesting them wouldn't leave scrolling broken.
   const openShareLink = () => {
     setIsDataDrawerOpen(false);
     void handleShare();

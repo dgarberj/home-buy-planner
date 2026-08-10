@@ -102,6 +102,18 @@ export function Toggle({
 }
 
 /**
+Background/text/border classes per tone, shared by `Callout` and anything
+else (e.g. `VerdictStrip`) that needs the same tone→colour mapping in a
+different layout, so the two can't drift apart.
+*/
+export const TONE_CLASSES = {
+  good: "bg-emerald-50 text-emerald-900 border-emerald-200",
+  warn: "bg-amber-50 text-amber-900 border-amber-200",
+  bad: "bg-red-50 text-red-900 border-red-200",
+  neutral: "bg-slate-50 text-slate-700 border-slate-200",
+};
+
+/**
 A coloured plain-English conclusion box.
 */
 export function Callout({
@@ -111,15 +123,9 @@ export function Callout({
   tone: "good" | "warn" | "bad" | "neutral";
   children: ReactNode;
 }) {
-  const tones = {
-    good: "bg-emerald-50 text-emerald-900 border-emerald-200",
-    warn: "bg-amber-50 text-amber-900 border-amber-200",
-    bad: "bg-red-50 text-red-900 border-red-200",
-    neutral: "bg-slate-50 text-slate-700 border-slate-200",
-  };
   return (
     <div
-      className={`rounded-xl border px-4 py-3 text-sm leading-relaxed ${tones[tone]}`}
+      className={`rounded-xl border px-4 py-3 text-sm leading-relaxed ${TONE_CLASSES[tone]}`}
     >
       {children}
     </div>

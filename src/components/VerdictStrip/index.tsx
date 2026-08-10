@@ -1,18 +1,15 @@
 import { worstVerdict } from "../Dashboard/VerdictsCard";
+import { TONE_CLASSES } from "../ui";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
 
 /**
  * A one-glance headline pinned above the content pane: the worst-case
  * verdict across whichever scenarios are currently switched on, so the
- * answer stays visible no matter which cluster tab is active.
+ * answer stays visible no matter which cluster tab is active. Uses the same
+ * tone→colour classes as `Callout`, just in a single-line layout instead of
+ * a block.
  */
-const TONE_CLASSES = {
-  good: "bg-emerald-50 text-emerald-900 border-emerald-200",
-  warn: "bg-amber-50 text-amber-900 border-amber-200",
-  bad: "bg-red-50 text-red-900 border-red-200",
-} as const;
-
 export default function VerdictStrip() {
   const { summaries } = useProjections();
   const settings = useStore((s) => s.settings);

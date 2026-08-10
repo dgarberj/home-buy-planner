@@ -43,13 +43,25 @@ export function clusterOfSection(id: string): ClusterId {
   return found ? found.id : "setup";
 }
 
+const ALL_SECTION_IDS = new Set(CLUSTERS.flatMap((c) => c.sectionIds));
+
 /**
-Which cluster to open on initial load, given `location.hash` (leading "#"
-included, may be empty). A `#share=...` hash is never a section id -- it's
-handled entirely by `ShareImportHandler` -- so it always falls back to
-"setup" rather than being misread as an unknown section.
+The Section id a `location.hash` (leading "#" included, may be empty) points
+at, or null if it doesn't point at one -- an empty hash, a `#share=...`
+payload (handled entirely by `ShareImportHandler`, never a section id), or an
+id this app doesn't recognize.
+*/
+export function sectionIdFromHash(hash: string): string | null {
+  if (!hash || isShareHash(hash)) return null;
+  const id = hash.slice(1);
+  return ALL_SECTION_IDS.has(id) ? id : null;
+}
+
+/**
+Which cluster to open on initial load, given `location.hash`. Falls back to
+"setup" for an empty, share, or unrecognized hash.
 */
 export function clusterForHash(hash: string): ClusterId {
-  if (!hash || isShareHash(hash)) return "setup";
-  return clusterOfSection(hash.slice(1));
+  const id = sectionIdFromHash(hash);
+  return id ? clusterOfSection(id) : "setup";
 }

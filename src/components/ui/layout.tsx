@@ -1,4 +1,5 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { InfoTip } from "./feedback";
 
 export function Card({
@@ -38,26 +39,52 @@ export function Card({
   );
 }
 
+// How many overlays currently want the page scroll locked. Reference-counted
+// so nesting a Modal inside an open Drawer (or any other overlap) can't have
+// one's close-cleanup re-enable scrolling while the other is still open.
+const bodyScrollLock = { count: 0, previousOverflow: "" };
+
+function lockBodyScroll() {
+  if (bodyScrollLock.count === 0) {
+    bodyScrollLock.previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  }
+  bodyScrollLock.count += 1;
+}
+
+function unlockBodyScroll() {
+  bodyScrollLock.count -= 1;
+  if (bodyScrollLock.count === 0) {
+    document.body.style.overflow = bodyScrollLock.previousOverflow;
+  }
+}
+
 /**
  * Escape-to-close plus a body-scroll lock, shared by every full-screen
  * overlay (`Modal`, `Drawer`). Factored out so the two don't drift out of
- * sync with each other.
+ * sync with each other. Keeps `onClose` in a ref so the effect only needs
+ * `isOpen` as a dependency -- an inline `onClose` handler (the common case at
+ * every call site) would otherwise re-run the effect, and re-lock/re-listen,
+ * on every unrelated re-render of the caller while the overlay is open.
  */
 function useDismissableOverlay(isOpen: boolean, onClose: () => void) {
+  const onCloseReference = useRef(onClose);
+  useEffect(() => {
+    onCloseReference.current = onClose;
+  });
+
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (event_: KeyboardEvent) => {
-      if (event_.key === "Escape") onClose();
+      if (event_.key === "Escape") onCloseReference.current();
     };
     addEventListener("keydown", onKey);
-    // Stop the page scrolling behind the dialog.
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    lockBodyScroll();
     return () => {
       removeEventListener("keydown", onKey);
-      document.body.style.overflow = previous;
+      unlockBodyScroll();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 }
 
 /**
@@ -84,7 +111,11 @@ export function Modal({
 
   if (!open) return null;
 
-  return (
+  // Portalled to <body> so a `fixed` overlay always escapes any ancestor
+  // that happens to create its own stacking context (e.g. `backdrop-blur`
+  // on the page header) -- otherwise it can paint behind later siblings
+  // despite the z-index, instead of on top of the whole page.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/40 p-4 backdrop-blur-sm sm:items-center"
       onClick={onClose}
@@ -119,7 +150,8 @@ export function Modal({
           </footer>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -147,7 +179,10 @@ export function Drawer({
 
   if (!open) return null;
 
-  return (
+  // See Modal's comment: portalled to <body> for the same stacking-context
+  // reason -- Drawer is used inside the page header, which creates one via
+  // `backdrop-blur`.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm"
       onClick={onClose}
@@ -182,7 +217,8 @@ export function Drawer({
           </footer>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

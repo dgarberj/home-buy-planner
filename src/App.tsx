@@ -3,6 +3,7 @@ import {
   CLUSTERS,
   clusterForHash,
   clusterOfSection,
+  sectionIdFromHash,
   type ClusterId,
 } from "./clusters";
 import AppSidebar from "./components/AppSidebar";
@@ -18,6 +19,7 @@ import LeversBar from "./components/LeversBar";
 import MarketPanel from "./components/MarketPanel";
 import WaitingPanel from "./components/WaitingPanel";
 import MonthlyDataTable from "./components/MonthlyDataTable";
+import NavLinks from "./components/NavLinks";
 import RetirementMilestones from "./components/RetirementMilestones";
 import ScenarioBuilder from "./components/ScenarioBuilder";
 import SourcesPanel from "./components/SourcesPanel";
@@ -25,7 +27,6 @@ import { Button, Modal, Section } from "./components/ui";
 import VerdictStrip from "./components/VerdictStrip";
 import { SEED_VERSION } from "./data/seed";
 import { decodeShareHash, isShareHash } from "./lib/share";
-import { NAV } from "./nav";
 import { useStore } from "./store/useStore";
 
 /**
@@ -39,19 +40,10 @@ function MobileNav({ onNavigate }: { onNavigate: (id: string) => void }) {
   return (
     <div className="border-b border-slate-200 bg-slate-50 md:hidden">
       <nav className="flex flex-wrap gap-1 px-6 py-2">
-        {NAV.map((n) => (
-          <a
-            key={n.id}
-            href={`#${n.id}`}
-            onClick={(event) => {
-              event.preventDefault();
-              onNavigate(n.id);
-            }}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-          >
-            {n.label}
-          </a>
-        ))}
+        <NavLinks
+          onNavigate={onNavigate}
+          linkClassName="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+        />
       </nav>
       <button
         type="button"
@@ -279,21 +271,6 @@ function ShareImportHandler() {
   );
 }
 
-/**
-On initial load, a hash like "#detail" should land on the Results cluster
-*and* scroll to the Month-by-month Section, not just to the top of Results
--- the browser's own fragment-scroll fired before React mounted anything, so
-it landed on nothing. Returns the target Section id to scroll to once its
-cluster has rendered, or null for an empty/share/unrecognized hash. Guards
-against a non-Section hash reaching `querySelector` (an arbitrary hash isn't
-guaranteed to be a valid CSS identifier).
-*/
-function initialScrollTarget(hash: string): string | null {
-  if (!hash || isShareHash(hash)) return null;
-  const id = hash.slice(1);
-  return NAV.some((n) => n.id === id) ? id : null;
-}
-
 export default function App() {
   const [cluster, setCluster] = useState<ClusterId>(() =>
     clusterForHash(location.hash),
@@ -303,8 +280,15 @@ export default function App() {
   // that changed clusters). A ref, not state -- clearing it is a side
   // effect on an external system (the DOM scroll position), not something
   // a render depends on, so it shouldn't itself trigger a re-render.
+  //
+  // On initial load, a hash like "#detail" should land on the Results
+  // cluster *and* scroll to the Month-by-month Section, not just to the top
+  // of Results -- the browser's own fragment-scroll fired before React
+  // mounted anything, so it landed on nothing. `sectionIdFromHash` is null
+  // for an empty/share/unrecognized hash, so there's nothing queued in that
+  // case.
   const pendingScrollId = useRef<string | null>(
-    initialScrollTarget(location.hash),
+    sectionIdFromHash(location.hash),
   );
 
   useEffect(() => {
