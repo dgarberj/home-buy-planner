@@ -64,7 +64,7 @@ export default function BudgetPanel() {
           variant="primary"
           onClick={() => setIsDrawerOpen(true)}
         >
-          Start here — edit your line items →
+          Edit your line items →
         </Button>
       </div>
       <BudgetDrawer

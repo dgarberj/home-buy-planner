@@ -3,7 +3,11 @@ import { duration, monthLabel, pct } from "../../lib/format";
 import { useStore } from "../../store/useStore";
 import { INLINE_INPUT, Slider, Toggle } from "../ui";
 
-export default function ScenarioCard({ scenario }: { scenario: ScenarioConfig }) {
+export default function ScenarioCard({
+  scenario,
+}: {
+  scenario: ScenarioConfig;
+}) {
   const { assumptions, settings, updateScenario, removeScenario } = useStore();
   const horizon = settings.horizonMonths;
   const jl = { ...assumptions.jobLoss, ...scenario.jobLossOverride };

@@ -13,12 +13,14 @@
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "fetch:montco-sales": "node scripts/fetch-montco-sales.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "recharts": "^3.10.1",
+    "zod": "^4.4.3",
     "zustand": "^5.0.1"
   },
   "devDependencies": {

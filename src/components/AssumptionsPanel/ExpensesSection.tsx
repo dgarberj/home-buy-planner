@@ -3,8 +3,7 @@ import { useStore } from "../../store/useStore";
 import { Card, Field, MoneyInput, PercentInput, SectionTitle } from "../ui";
 
 export default function ExpensesSection() {
-  const { assumptions: a, setAssumptions, budget, settings } = useStore();
-  const fromBudget = settings.useBudgetTotals;
+  const { assumptions: a, setAssumptions, budget } = useStore();
   const totals = deriveBudgetTotals(budget);
 
   return (
@@ -16,8 +15,8 @@ export default function ExpensesSection() {
           hint="Bills that are the same every month: insurance, car payment, loan payments, subscriptions."
         >
           <MoneyInput
-            value={fromBudget ? totals.fixed : a.expenses.fixedMonthly}
-            disabled={fromBudget}
+            value={totals.fixed}
+            disabled
             onChange={(v) => setAssumptions({ expenses: { fixedMonthly: v } })}
           />
         </Field>
@@ -26,8 +25,8 @@ export default function ExpensesSection() {
           hint="Spending that moves around: groceries, dining, shopping, travel."
         >
           <MoneyInput
-            value={fromBudget ? totals.variable : a.expenses.variableMonthly}
-            disabled={fromBudget}
+            value={totals.variable}
+            disabled
             onChange={(v) =>
               setAssumptions({ expenses: { variableMonthly: v } })
             }
@@ -38,8 +37,8 @@ export default function ExpensesSection() {
           hint="Tracked separately because it disappears the month you buy, replaced by the mortgage payment."
         >
           <MoneyInput
-            value={fromBudget ? totals.rent : a.expenses.currentRentMonthly}
-            disabled={fromBudget}
+            value={totals.rent}
+            disabled
             onChange={(v) =>
               setAssumptions({ expenses: { currentRentMonthly: v } })
             }
@@ -51,7 +50,9 @@ export default function ExpensesSection() {
         >
           <PercentInput
             value={a.expenses.inflationAnnual}
-            onChange={(v) => setAssumptions({ expenses: { inflationAnnual: v } })}
+            onChange={(v) =>
+              setAssumptions({ expenses: { inflationAnnual: v } })
+            }
           />
         </Field>
       </div>

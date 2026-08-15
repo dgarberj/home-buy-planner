@@ -34,7 +34,10 @@ export default function ScenarioComparisonTable() {
         </thead>
         <tbody>
           {summaries.map((s) => (
-            <tr key={s.scenarioId} className="border-b border-slate-100 last:border-0">
+            <tr
+              key={s.scenarioId}
+              className="border-b border-slate-100 last:border-0"
+            >
               <Td sticky className="bg-white py-3 pr-4">
                 <div className="flex items-center gap-2">
                   <span

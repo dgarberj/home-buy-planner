@@ -61,7 +61,9 @@ export default function DepletionStatCards({
               <Stat
                 label="Money lasts until"
                 hint="Simulated month by month: the balance grows at the retirement return and your inflating spending comes out of it."
-                value={isRunsOut ? `age ${lastsTo.toFixed(1)}` : `past ${planToAge}`}
+                value={
+                  isRunsOut ? `age ${lastsTo.toFixed(1)}` : `past ${planToAge}`
+                }
                 tone={depletionTone(isRunsOut, lastsTo, planToAge)}
                 sub={
                   isRunsOut

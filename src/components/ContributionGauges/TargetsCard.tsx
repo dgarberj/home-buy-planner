@@ -91,9 +91,7 @@ function computeContributionFigures(
     ? gross * RETIREMENT_TARGETS.employerMatchPct
     : 0;
 
-  const actual401k = hasK401Plan
-    ? assumptions.retirement.k401Monthly * 12
-    : 0;
+  const actual401k = hasK401Plan ? assumptions.retirement.k401Monthly * 12 : 0;
   const actualHsa = hasHsaPlan ? assumptions.retirement.hsaMonthly * 12 : 0;
   const actualMatch = hasK401Plan
     ? assumptions.retirement.employerMatchMonthly * 12 +
@@ -288,8 +286,8 @@ export default function TargetsCard() {
 
               {(hasK401Plan || hasHsaPlan) && (
                 <div className="pt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  From your employer — a calculated number, not a target of
-                  its own
+                  From your employer — a calculated number, not a target of its
+                  own
                 </div>
               )}
               {hasK401Plan && (
@@ -374,9 +372,7 @@ export default function TargetsCard() {
           >
             <Select
               value={filingStatus}
-              onChange={(v) =>
-                setSettings({ filingStatus: v as FilingStatus })
-              }
+              onChange={(v) => setSettings({ filingStatus: v as FilingStatus })}
             >
               {(Object.keys(FILING_STATUS_LABEL) as FilingStatus[]).map(
                 (status) => (
@@ -485,8 +481,8 @@ export default function TargetsCard() {
       <Callout tone={toneForLeftAfterTargets(leftAfterTargets)}>
         <strong>The trade-off, stated plainly.</strong> Before any contributions
         there is {money(surplusBefore)} a month spare.{" "}
-        {fundedTargetsLabel(hasK401Plan, hasHsaPlan)}{" "}
-        takes {money(monthlyTarget)} of it, leaving{" "}
+        {fundedTargetsLabel(hasK401Plan, hasHsaPlan)} takes{" "}
+        {money(monthlyTarget)} of it, leaving{" "}
         <strong>{money(leftAfterTargets)} a month</strong> towards a deposit.
         {leftAfterTargets < 500 && (
           <>

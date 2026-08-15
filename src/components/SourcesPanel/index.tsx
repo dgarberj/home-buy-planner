@@ -1,9 +1,12 @@
+import { STALE_THRESHOLD_LABEL } from "../../data/freshness";
 import {
   RELIABILITY_LABEL,
   RELIABILITY_NOTE,
   SOURCES,
   SOURCE_TOPICS,
+  isSourceStale,
   sourcesFor,
+  staleSources,
   type Reliability,
 } from "../../data/sources";
 import { Callout, Card, InfoTip } from "../ui";
@@ -26,6 +29,7 @@ const BADGE: Record<Reliability, string> = {
 function SourceCard({ id }: { id: string }) {
   const source = SOURCES.find((s) => s.id === id);
   if (!source) return null;
+  const stale = isSourceStale(source);
 
   return (
     <div className="rounded-xl border border-slate-200 p-4">
@@ -41,15 +45,26 @@ function SourceCard({ id }: { id: string }) {
           </a>
           <p className="mt-0.5 text-sm text-slate-500">{source.publisher}</p>
         </div>
-        <span
-          className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${BADGE[source.reliability]}`}
-        >
-          {RELIABILITY_LABEL[source.reliability]}
-          <InfoTip
-            placement="bottom"
-            text={RELIABILITY_NOTE[source.reliability]}
-          />
-        </span>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+          {stale && (
+            <span className="whitespace-nowrap rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800">
+              STALE
+              <InfoTip
+                placement="bottom"
+                text={`Retrieved more than ${STALE_THRESHOLD_LABEL[source.category!]} ago, this category's threshold per docs/adr/0001-stale-data-threshold.md. Re-fetch before relying on it.`}
+              />
+            </span>
+          )}
+          <span
+            className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${BADGE[source.reliability]}`}
+          >
+            {RELIABILITY_LABEL[source.reliability]}
+            <InfoTip
+              placement="bottom"
+              text={RELIABILITY_NOTE[source.reliability]}
+            />
+          </span>
+        </div>
       </div>
 
       <p className="mt-3 text-sm leading-relaxed text-slate-700">
@@ -73,6 +88,14 @@ function SourceCard({ id }: { id: string }) {
           <dt>Goes stale</dt>
           <dd className="text-slate-700">{source.refresh}</dd>
         </div>
+        {source.category && (
+          <div className="flex gap-1.5">
+            <dt>Staleness threshold</dt>
+            <dd className="text-slate-700">
+              {STALE_THRESHOLD_LABEL[source.category]}
+            </dd>
+          </div>
+        )}
       </dl>
     </div>
   );
@@ -82,9 +105,24 @@ export default function SourcesPanel() {
   const officialCount = SOURCES.filter(
     (s) => s.reliability === "official",
   ).length;
+  const stale = staleSources();
 
   return (
     <div className="space-y-5">
+      {stale.length > 0 && (
+        <Callout tone="warn">
+          <strong>
+            {stale.length} source{stale.length === 1 ? "" : "s"} past its
+            staleness threshold.
+          </strong>{" "}
+          {stale
+            .map((s) => `${s.source.title} (older than ${s.thresholdLabel})`)
+            .join(", ")}
+          . See docs/adr/0001-stale-data-threshold.md and re-fetch before
+          relying on these.
+        </Callout>
+      )}
+
       <Callout tone="neutral">
         <strong>
           {SOURCES.length} sources, {officialCount} of them official.

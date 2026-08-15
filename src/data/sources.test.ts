@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SOURCES, SOURCE_TOPICS, sourceById, sourcesFor } from './sources';
+import { SOURCES, SOURCE_TOPICS, isSourceStale, sourceById, sourcesFor, staleSources } from './sources';
+import { STALE_THRESHOLD_DAYS } from './freshness';
 import { ALL_MUNICIPALITIES } from './localMarket';
 import { SCHOOL_DISTRICTS } from './schools';
 import { ASSISTANCE_PROGRAMS } from './homebuyerPrograms';
@@ -127,6 +128,46 @@ describe('the four things asked for are all covered', () => {
     for (const key of ['tax', 'programs']) {
       const official = sourcesFor(key).filter((s) => s.reliability === 'official');
       expect(official.length, key).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('staleness — docs/adr/0001-stale-data-threshold.md', () => {
+  it('has no stale categorized source as of today', () => {
+    // This is the whole point of the ADR: a dataset that ages past its
+    // category's threshold should fail the build, not sit there quietly.
+    const stale = staleSources();
+    expect(
+      stale.map((s) => `${s.source.id} (retrieved ${s.source.retrieved}, threshold ${s.thresholdLabel})`),
+      'stale sources found',
+    ).toEqual([]);
+  });
+
+  it('assigns a category to every source that actually needs a staleness check', () => {
+    const schoolSource = sourceById('frpi-performance');
+    const climateSource = sourceById('fema-nri');
+    const salesSource = sourceById('montco-parcels');
+    expect(schoolSource?.category).toBe('schools');
+    expect(climateSource?.category).toBe('climate');
+    expect(salesSource?.category).toBe('homeSales');
+  });
+
+  it('never flags an uncategorized source as stale, however old', () => {
+    const ancient = { ...sourceById('irs-hsa-2026')!, retrieved: '1990-01-01' };
+    expect(ancient.category).toBeUndefined();
+    expect(isSourceStale(ancient)).toBe(false);
+  });
+
+  it('flags a categorized source once it passes its threshold', () => {
+    const overdue = { ...sourceById('fema-nri')!, retrieved: '2000-01-01' };
+    const asOf = new Date('2026-08-10');
+    expect(isSourceStale(overdue, asOf)).toBe(true);
+  });
+
+  it('every category with a source uses the threshold the ADR documents', () => {
+    for (const s of SOURCES) {
+      if (!s.category) continue;
+      expect(STALE_THRESHOLD_DAYS[s.category], s.id).toBeGreaterThan(0);
     }
   });
 });

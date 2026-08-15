@@ -1,12 +1,7 @@
-import { useState } from "react";
 import { DELCO_CLR_FACTOR } from "../../data/localMarket";
-import { useStore } from "../../store/useStore";
 import { Callout } from "../ui";
-import AffordabilityTable from "./AffordabilityTable";
-import CountyOverviewCard from "./CountyOverviewCard";
-import HeadToHeadCard from "./HeadToHeadCard";
-import LowDepositCard from "./LowDepositCard";
 import NeighbouringCountiesCard from "./NeighbouringCountiesCard";
+import TownExplorer from "./TownExplorer";
 
 /**
  * Where to buy, costed properly.
@@ -17,15 +12,9 @@ import NeighbouringCountiesCard from "./NeighbouringCountiesCard";
  * levers elsewhere in this app. This panel makes it pickable.
  */
 export default function MarketPanel() {
-  const home = useStore((s) => s.assumptions.home);
-  const [price, setPrice] = useState(home.targetPrice);
-
   return (
     <div className="space-y-5">
-      <CountyOverviewCard price={price} setPrice={setPrice} />
-      <HeadToHeadCard price={price} />
-      <LowDepositCard price={price} />
-      <AffordabilityTable />
+      <TownExplorer />
       <NeighbouringCountiesCard />
 
       <Callout tone="bad">

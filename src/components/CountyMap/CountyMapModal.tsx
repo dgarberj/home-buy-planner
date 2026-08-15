@@ -1,13 +1,53 @@
 import {
   clrFactorFor,
+  countyInfoFor,
   effectiveRate,
   estimatedMonthlyOwnershipCost,
   type Municipality,
 } from "../../data/localMarket";
-import { districtFor, PA_AVERAGE } from "../../data/schools";
-import { money, pct } from "../../lib/format";
+import { climateRiskFor } from "../../data/climateRisk";
+import { districtFor, PA_STATE_AVERAGE } from "../../data/schools";
+import { money, ordinal, pct } from "../../lib/format";
 import { useStore } from "../../store/useStore";
 import { Button, Modal } from "../ui";
+
+/**
+ * One label/value/sub-value line, shared by the schools and hazard-risk
+ * sections below since both are "a handful of stats, each with an optional
+ * state-average or rating annotation" -- factored out rather than repeating
+ * the same `<div className="flex justify-between gap-4">...` block per stat.
+ */
+function StatRow({
+  label,
+  value,
+  sub,
+  emphasize,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  emphasize?: boolean;
+}) {
+  return (
+    <div
+      className={`flex justify-between gap-4 ${emphasize ? "border-t border-slate-200 pt-2" : ""}`}
+    >
+      <dt
+        className={emphasize ? "font-medium text-slate-900" : "text-slate-600"}
+      >
+        {label}
+      </dt>
+      <dd
+        className={`tabular-nums ${emphasize ? "font-semibold" : "font-medium"}`}
+      >
+        {value}
+        {sub && (
+          <span className="ml-1 text-xs font-normal text-slate-400">{sub}</span>
+        )}
+      </dd>
+    </div>
+  );
+}
 
 /**
 Full detail on one municipality: cost breakdown, millage, and schools.
@@ -26,6 +66,7 @@ export default function CountyMapModal({
   const setSettings = useStore((s) => s.setSettings);
 
   const detail = open ? districtFor(open.schoolDistrict) : null;
+  const risk = open ? climateRiskFor(open.countyKey) : null;
   const onShortlist = open ? settings.shortlist.includes(open.name) : false;
 
   return (
@@ -87,12 +128,16 @@ export default function CountyMapModal({
                 return (
                   <>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-slate-600">Principal &amp; interest</dt>
+                      <dt className="text-slate-600">
+                        Principal &amp; interest
+                      </dt>
                       <dd className="tabular-nums">{money(c.pi)}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
                       <dt className="text-slate-600">Property + school tax</dt>
-                      <dd className="tabular-nums font-medium">{money(c.tax)}</dd>
+                      <dd className="tabular-nums font-medium">
+                        {money(c.tax)}
+                      </dd>
                     </div>
                     {c.pmi > 0 && (
                       <div className="flex justify-between gap-4">
@@ -147,7 +192,9 @@ export default function CountyMapModal({
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-slate-600">Effective rate on market value</dt>
+                <dt className="text-slate-600">
+                  Effective rate on market value
+                </dt>
                 <dd className="tabular-nums">{pct(effectiveRate(open), 2)}</dd>
               </div>
               {open.wageTax > 0 && (
@@ -170,51 +217,47 @@ export default function CountyMapModal({
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               {open.schoolDistrict} schools
             </h3>
-            {detail &&
-            (detail.mathProficiency !== null || detail.paRank2025 !== null) ? (
+            {detail && detail.mathProficiency !== null ? (
               <dl className="mt-3 space-y-1.5 text-sm">
-                {detail.paRank2025 !== null && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-slate-600">Pennsylvania rank (2025)</dt>
-                    <dd className="tabular-nums font-medium">
-                      #{detail.paRank2025}
-                    </dd>
-                  </div>
-                )}
-                {detail.nationalRank !== null && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-slate-600">National rank (Niche)</dt>
-                    <dd className="tabular-nums">#{detail.nationalRank}</dd>
-                  </div>
-                )}
-                {detail.mathProficiency !== null && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-slate-600">Maths proficient</dt>
-                    <dd className="tabular-nums font-medium">
-                      {detail.mathProficiency}%
-                      <span className="ml-1 text-xs font-normal text-slate-400">
-                        state average {PA_AVERAGE.math}%
-                      </span>
-                    </dd>
-                  </div>
-                )}
+                <StatRow
+                  label="Maths proficient"
+                  value={`${detail.mathProficiency}%`}
+                  sub={`state average ${PA_STATE_AVERAGE.math}%`}
+                />
                 {detail.readingProficiency !== null && (
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-slate-600">Reading proficient</dt>
-                    <dd className="tabular-nums font-medium">
-                      {detail.readingProficiency}%
-                      <span className="ml-1 text-xs font-normal text-slate-400">
-                        state average {PA_AVERAGE.reading}%
-                      </span>
-                    </dd>
-                  </div>
+                  <StatRow
+                    label="Reading proficient"
+                    value={`${detail.readingProficiency}%`}
+                    sub={`state average ${PA_STATE_AVERAGE.reading}%`}
+                  />
+                )}
+                {detail.graduationRate !== null && (
+                  <StatRow
+                    label="4-year graduation rate"
+                    value={`${detail.graduationRate}%`}
+                    sub={`state average ${PA_STATE_AVERAGE.graduation}%`}
+                  />
+                )}
+                {detail.persistentAttendance !== null && (
+                  <StatRow
+                    label="Attending 90%+ of days"
+                    value={`${detail.persistentAttendance}%`}
+                    sub={`state average ${PA_STATE_AVERAGE.persistentAttendance}%`}
+                  />
+                )}
+                {detail.sourceSchoolCount !== null && (
+                  <p className="pt-1 text-xs text-slate-400">
+                    Averaged across {detail.sourceSchoolCount} school
+                    {detail.sourceSchoolCount === 1 ? "" : "s"} in this
+                    district.
+                  </p>
                 )}
               </dl>
             ) : (
               <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-900">
                 No performance figures sourced for this district. That is an
-                absence of data, not a bad score — look it up before it sways
-                a decision.
+                absence of data, not a bad score — look it up before it sways a
+                decision.
               </p>
             )}
             {detail?.note && (
@@ -224,14 +267,51 @@ export default function CountyMapModal({
             )}
           </section>
 
+          {/* --- Natural hazard risk ------------------------------------ */}
+          {risk && (
+            <section>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                {countyInfoFor(open.countyKey).name} hazard risk
+              </h3>
+              <dl className="mt-3 space-y-1.5 text-sm">
+                <StatRow
+                  label="Inland flooding"
+                  value={`${ordinal(risk.floodRiskScore)} pctl`}
+                  sub={risk.floodRiskRating}
+                />
+                <StatRow
+                  label="Heat wave"
+                  value={`${ordinal(risk.heatWaveRiskScore)} pctl`}
+                  sub={risk.heatWaveRiskRating}
+                />
+                <StatRow
+                  label="Wildfire"
+                  value={`${ordinal(risk.wildfireRiskScore)} pctl`}
+                  sub={risk.wildfireRiskRating}
+                />
+                <StatRow
+                  label="Composite risk (all 18 hazards)"
+                  value={`${ordinal(risk.riskScore)} pctl`}
+                  emphasize
+                />
+              </dl>
+              <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                National percentiles from FEMA&rsquo;s National Risk Index — how
+                this county compares to the rest of the US, not a probability.
+                County-level only: every town in this county shares these
+                figures. {risk.note}
+              </p>
+            </section>
+          )}
+
           <p className="border-t border-slate-100 pt-4 text-xs leading-relaxed text-slate-500">
             Pennsylvania taxes assessed value, and buying does not trigger a
             reassessment. This converts a sale price using {open.countyKey}
             &rsquo;s county-wide drift factor of {clrFactorFor(open)}, so it is
-            reliable for ranking places and not for budgeting a specific
-            house. Raw millage is NOT comparable across county lines — only
-            the effective rate is. Check the actual assessment before making
-            an offer.
+            reliable for ranking places and not for budgeting a specific house.
+            Raw millage is NOT comparable across county lines — only the
+            effective rate is. Check the actual assessment before making an
+            offer.
           </p>
         </div>
       )}

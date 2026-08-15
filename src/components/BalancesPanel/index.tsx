@@ -32,8 +32,12 @@ export default function BalancesPanel() {
       }
     >
       <div>
-        <Button size="sm" variant="ghost" onClick={() => setIsDrawerOpen(true)}>
-          Edit balances
+        <Button
+          size="md"
+          variant="primary"
+          onClick={() => setIsDrawerOpen(true)}
+        >
+          Start here — edit your balances →
         </Button>
       </div>
       <BalancesDrawer

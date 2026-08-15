@@ -10,6 +10,8 @@
  * prices monthly, IRS limits every January.
  */
 
+import { STALE_THRESHOLD_LABEL, isStale, type DataCategory } from './freshness';
+
 export type Reliability = 'official' | 'commercial' | 'secondary';
 
 export interface Source {
@@ -34,6 +36,14 @@ export interface Source {
   Caveats worth knowing before relying on it.
   */
   note?: string;
+  /**
+   * One of the categories with a hard staleness threshold in
+   * docs/adr/0001-stale-data-threshold.md (school stats, climate stats, home
+   * sales, crime). Left undefined for sources that policy doesn't cover --
+   * e.g. IRS limits or programme rules, which don't "go stale" the same way
+   * a dataset snapshot does; `refresh` already documents those.
+   */
+  category?: DataCategory;
 }
 
 export const RELIABILITY_LABEL: Record<Reliability, string> = {
@@ -134,8 +144,46 @@ export const SOURCES: Source[] = [
     refresh: 'Monthly.',
     note: 'Mixed listing and sold prices from several aggregators. Directionally right; the exact figures are softer than the county medians.',
   },
+  {
+    id: 'montco-parcels',
+    title: 'Montgomery County Parcels (assessment database)',
+    publisher: 'Montgomery County, PA (GIS)',
+    url: 'https://www.montgomerycountypa.gov/departments/board-assessment-appeals/property-data-data-requests',
+    covers:
+      'Individual sale records behind recentSales.ts: address, sale price (deed consideration), sale date, year built, beds, baths and square footage, straight from the county assessment database via its public ArcGIS feature service. Unlike the Zillow/Redfin figures above, these are actual transactions, not a computed town-wide median.',
+    retrieved: '2026-08-10',
+    reliability: 'official',
+    refresh: 'Monthly (the county republishes the underlying feature service on its own schedule).',
+    note: 'The committed dataset is a small, hand-pulled sample across a few towns, not a systematic recent-sales sweep — see the caveat at the top of recentSales.ts. Also includes whatever non-arm\'s-length transfers survive the price/class filter; treat any single record as a data point, not a comp you can rely on unverified. Individual sale RECORDS are further filtered by date at read time (see freshness.ts) — this `retrieved` date is about the fetch, not any one sale\'s age.',
+    category: 'homeSales',
+  },
 
   // ---- Schools ---------------------------------------------------------
+  {
+    id: 'frpi-performance',
+    title: 'Future Ready Performance Data, SY2024-25',
+    publisher: 'Pennsylvania Department of Education',
+    url: 'https://www.futurereadypa.org/home/getdatafile?id=60',
+    covers:
+      'Per-school PSSA/Keystone maths and ELA proficiency, PVAAS growth, graduation rate (4- and 5-year cohort) and persistent attendance, for every public school building in the state, keyed by AUN. Aggregated to district level in schools.ts by unweighted average across each district\'s buildings — see DISTRICT_AUN and sourceSchoolCount on each entry.',
+    retrieved: '2026-08-10',
+    reliability: 'official',
+    refresh: 'Annually, as new PSSA/Keystone results publish (a new SY file each year).',
+    note: 'District-level figures here are our own aggregation, not a PDE-published statistic — the workbook has no district rollup row. Chronic absenteeism was blank for SY2024-25; persistent attendance is used instead.',
+    category: 'schools',
+  },
+  {
+    id: 'frpi-fastfacts',
+    title: 'District Fast Facts, SY2024-25',
+    publisher: 'Pennsylvania Department of Education',
+    url: 'https://www.futurereadypa.org/home/getdatafile?id=59',
+    covers:
+      'Official district name and AUN for every Pennsylvania LEA — the join key used to build DISTRICT_AUN in schools.ts and to map municipalities to districts.',
+    retrieved: '2026-08-10',
+    reliability: 'official',
+    refresh: 'Annually.',
+    category: 'schools',
+  },
   {
     id: 'psr-penn-delco',
     title: 'Penn-Delco School District profile',
@@ -146,7 +194,7 @@ export const SOURCES: Source[] = [
     retrieved: '2026-08-08',
     reliability: 'secondary',
     refresh: 'Annually, as new PSSA results publish.',
-    note: 'Underlying data is 2022-23. Middle-school maths is notably weaker at 29% proficient — the district average hides it.',
+    note: 'Superseded by frpi-performance as the primary source; kept as a cross-check. Underlying data here is 2022-23.',
   },
   {
     id: 'psr-ridley',
@@ -158,6 +206,7 @@ export const SOURCES: Source[] = [
     retrieved: '2026-08-08',
     reliability: 'secondary',
     refresh: 'Annually.',
+    note: 'Superseded by frpi-performance as the primary source; kept as a cross-check.',
   },
   {
     id: 'delco-today-rankings',
@@ -169,6 +218,7 @@ export const SOURCES: Source[] = [
     retrieved: '2026-08-08',
     reliability: 'secondary',
     refresh: 'Annually.',
+    note: 'Superseded by frpi-performance as the primary source; kept as a cross-check.',
   },
   {
     id: 'niche-districts',
@@ -180,7 +230,7 @@ export const SOURCES: Source[] = [
     retrieved: '2026-08-08',
     reliability: 'commercial',
     refresh: 'Annually.',
-    note: 'Niche blends test scores with survey data and self-reported reviews. Useful as a cross-check, not as evidence on its own.',
+    note: 'Niche blends test scores with survey data and self-reported reviews, and requires a paid Enterprise Data License for its full 1-10 ratings, so it is not usable as a primary source here. Kept as a cross-check.',
   },
 
   // ---- First-time buyer programmes -------------------------------------
@@ -359,6 +409,21 @@ export const SOURCES: Source[] = [
     reliability: 'commercial',
     refresh: 'Annually.',
   },
+
+  // ---- Natural hazard risk -----------------------------------------------
+  {
+    id: 'fema-nri',
+    title: 'National Risk Index for Natural Hazards, county-level',
+    publisher: 'Federal Emergency Management Agency',
+    url: 'https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/National_Risk_Index_Counties/FeatureServer',
+    covers:
+      'Composite risk score, expected annual loss, and per-hazard national-percentile scores (inland flooding, wildfire, heat wave, hurricane, strong wind, earthquake) plus social vulnerability and community resilience, for Delaware, Montgomery, Chester and Philadelphia counties.',
+    retrieved: '2026-08-10',
+    reliability: 'official',
+    refresh: 'Roughly annually, whenever FEMA republishes a new NRI version.',
+    note: 'County level only -- the NRI does not publish at municipality/township granularity, so every town in a county shares the same figures. Scores are NATIONAL PERCENTILES, not probabilities: a dense, built-up county scores high partly because more people and property are exposed, not necessarily because a disaster is more likely per acre.',
+    category: 'climate',
+  },
 ];
 
 export interface SourceTopic {
@@ -377,7 +442,7 @@ export const SOURCE_TOPICS: SourceTopic[] = [
     key: 'tax',
     label: 'Property and school tax',
     description:
-      'Millage for every municipality, and the assessment factors that make rates comparable between counties.',
+      'Millage for every municipality, and the assessment factors that make rates comparable between counties. Chester County has no single official township millage table like Delco/Montco — the county rate is sourced, but individual Chester townships are out of scope, so only the two Chester school districts that Delco municipalities feed into (Unionville-Chadds Ford, West Chester Area) appear in the school data.',
     usedBy: 'The county map, the Where to buy table, and every housing cost in the projection.',
     sourceIds: ['delco-millage', 'montco-millage', 'pa-clr', 'chesco-rates'],
   },
@@ -390,12 +455,27 @@ export const SOURCE_TOPICS: SourceTopic[] = [
     sourceIds: ['zillow-values', 'redfin-counties', 'radnor-marple-prices'],
   },
   {
+    key: 'recentSales',
+    label: 'Recent individual sales',
+    description:
+      'Actual Montgomery County property transactions -- address, price, date -- rather than a computed town-wide median. Sales older than the 1-year staleness threshold (docs/adr/0001-stale-data-threshold.md) are excluded from what the app shows.',
+    usedBy: 'TownExplorer/TownDetail, the per-town recent-sales section.',
+    sourceIds: ['montco-parcels'],
+  },
+  {
     key: 'schools',
     label: 'School district performance',
     description:
-      'Proficiency rates and rankings. Districts I could not source are marked "not sourced" rather than left to look poor by omission.',
-    usedBy: 'The map tooltip and modal, and the Where to buy table.',
-    sourceIds: ['psr-penn-delco', 'psr-ridley', 'delco-today-rankings', 'niche-districts'],
+      'Proficiency, graduation and attendance from Pennsylvania\'s own Future Ready PA Index, aggregated from per-school data since the state does not publish a district rollup. Districts I could not match to an AUN are marked "not sourced" rather than left to look poor by omission.',
+    usedBy: 'The map tooltip and modal, the Where to buy table, and the value-score ranking.',
+    sourceIds: [
+      'frpi-performance',
+      'frpi-fastfacts',
+      'psr-penn-delco',
+      'psr-ridley',
+      'delco-today-rankings',
+      'niche-districts',
+    ],
   },
   {
     key: 'programs',
@@ -434,6 +514,14 @@ export const SOURCE_TOPICS: SourceTopic[] = [
     usedBy: 'The second income presets and the retirement discussion.',
     sourceIds: ['ssa-noncitizens', 'ss-credits-2026', 'salary-bba-pa', 'zip-bba-philly', 'zip-parttime-philly'],
   },
+  {
+    key: 'risk',
+    label: 'Natural hazard risk',
+    description:
+      'County-level flood, wildfire, heat, hurricane, wind and earthquake risk from FEMA. Two other factors were researched and deliberately left out: commute time (Census ACS) needs a free API key this household hasn\'t registered for, and PA crime data (ucr.pa.gov) has no bulk export -- only a one-municipality-at-a-time dashboard, impractical to source reliably for 100+ towns. Both are documented here as known gaps, not silently dropped.',
+    usedBy: 'The county map and the county detail modal.',
+    sourceIds: ['fema-nri'],
+  },
 ];
 
 export function sourceById(id: string): Source | undefined {
@@ -444,4 +532,29 @@ export function sourcesFor(topicKey: string): Source[] {
   const topic = SOURCE_TOPICS.find((t) => t.key === topicKey);
   if (!topic) return [];
   return topic.sourceIds.map((id) => sourceById(id)).filter((s): s is Source => s !== undefined);
+}
+
+/**
+ * Whether a source's `retrieved` date has passed its category's staleness
+ * threshold (docs/adr/0001-stale-data-threshold.md). Sources with no
+ * `category` are never stale by this check -- that policy doesn't apply to
+ * them (see the field's doc comment on `Source`).
+ */
+export function isSourceStale(source: Source, asOf: Date = new Date()): boolean {
+  if (!source.category) return false;
+  return isStale(source.retrieved, source.category, asOf);
+}
+
+/**
+Every categorized source that has gone stale as of `asOf`, with the label
+for how old it's allowed to be -- what SourcesPanel and the test suite use to
+flag a dataset that needs re-fetching rather than let it age silently.
+*/
+export function staleSources(
+  asOf: Date = new Date(),
+): { source: Source; thresholdLabel: string }[] {
+  return SOURCES.filter((s) => isSourceStale(s, asOf)).map((source) => ({
+    source,
+    thresholdLabel: STALE_THRESHOLD_LABEL[source.category!],
+  }));
 }

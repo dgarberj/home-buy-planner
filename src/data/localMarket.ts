@@ -1,5 +1,7 @@
 import type { HomePurchaseAssumptions } from "../model/types";
+import { COST_DEFAULTS } from "../costDefaults";
 import { monthlyNominal, monthlyPayment, isPmiRequired } from "../engine/finance";
+import { districtFor } from "./schools";
 
 /**
  * ============================================================================
@@ -301,6 +303,10 @@ export function municipalitiesIn(countyKey: string): Municipality[] {
   return ALL_MUNICIPALITIES.filter((m) => m.countyKey === countyKey);
 }
 
+export function countyInfoFor(countyKey: string): CountyInfo {
+  return COUNTY_INFO.find((c) => c.key === countyKey) ?? COUNTY_INFO[0]!;
+}
+
 export interface CountyMarket {
   name: string;
   state: string;
@@ -425,7 +431,7 @@ export function estimatedMonthlyOwnershipCost(
   insurance: number;
   total: number;
 } {
-  const insurance = 150; // rough homeowner's premium; excluded from the tax figures
+  const insurance = COST_DEFAULTS.flatMonthlyInsuranceUsd; // rough homeowner's premium; excluded from the tax figures
   const loanShare = 1 - home.downPaymentPct;
   const loan = price * loanShare;
   const pi = monthlyPayment(
@@ -448,4 +454,82 @@ export function rankedByTax(countyKey?: string): Municipality[] {
   const pool = countyKey ? municipalitiesIn(countyKey) : ALL_MUNICIPALITIES;
   // Sorted by EFFECTIVE rate, not raw millage, so counties can be compared.
   return pool.toSorted((a, b) => effectiveRate(a) - effectiveRate(b));
+}
+
+/**
+Reference price used to compare the "value score" across municipalities: the
+SAME house priced everywhere, so the ranking works for all ~112 municipalities
+rather than the ~18 with a sourced medianPrice. Value lives in costDefaults.ts;
+re-exported under this name since it's the established import elsewhere.
+*/
+export const VALUE_SCORE_REFERENCE_PRICE = COST_DEFAULTS.valueScoreReferencePriceUsd;
+
+/**
+ * A single 0-100 school-quality score for a municipality's district: the mean
+ * of maths and reading proficiency. Null when the district isn't sourced --
+ * this must stay null, not fall back to a state average or zero, or an
+ * unsourced district would silently look bad rather than simply unranked.
+ */
+export function districtQualityScore(m: Municipality): number | null {
+  const d = districtFor(m.schoolDistrict);
+  if (!d || d.mathProficiency === null || d.readingProficiency === null) return null;
+  return (d.mathProficiency + d.readingProficiency) / 2;
+}
+
+/**
+ * "Value score": school-quality points per $1,000/month of all-in ownership
+ * cost, pricing the SAME reference house in every municipality so coverage
+ * isn't limited by the sparse medianPrice field. Null whenever the quality
+ * side is unsourced -- never defaulted, per districtQualityScore.
+ */
+export function qualityPerDollar(
+  m: Municipality,
+  home: Pick<
+    HomePurchaseAssumptions,
+    | "downPaymentPct"
+    | "mortgageRateAnnual"
+    | "mortgageTermYears"
+    | "pmiAnnualPct"
+    | "pmiRemovedAtLtv"
+    | "maintenanceAnnualPct"
+  >,
+  referencePrice: number = VALUE_SCORE_REFERENCE_PRICE,
+): number | null {
+  const quality = districtQualityScore(m);
+  if (quality === null) return null;
+  const monthlyCost = estimatedMonthlyOwnershipCost(m, referencePrice, home).total;
+  return (quality * 1000) / monthlyCost;
+}
+
+/**
+ * Descending comparator for a nullable numeric score -- highest first, with
+ * null (unsourced) always sorted to the end regardless of which side it's
+ * on. Shared by rankedByQualityPerDollar below and by any UI that sorts its
+ * own decorated rows by the same score (e.g. AllTownsTable), so the
+ * "unsourced sorts last" rule lives in exactly one place.
+ */
+export function compareNullableDesc(a: number | null, b: number | null): number {
+  if (a === null && b === null) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return b - a;
+}
+
+/**
+Municipalities ranked best-to-worst by value score. Unsourced districts sort
+to the end, in their natural order, rather than being dropped -- "not
+sourced" should still be visible in a ranked list, just clearly last.
+*/
+export function rankedByQualityPerDollar(
+  home: Parameters<typeof qualityPerDollar>[1],
+  countyKey?: string,
+  referencePrice: number = VALUE_SCORE_REFERENCE_PRICE,
+): Municipality[] {
+  const pool = countyKey ? municipalitiesIn(countyKey) : ALL_MUNICIPALITIES;
+  return pool.toSorted((a, b) =>
+    compareNullableDesc(
+      qualityPerDollar(a, home, referencePrice),
+      qualityPerDollar(b, home, referencePrice),
+    ),
+  );
 }

@@ -45,9 +45,7 @@ describe("encodeShareHash / decodeShareHash", () => {
   });
 
   it("is URL-safe -- no +, /, or = characters in the encoded payload", async () => {
-    const hash = await encodeShareHash(
-      JSON.stringify({ a: "x".repeat(500) }),
-    );
+    const hash = await encodeShareHash(JSON.stringify({ a: "x".repeat(500) }));
     const payload = hash.replace(/^share=/, "");
     expect(payload).not.toMatch(/[+/=]/);
   });

@@ -141,8 +141,8 @@ export default function HorizonSection() {
           })}
         </div>
         <p className="mt-2 text-xs text-slate-500">
-          Faded ages fall outside the projection window — stretch the window
-          to include them.
+          Faded ages fall outside the projection window — stretch the window to
+          include them.
         </p>
       </div>
     </Card>

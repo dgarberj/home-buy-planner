@@ -46,7 +46,10 @@ export default function Gauge({
         </span>
         <span className="whitespace-nowrap text-sm font-semibold tabular-nums text-slate-900">
           {money(actual)}
-          <span className="font-normal text-slate-400"> / {money(target)} a year</span>
+          <span className="font-normal text-slate-400">
+            {" "}
+            / {money(target)} a year
+          </span>
         </span>
       </div>
       <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">

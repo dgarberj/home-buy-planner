@@ -1,15 +1,24 @@
 import { deriveBudgetTotals, deriveStartingBalances } from "../../lib/derive";
 import { money } from "../../lib/format";
 import { useStore } from "../../store/useStore";
-import { Card, Field, MoneyInput, NumberInput, PercentInput, SectionTitle } from "../ui";
+import {
+  Card,
+  Field,
+  MoneyInput,
+  NumberInput,
+  PercentInput,
+  SectionTitle,
+} from "../ui";
 
 export default function SavingsSection() {
-  const { assumptions: a, setAssumptions, budget, balances, settings } =
-    useStore();
-  const fromBudget = settings.useBudgetTotals;
-  const fromBalances = settings.useLatestBalances;
+  const { assumptions: a, setAssumptions, budget, balances } = useStore();
   const totals = deriveBudgetTotals(budget);
   const starting = deriveStartingBalances(balances);
+  // Not a user choice -- always derive from the newest Balances snapshot,
+  // if one exists yet. `starting.asOf` is null before any snapshot is
+  // logged, which is the only remaining reason to fall back to the typed
+  // value below.
+  const hasSnapshot = !!starting.asOf;
 
   return (
     <Card title="Savings & investments">
@@ -22,12 +31,8 @@ export default function SavingsSection() {
           hint="Checking plus high-yield savings. The money you could spend this week."
         >
           <MoneyInput
-            value={
-              fromBalances && starting.asOf
-                ? starting.cash
-                : a.savings.cashBalance
-            }
-            disabled={fromBalances && !!starting.asOf}
+            value={hasSnapshot ? starting.cash : a.savings.cashBalance}
+            disabled={hasSnapshot}
             step={1000}
             onChange={(v) => setAssumptions({ savings: { cashBalance: v } })}
           />
@@ -38,11 +43,9 @@ export default function SavingsSection() {
         >
           <MoneyInput
             value={
-              fromBalances && starting.asOf
-                ? starting.investments
-                : a.savings.investmentBalance
+              hasSnapshot ? starting.investments : a.savings.investmentBalance
             }
-            disabled={fromBalances && !!starting.asOf}
+            disabled={hasSnapshot}
             step={1000}
             onChange={(v) =>
               setAssumptions({ savings: { investmentBalance: v } })
@@ -55,7 +58,9 @@ export default function SavingsSection() {
         >
           <PercentInput
             value={a.savings.cashReturnAnnual}
-            onChange={(v) => setAssumptions({ savings: { cashReturnAnnual: v } })}
+            onChange={(v) =>
+              setAssumptions({ savings: { cashReturnAnnual: v } })
+            }
           />
         </Field>
         <Field
@@ -77,7 +82,9 @@ export default function SavingsSection() {
             value={a.savings.cashBufferMonths}
             min={0}
             max={36}
-            onChange={(v) => setAssumptions({ savings: { cashBufferMonths: v } })}
+            onChange={(v) =>
+              setAssumptions({ savings: { cashBufferMonths: v } })
+            }
           />
         </Field>
         <div className="flex items-end">
@@ -86,10 +93,7 @@ export default function SavingsSection() {
             <strong className="text-slate-700">
               {money(
                 a.savings.cashBufferMonths *
-                  ((fromBudget
-                    ? totals.fixed + totals.variable
-                    : a.expenses.fixedMonthly + a.expenses.variableMonthly) +
-                    (fromBudget ? totals.rent : a.expenses.currentRentMonthly)),
+                  (totals.fixed + totals.variable + totals.rent),
               )}
             </strong>
             . It rises with inflation, and jumps when the mortgage replaces
@@ -97,7 +101,7 @@ export default function SavingsSection() {
           </p>
         </div>
       </div>
-      {fromBalances && starting.asOf && (
+      {hasSnapshot && (
         <p className="mt-3 text-xs text-slate-500">
           From your snapshot dated {starting.asOf}: {money(starting.liquid)}{" "}
           available in total.

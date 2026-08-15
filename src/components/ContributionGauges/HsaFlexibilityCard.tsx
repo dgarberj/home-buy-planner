@@ -41,9 +41,9 @@ export default function HsaFlexibilityCard() {
         <strong>This is a transfer, not income.</strong> Net worth does not
         change the month you do it — money moves from a pot compounding at{" "}
         {pct(assumptions.retirement.returnAnnual, 0)} into one compounding at{" "}
-        {pct(assumptions.savings.cashReturnAnnual, 0)}. That is a real
-        long-run cost, and worth paying when the thing actually blocking you
-        is cash rather than retirement.
+        {pct(assumptions.savings.cashReturnAnnual, 0)}. That is a real long-run
+        cost, and worth paying when the thing actually blocking you is cash
+        rather than retirement.
       </Callout>
     </Card>
   );

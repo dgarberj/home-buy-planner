@@ -22,7 +22,9 @@ export default function NeighbouringCountiesCard() {
             <p className="mt-1 text-xs text-slate-400">{c.priceNote}</p>
             <p className="mt-2 text-sm text-slate-600">
               Typical effective tax {pct(c.effectiveTaxRate, 2)} — about{" "}
-              <strong>{money((c.medianPrice * c.effectiveTaxRate) / 12)}/mo</strong>{" "}
+              <strong>
+                {money((c.medianPrice * c.effectiveTaxRate) / 12)}/mo
+              </strong>{" "}
               on the median house.
             </p>
             <p className="mt-2 text-sm leading-relaxed text-slate-500">

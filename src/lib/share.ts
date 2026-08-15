@@ -43,7 +43,9 @@ function fromBase64Url(value: string): Uint8Array {
   return bytes;
 }
 
-async function readAll(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
+async function readAll(
+  stream: ReadableStream<Uint8Array>,
+): Promise<Uint8Array> {
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 

@@ -10,7 +10,18 @@ import {
   effectiveRate,
   estimatedAnnualTax,
   municipalitiesIn,
+  qualityPerDollar,
+  rankedByQualityPerDollar,
 } from './localMarket';
+
+const HOME = {
+  downPaymentPct: 0.1,
+  mortgageRateAnnual: 0.065,
+  mortgageTermYears: 30,
+  maintenanceAnnualPct: 0.01,
+  pmiAnnualPct: 0.006,
+  pmiRemovedAtLtv: 0.8,
+};
 
 /**
  * Integrity checks on the tax data.
@@ -130,6 +141,32 @@ describe('median price coverage is partial, and known to be', () => {
     // because prices were added, not because towns were dropped.
     expect(priced).toHaveLength(18);
     expect(ALL_MUNICIPALITIES.length - priced.length).toBe(94);
+  });
+});
+
+describe('the value score reaches every municipality, not just the priced ones', () => {
+  it('scores a town whose district is sourced but has no median price', () => {
+    // Bethel has no sourced medianPrice but its district (Garnet Valley) is sourced.
+    const bethel = ALL_MUNICIPALITIES.find((m) => m.name === 'Bethel')!;
+    expect(bethel.medianPrice).toBeUndefined();
+    expect(qualityPerDollar(bethel, HOME)).not.toBeNull();
+  });
+
+  it('returns null, not a default, for an unsourced district', () => {
+    const bryn = ALL_MUNICIPALITIES.find((m) => m.schoolDistrict === 'Bryn Athyn')!;
+    expect(qualityPerDollar(bryn, HOME)).toBeNull();
+  });
+
+  it('sorts unsourced districts to the end rather than dropping them', () => {
+    const ranked = rankedByQualityPerDollar(HOME, 'montgomery');
+    const names = ranked.map((m) => m.name);
+    expect(names).toHaveLength(municipalitiesIn('montgomery').length);
+    const lastScored = ranked.findLastIndex(
+      (m) => qualityPerDollar(m, HOME) !== null,
+    );
+    for (let index = lastScored + 1; index < ranked.length; index++) {
+      expect(qualityPerDollar(ranked[index]!, HOME)).toBeNull();
+    }
   });
 
   it('still has complete tax data for every unpriced town', () => {

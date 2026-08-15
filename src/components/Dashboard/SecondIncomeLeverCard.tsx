@@ -21,8 +21,8 @@ export default function SecondIncomeLeverCard() {
           onChange={(v) => setAssumptions({ secondIncome: { enabled: v } })}
           label={
             <>
-              <strong>{assumptions.secondIncome.label}</strong> — every
-              figure below assumes this{" "}
+              <strong>{assumptions.secondIncome.label}</strong> — every figure
+              below assumes this{" "}
               {assumptions.secondIncome.enabled ? "happens" : "does not happen"}
             </>
           }
@@ -30,8 +30,8 @@ export default function SecondIncomeLeverCard() {
         />
         <span className="text-xs text-slate-500">
           {money(assumptions.secondIncome.monthlyTakeHome)}/mo from{" "}
-          {monthLabel(settings.startDate, assumptions.secondIncome.startMonth)}
-          , less {money(assumptions.secondIncome.additionalCostsMonthly)} of
+          {monthLabel(settings.startDate, assumptions.secondIncome.startMonth)},
+          less {money(assumptions.secondIncome.additionalCostsMonthly)} of
           childcare
         </span>
       </div>

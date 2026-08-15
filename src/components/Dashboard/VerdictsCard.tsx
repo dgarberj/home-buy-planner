@@ -61,14 +61,23 @@ export function verdict(
 export function worstVerdict(
   summaries: ScenarioSummary[],
   startDate: string,
-): (ReturnType<typeof verdict> & { scenarioName: string; color: string }) | null {
+):
+  | (ReturnType<typeof verdict> & { scenarioName: string; color: string })
+  | null {
   const tonesRank = { bad: 0, warn: 1, good: 2 } as const;
-  let worst: { s: ScenarioSummary; v: ReturnType<typeof verdict> } | null = null;
+  let worst: { s: ScenarioSummary; v: ReturnType<typeof verdict> } | null =
+    null;
   for (const s of summaries) {
     const v = verdict(s, startDate);
     if (!worst || tonesRank[v.tone] < tonesRank[worst.v.tone]) worst = { s, v };
   }
-  return worst && { ...worst.v, scenarioName: worst.s.scenarioName, color: worst.s.color };
+  return (
+    worst && {
+      ...worst.v,
+      scenarioName: worst.s.scenarioName,
+      color: worst.s.color,
+    }
+  );
 }
 
 export default function VerdictsCard() {

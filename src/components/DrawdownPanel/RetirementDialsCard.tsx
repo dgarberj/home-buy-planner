@@ -1,6 +1,13 @@
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
-import { Card, Field, MoneyInput, NumberInput, PercentInput, Toggle } from "../ui";
+import {
+  Card,
+  Field,
+  MoneyInput,
+  NumberInput,
+  PercentInput,
+  Toggle,
+} from "../ui";
 
 export default function RetirementDialsCard() {
   const { assumptions } = useProjections();
@@ -43,7 +50,9 @@ export default function RetirementDialsCard() {
           <PercentInput
             value={d.withdrawalRate}
             step={0.25}
-            onChange={(v) => setAssumptions({ drawdown: { withdrawalRate: v } })}
+            onChange={(v) =>
+              setAssumptions({ drawdown: { withdrawalRate: v } })
+            }
           />
         </Field>
         <Field
@@ -74,7 +83,9 @@ export default function RetirementDialsCard() {
         >
           <PercentInput
             value={d.inflationAnnual}
-            onChange={(v) => setAssumptions({ drawdown: { inflationAnnual: v } })}
+            onChange={(v) =>
+              setAssumptions({ drawdown: { inflationAnnual: v } })
+            }
           />
         </Field>
         <Field

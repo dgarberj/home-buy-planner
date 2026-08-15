@@ -47,8 +47,15 @@ export default function DepletionChart({
     >
       <div className="h-[320px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-            <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" vertical={false} />
+          <AreaChart
+            data={chartData}
+            margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+          >
+            <CartesianGrid
+              stroke="#e2e8f0"
+              strokeDasharray="3 3"
+              vertical={false}
+            />
             <XAxis
               dataKey="age"
               tickFormatter={(a: number) => `age ${a}`}

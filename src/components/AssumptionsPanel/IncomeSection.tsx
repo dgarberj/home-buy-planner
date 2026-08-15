@@ -3,8 +3,7 @@ import { useStore } from "../../store/useStore";
 import { Card, Field, MoneyInput, PercentInput, SectionTitle } from "../ui";
 
 export default function IncomeSection() {
-  const { assumptions: a, setAssumptions, budget, settings } = useStore();
-  const fromBudget = settings.useBudgetTotals;
+  const { assumptions: a, setAssumptions, budget } = useStore();
   const totals = deriveBudgetTotals(budget);
 
   return (
@@ -16,8 +15,8 @@ export default function IncomeSection() {
           hint="What actually lands in the bank each month after tax and deductions, for both of you together."
         >
           <MoneyInput
-            value={fromBudget ? totals.income : a.income.monthlyTakeHome}
-            disabled={fromBudget}
+            value={totals.income}
+            disabled
             onChange={(v) => setAssumptions({ income: { monthlyTakeHome: v } })}
           />
         </Field>
@@ -31,12 +30,10 @@ export default function IncomeSection() {
           />
         </Field>
       </div>
-      {fromBudget && (
-        <p className="mt-3 text-xs text-slate-500">
-          Added up from {budget.filter((b) => b.type === "income").length}{" "}
-          income line items in the Budget tab.
-        </p>
-      )}
+      <p className="mt-3 text-xs text-slate-500">
+        Added up from {budget.filter((b) => b.type === "income").length} income
+        line items in the Budget tab.
+      </p>
     </Card>
   );
 }

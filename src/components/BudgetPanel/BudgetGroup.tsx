@@ -36,7 +36,9 @@ export default function BudgetGroup({
         {items.length === 0 ? (
           <p className="px-2 py-3 text-sm text-slate-400">Nothing here yet.</p>
         ) : (
-          <table className={`w-full table-fixed ${dated ? "min-w-[560px]" : ""}`}>
+          <table
+            className={`w-full table-fixed ${dated ? "min-w-[560px]" : ""}`}
+          >
             <colgroup>
               {dated ? (
                 <>

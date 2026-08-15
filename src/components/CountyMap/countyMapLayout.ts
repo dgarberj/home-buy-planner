@@ -125,6 +125,12 @@ export const METRICS = [
     unit: "of value",
     hint: "Annual property and school tax as a share of market value. The only figure that compares directly across county lines.",
   },
+  {
+    key: "valueScore" as const,
+    label: "Value score",
+    unit: "pts/$1k",
+    hint: "School quality (mean maths/reading proficiency) per $1,000/month of all-in ownership cost, pricing the SAME reference house everywhere. Blank where the district isn't sourced.",
+  },
 ];
 
 export type MetricKey = (typeof METRICS)[number]["key"];

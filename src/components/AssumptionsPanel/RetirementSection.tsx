@@ -9,9 +9,11 @@ import { useStore } from "../../store/useStore";
 import { Card, Field, MoneyInput, PercentInput, Toggle } from "../ui";
 
 export default function RetirementSection() {
-  const { assumptions: a, setAssumptions, balances, settings } = useStore();
-  const fromBalances = settings.useLatestBalances;
+  const { assumptions: a, setAssumptions, balances } = useStore();
   const starting = deriveStartingBalances(balances);
+  // Not a user choice -- always derive from the newest Balances snapshot,
+  // if one exists yet (starting.asOf is null before any snapshot is logged).
+  const hasSnapshot = !!starting.asOf;
 
   return (
     <Card title="Retirement">
@@ -22,11 +24,9 @@ export default function RetirementSection() {
         >
           <MoneyInput
             value={
-              fromBalances && starting.asOf
-                ? starting.retirement
-                : a.retirement.currentBalance
+              hasSnapshot ? starting.retirement : a.retirement.currentBalance
             }
-            disabled={fromBalances && !!starting.asOf}
+            disabled={hasSnapshot}
             step={1000}
             onChange={(v) =>
               setAssumptions({ retirement: { currentBalance: v } })
@@ -39,7 +39,9 @@ export default function RetirementSection() {
         >
           <PercentInput
             value={a.retirement.returnAnnual}
-            onChange={(v) => setAssumptions({ retirement: { returnAnnual: v } })}
+            onChange={(v) =>
+              setAssumptions({ retirement: { returnAnnual: v } })
+            }
           />
         </Field>
         <Field

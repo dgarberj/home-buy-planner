@@ -17,11 +17,13 @@ import DrawdownPanel from "./components/DrawdownPanel";
 import LenderPanel from "./components/LenderPanel";
 import LeversBar from "./components/LeversBar";
 import MarketPanel from "./components/MarketPanel";
+import SegmentedTabs from "./components/ui/SegmentedTabs";
 import WaitingPanel from "./components/WaitingPanel";
 import MonthlyDataTable from "./components/MonthlyDataTable";
 import NavLinks from "./components/NavLinks";
 import RetirementMilestones from "./components/RetirementMilestones";
 import ScenarioBuilder from "./components/ScenarioBuilder";
+import Splash from "./components/Splash";
 import SourcesPanel from "./components/SourcesPanel";
 import { Button, Modal, Section } from "./components/ui";
 import VerdictStrip from "./components/VerdictStrip";
@@ -140,10 +142,6 @@ function HowToRead() {
   );
 }
 
-/**
-Plain flex/grid segmented control -- no absolutely-positioned "active tab"
-indicator, per the layout guard's preference for that pattern.
-*/
 function ClusterTabs({
   cluster,
   onSelect,
@@ -152,23 +150,11 @@ function ClusterTabs({
   onSelect: (id: ClusterId) => void;
 }) {
   return (
-    <div className="flex gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-      {CLUSTERS.map((c) => (
-        <button
-          key={c.id}
-          type="button"
-          onClick={() => onSelect(c.id)}
-          aria-pressed={cluster === c.id}
-          className={
-            cluster === c.id
-              ? "flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition"
-              : "flex-1 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-          }
-        >
-          {c.label}
-        </button>
-      ))}
-    </div>
+    <SegmentedTabs
+      items={CLUSTERS.map((c) => ({ id: c.id, label: c.label }))}
+      active={cluster}
+      onSelect={onSelect}
+    />
   );
 }
 
@@ -298,6 +284,21 @@ export default function App() {
     pendingScrollId.current = null;
   }, [cluster]);
 
+  const hasSeenSplash = useStore((s) => s.settings.hasSeenSplash);
+  const setSettings = useStore((s) => s.setSettings);
+  // Shown once, on first ever visit, and reopenable later from the header
+  // link -- but skipped for a deep link (a specific section, or a
+  // #share=... payload) landing directly on it doesn't need the pitch, and
+  // ShareImportHandler needs the hash left alone to do its own thing.
+  const [splashOpen, setSplashOpen] = useState(
+    () => !hasSeenSplash && !location.hash,
+  );
+
+  function handleEnterPlanner() {
+    if (!hasSeenSplash) setSettings({ hasSeenSplash: true });
+    setSplashOpen(false);
+  }
+
   function handleNavigate(id: string) {
     const target = clusterOfSection(id);
     if (target === cluster) {
@@ -307,6 +308,10 @@ export default function App() {
       setCluster(target);
     }
     history.pushState(null, "", `#${id}`);
+  }
+
+  if (splashOpen) {
+    return <Splash onEnter={handleEnterPlanner} />;
   }
 
   return (
@@ -319,6 +324,9 @@ export default function App() {
               Home Buy Planner
             </h1>
           </div>
+          <Button variant="ghost" size="sm" onClick={() => setSplashOpen(true)}>
+            About this tool
+          </Button>
           <DataToolbar />
         </div>
       </header>
@@ -336,40 +344,42 @@ export default function App() {
           {cluster === "setup" && (
             <>
               <Section
-                id="budget"
-                eyebrow="Step 1"
-                title="What comes in and what goes out"
-                description="Your actual budget. Anything marked ESTIMATE is still a guess — fixing those, starting with take-home, makes everything downstream more honest."
-              >
-                <BudgetPanel />
-              </Section>
-
-              <Section
-                id="assumptions"
-                eyebrow="Step 2"
-                title="Assumptions"
-                description="The rates and terms behind the projection: raises, inflation, investment returns, and the house we're aiming at. Hover any ? for what it means."
-              >
-                <AssumptionsPanel />
-              </Section>
-
-              <Section
                 id="balances"
-                eyebrow="Step 3"
+                eyebrow="Step 1"
                 title="What we actually have"
                 description="A snapshot of real balances, logged every month or quarter. The newest one is where the projection starts."
-                defaultOpen={false}
               >
                 <BalancesPanel />
               </Section>
 
               <Section
+                id="budget"
+                eyebrow="Step 2"
+                title="What comes in and what goes out"
+                description="Your actual budget. Anything marked ESTIMATE is still a guess — fixing those, starting with take-home, makes everything downstream more honest."
+                defaultOpen={false}
+              >
+                <BudgetPanel />
+              </Section>
+
+              <Section
                 id="contributions"
-                eyebrow="Step 4"
+                eyebrow="Step 3"
                 title="Retirement contributions"
                 description="What you are putting away each year, against the targets — and what that leaves for a deposit."
+                defaultOpen={false}
               >
                 <ContributionGauges />
+              </Section>
+
+              <Section
+                id="assumptions"
+                eyebrow="Step 4"
+                title="Assumptions"
+                description="The rates and terms behind the projection: raises, inflation, investment returns, and the house we're aiming at. Hover any ? for what it means."
+                defaultOpen={false}
+              >
+                <AssumptionsPanel />
               </Section>
             </>
           )}

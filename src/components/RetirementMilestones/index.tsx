@@ -155,14 +155,15 @@ export default function RetirementMilestones() {
               </Td>
               {ages.map((age) => {
                 const value = s[metric][age];
-                const isBest =
-                  value !== undefined && value === bestByAge[age];
+                const isBest = value !== undefined && value === bestByAge[age];
                 return (
                   <Td
                     key={age}
                     align="right"
                     className={`py-3 pr-4 tabular-nums ${
-                      isBest ? "font-semibold text-emerald-700" : "text-slate-900"
+                      isBest
+                        ? "font-semibold text-emerald-700"
+                        : "text-slate-900"
                     }`}
                   >
                     {value === undefined ? "—" : money(value)}

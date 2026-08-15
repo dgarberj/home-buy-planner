@@ -49,7 +49,10 @@ export default function DataToolbar() {
       await navigator.clipboard.writeText(shareLink);
       flash("Link copied.");
     } catch {
-      flash("Couldn't copy automatically -- select and copy the link below.", true);
+      flash(
+        "Couldn't copy automatically -- select and copy the link below.",
+        true,
+      );
     }
   };
 

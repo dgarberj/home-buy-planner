@@ -8,7 +8,11 @@ Phase 1 left it.
 */
 export type ClusterId = "setup" | "where" | "results";
 
-export const CLUSTERS: { id: ClusterId; label: string; sectionIds: string[] }[] = [
+export const CLUSTERS: {
+  id: ClusterId;
+  label: string;
+  sectionIds: string[];
+}[] = [
   {
     id: "setup",
     label: "Setup",

@@ -11,6 +11,29 @@ export const money = (n: number, digits = 0) =>
   });
 
 /**
+"1st", "2nd", "3rd", "94th", "93rd" -- for percentile labels.
+*/
+export function ordinal(n: number): string {
+  const rounded = Math.round(n);
+  const module100 = rounded % 100;
+  if (module100 >= 11 && module100 <= 13) return `${rounded}th`;
+  switch (rounded % 10) {
+    case 1: {
+      return `${rounded}st`;
+    }
+    case 2: {
+      return `${rounded}nd`;
+    }
+    case 3: {
+      return `${rounded}rd`;
+    }
+    default: {
+      return `${rounded}th`;
+    }
+  }
+}
+
+/**
 Compact form for chart axes: $1.2M, $340k, -$18k.
 */
 export function moneyShort(n: number): string {

@@ -55,7 +55,9 @@ export default function CountyMapTooltip({
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-slate-400">Tax rate</dt>
-          <dd className="tabular-nums">{pct(effectiveRate(hover), 2)} of value</dd>
+          <dd className="tabular-nums">
+            {pct(effectiveRate(hover), 2)} of value
+          </dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-slate-400">Total millage</dt>
@@ -68,7 +70,9 @@ export default function CountyMapTooltip({
           <span className="flex items-start gap-1.5">
             <span
               className="mt-1 h-2 w-2 shrink-0 rounded-full"
-              style={{ background: BAND_COLOUR[ratingBand(hover.schoolDistrict)] }}
+              style={{
+                background: BAND_COLOUR[ratingBand(hover.schoolDistrict)],
+              }}
             />
             <span className="text-slate-200">
               {ratingSummary(hover.schoolDistrict)}

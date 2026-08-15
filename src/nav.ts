@@ -1,10 +1,10 @@
 // "share" is a reserved hash key (see ShareImportHandler / src/lib/share.ts)
 // -- no Section id below may ever be "share".
 export const NAV = [
-  { id: "budget", label: "Budget" },
-  { id: "assumptions", label: "Assumptions" },
   { id: "balances", label: "Balances" },
+  { id: "budget", label: "Budget" },
   { id: "contributions", label: "Contributions" },
+  { id: "assumptions", label: "Assumptions" },
   { id: "market", label: "Where to buy" },
   { id: "lender", label: "Lender view" },
   { id: "waiting", label: "Worth waiting?" },

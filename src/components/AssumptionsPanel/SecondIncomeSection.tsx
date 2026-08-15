@@ -72,7 +72,10 @@ export default function SecondIncomeSection() {
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Field label="Who" hint="Just a label for the month-by-month table.">
+            <Field
+              label="Who"
+              hint="Just a label for the month-by-month table."
+            >
               <TextInput
                 value={a.secondIncome.label}
                 onChange={(v) => setAssumptions({ secondIncome: { label: v } })}
@@ -128,7 +131,9 @@ export default function SecondIncomeSection() {
               value={a.secondIncome.startMonth}
               min={1}
               max={Math.min(settings.horizonMonths, 120)}
-              onChange={(v) => setAssumptions({ secondIncome: { startMonth: v } })}
+              onChange={(v) =>
+                setAssumptions({ secondIncome: { startMonth: v } })
+              }
               display={`${monthLabel(settings.startDate, a.secondIncome.startMonth)} · month ${a.secondIncome.startMonth}`}
             />
           </div>
@@ -155,11 +160,11 @@ export default function SecondIncomeSection() {
             <strong className="text-slate-900">Social Security credits.</strong>{" "}
             In 2026 four credits — a full year — costs only{" "}
             {money(SS_CREDIT_2026.fullYearEarnings)} of earnings, and forty
-            credits (ten years) earns a benefit in her own right. Part-time
-            work clears that threshold just as completely as full-time, so{" "}
+            credits (ten years) earns a benefit in her own right. Part-time work
+            clears that threshold just as completely as full-time, so{" "}
             <em>
-              building Social Security is not a reason to choose full-time
-              over part-time
+              building Social Security is not a reason to choose full-time over
+              part-time
             </em>
             . The reasons to prefer full-time are the pay and the career
             progression, not the credits.
@@ -191,9 +196,9 @@ export default function SecondIncomeSection() {
                 {net < 0 && (
                   <>
                     {" "}
-                    And note it does <em>not</em> protect you against a job
-                    loss while that is true: you would still be paying more
-                    for childcare than the second wage brings in.
+                    And note it does <em>not</em> protect you against a job loss
+                    while that is true: you would still be paying more for
+                    childcare than the second wage brings in.
                   </>
                 )}
               </div>

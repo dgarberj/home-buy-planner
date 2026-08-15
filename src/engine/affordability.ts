@@ -82,7 +82,8 @@ export function housingBudget(
   const secondNet = secondRunning ? second.monthlyTakeHome - secondCosts : 0;
 
   const livingCosts = expenses.fixedMonthly + expenses.variableMonthly;
-  const retirementContributions = retirement.k401Monthly + retirement.hsaMonthly;
+  const retirementContributions =
+    retirement.k401Monthly + retirement.hsaMonthly;
 
   const monthlyBudget =
     income.monthlyTakeHome +

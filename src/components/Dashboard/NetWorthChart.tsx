@@ -224,8 +224,8 @@ export default function NetWorthChart() {
       {(metric === "liquidSavings" || metric === "cashBalance") &&
         buyMarkers.length > 0 && (
           <p className="mt-2 text-xs text-slate-500">
-            Dashed lines mark the month each scenario buys. The drop is the
-            down payment and closing costs leaving the account.
+            Dashed lines mark the month each scenario buys. The drop is the down
+            payment and closing costs leaving the account.
           </p>
         )}
     </Card>

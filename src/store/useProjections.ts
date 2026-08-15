@@ -20,21 +20,17 @@ export function useProjections(): {
   const scenarios = useStore((s) => s.scenarios);
   const settings = useStore((s) => s.settings);
 
+  // Assumptions always derive income/expenses/rent from Budget and starting
+  // balances from Balances -- not a user choice (see AssumptionsPanel's
+  // static note, not a toggle).
   const assumptions = useMemo(
     () =>
       resolveAssumptions(assumptionsInput, budget, balances, {
-        useBudgetTotals: settings.useBudgetTotals,
-        useLatestBalances: settings.useLatestBalances,
+        useBudgetTotals: true,
+        useLatestBalances: true,
         startDate: settings.startDate,
       }),
-    [
-      assumptionsInput,
-      budget,
-      balances,
-      settings.useBudgetTotals,
-      settings.useLatestBalances,
-      settings.startDate,
-    ],
+    [assumptionsInput, budget, balances, settings.startDate],
   );
 
   const summaries = useMemo(

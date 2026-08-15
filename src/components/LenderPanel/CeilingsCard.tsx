@@ -72,10 +72,10 @@ export default function CeilingsCard({
       )}
 
       <Callout tone="neutral">
-        <strong>This is not a pre-approval.</strong> An underwriter looks at
-        pay stubs, tax returns and a credit pull, and applies overlays this
-        model knows nothing about. Treat it as a way to avoid falling in love
-        with a house a lender will refuse.
+        <strong>This is not a pre-approval.</strong> An underwriter looks at pay
+        stubs, tax returns and a credit pull, and applies overlays this model
+        knows nothing about. Treat it as a way to avoid falling in love with a
+        house a lender will refuse.
       </Callout>
     </Card>
   );

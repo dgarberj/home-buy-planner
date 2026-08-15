@@ -45,7 +45,9 @@ export default function HomePurchaseSection() {
           <PercentInput
             value={a.home.mortgageRateAnnual}
             step={0.125}
-            onChange={(v) => setAssumptions({ home: { mortgageRateAnnual: v } })}
+            onChange={(v) =>
+              setAssumptions({ home: { mortgageRateAnnual: v } })
+            }
           />
         </Field>
         <Field
@@ -121,7 +123,8 @@ export default function HomePurchaseSection() {
           const monthly = (loan * a.home.pmiAnnualPct) / 12;
           const upfront = loan * a.home.pmiUpfrontPct;
           const cashNeeded =
-            a.home.targetPrice * (a.home.downPaymentPct + a.home.closingCostPct) +
+            a.home.targetPrice *
+              (a.home.downPaymentPct + a.home.closingCostPct) +
             upfront;
           return (
             <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">

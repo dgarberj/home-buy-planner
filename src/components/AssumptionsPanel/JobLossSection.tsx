@@ -22,7 +22,10 @@ export default function JobLossSection() {
             onChange={(v) => setAssumptions({ jobLoss: { startMonth: v } })}
           />
         </Field>
-        <Field label="Lasts (months)" hint="How long until income is back to normal.">
+        <Field
+          label="Lasts (months)"
+          hint="How long until income is back to normal."
+        >
           <NumberInput
             value={a.jobLoss.durationMonths}
             min={0}

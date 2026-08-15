@@ -62,7 +62,10 @@ describe("exportData / importData round trip", () => {
 
   it("returns null but discards data on a seedVersion mismatch", () => {
     const exported = JSON.parse(useStore.getState().exportData());
-    const stale = JSON.stringify({ ...exported, seedVersion: "some-older-build" });
+    const stale = JSON.stringify({
+      ...exported,
+      seedVersion: "some-older-build",
+    });
 
     useStore.getState().setSettings({ horizonMonths: 55 });
     const error = useStore.getState().importData(stale);

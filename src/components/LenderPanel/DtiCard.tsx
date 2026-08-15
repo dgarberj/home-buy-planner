@@ -1,7 +1,15 @@
 import { ALL_MUNICIPALITIES } from "../../data/localMarket";
 import type { DtiResult } from "../../engine/lending";
 import { money, pct } from "../../lib/format";
-import { Callout, Card, Field, InfoTip, MoneyInput, SectionTitle, Select } from "../ui";
+import {
+  Callout,
+  Card,
+  Field,
+  InfoTip,
+  MoneyInput,
+  SectionTitle,
+  Select,
+} from "../ui";
 
 const TONE = {
   comfortable: "good",
@@ -46,7 +54,10 @@ export default function DtiCard({
       subtitle="A different question from the rest of this app, and the one that decides whether you get the loan."
     >
       <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="Town" hint="Sets the tax rate and the median price tested.">
+        <Field
+          label="Town"
+          hint="Sets the tax rate and the median price tested."
+        >
           <Select value={townName} onChange={setTownName}>
             {ALL_MUNICIPALITIES.filter((m) => m.medianPrice).map((m) => (
               <option key={`${m.countyKey}-${m.name}`} value={m.name}>
@@ -59,7 +70,11 @@ export default function DtiCard({
           label="Credit card minimums"
           hint="Underwriters use the statement minimum even if you clear the balance every month."
         >
-          <MoneyInput value={revolvingMinimums} step={25} onChange={setRevolving} />
+          <MoneyInput
+            value={revolvingMinimums}
+            step={25}
+            onChange={setRevolving}
+          />
         </Field>
         <div>
           <SectionTitle>Back-end DTI</SectionTitle>
@@ -68,7 +83,9 @@ export default function DtiCard({
           >
             {pct(dti.backEnd, 1)}
           </p>
-          <p className="mt-1 text-xs capitalize text-slate-500">{dti.verdict}</p>
+          <p className="mt-1 text-xs capitalize text-slate-500">
+            {dti.verdict}
+          </p>
         </div>
       </div>
 
@@ -76,7 +93,10 @@ export default function DtiCard({
         <table className="w-full min-w-[520px] text-sm">
           <tbody>
             <tr className="border-b border-slate-100">
-              <th scope="row" className="py-2 text-left font-normal text-slate-600">
+              <th
+                scope="row"
+                className="py-2 text-left font-normal text-slate-600"
+              >
                 Gross monthly income
               </th>
               <td className="py-2 text-right tabular-nums">
@@ -84,14 +104,22 @@ export default function DtiCard({
               </td>
             </tr>
             <tr className="border-b border-slate-100">
-              <th scope="row" className="py-2 text-left font-normal text-slate-600">
+              <th
+                scope="row"
+                className="py-2 text-left font-normal text-slate-600"
+              >
                 Proposed housing on {money(price)}
                 <InfoTip text="Principal, interest, tax, insurance and mortgage insurance. Upkeep is excluded, because a lender excludes it — which is exactly why their maximum is not a safe maximum." />
               </th>
-              <td className="py-2 text-right tabular-nums">{money(lenderHousing)}</td>
+              <td className="py-2 text-right tabular-nums">
+                {money(lenderHousing)}
+              </td>
             </tr>
             <tr className="border-b border-slate-100">
-              <th scope="row" className="py-2 text-left font-normal text-slate-600">
+              <th
+                scope="row"
+                className="py-2 text-left font-normal text-slate-600"
+              >
                 Support payments
                 <InfoTip text="Counted as debt, not as a living cost. Fannie Mae includes support with more than ten months remaining." />
               </th>
@@ -100,13 +128,21 @@ export default function DtiCard({
               </td>
             </tr>
             <tr className="border-b border-slate-100">
-              <th scope="row" className="py-2 text-left font-normal text-slate-600">
+              <th
+                scope="row"
+                className="py-2 text-left font-normal text-slate-600"
+              >
                 Car and other instalment debts
               </th>
-              <td className="py-2 text-right tabular-nums">{money(instalmentDebts)}</td>
+              <td className="py-2 text-right tabular-nums">
+                {money(instalmentDebts)}
+              </td>
             </tr>
             <tr className="border-b border-slate-100">
-              <th scope="row" className="py-2 text-left font-normal text-slate-600">
+              <th
+                scope="row"
+                className="py-2 text-left font-normal text-slate-600"
+              >
                 Credit card minimums
               </th>
               <td className="py-2 text-right tabular-nums">
@@ -114,7 +150,10 @@ export default function DtiCard({
               </td>
             </tr>
             <tr>
-              <th scope="row" className="py-2 text-left font-medium text-slate-900">
+              <th
+                scope="row"
+                className="py-2 text-left font-medium text-slate-900"
+              >
                 Total counted against you
               </th>
               <td className="py-2 text-right font-semibold tabular-nums">
@@ -129,7 +168,8 @@ export default function DtiCard({
         {dti.supportShare > 0 && (
           <>
             <strong>
-              Support payments alone use {pct(dti.supportShare, 1)} of your ratio
+              Support payments alone use {pct(dti.supportShare, 1)} of your
+              ratio
             </strong>{" "}
             before a mortgage is even considered.{" "}
           </>

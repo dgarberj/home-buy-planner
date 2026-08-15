@@ -1,6 +1,15 @@
 import type { BalanceSnapshot } from "../../model/types";
 import { money } from "../../lib/format";
-import { Button, DateInput, Drawer, InfoTip, NumberInput, Table, Td, Th } from "../ui";
+import {
+  Button,
+  DateInput,
+  Drawer,
+  InfoTip,
+  NumberInput,
+  Table,
+  Td,
+  Th,
+} from "../ui";
 
 /**
  * The editable balance-history table, moved out of the main content pane

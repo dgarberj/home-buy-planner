@@ -39,14 +39,6 @@ export interface Settings {
   */
   startDate: string;
   /**
-  Let the Budget tab drive income / fixed / variable / rent.
-  */
-  useBudgetTotals: boolean;
-  /**
-  Let the newest Balances snapshot drive the starting balances.
-  */
-  useLatestBalances: boolean;
-  /**
   Ages the dashboard reports net worth at.
   */
   milestoneAges: number[];
@@ -74,6 +66,14 @@ export interface Settings {
    * than they really are.
    */
   paychecksPerYear: number;
+  /**
+   * Whether the welcome splash (`components/Splash`) has been clicked
+   * through once already. Gates first paint on a deliberate "Open the
+   * planner" click instead of the full Setup wall of inputs; flips to true
+   * permanently once the user enters, but `App.tsx` can still reopen the
+   * splash on demand without touching this flag.
+   */
+  hasSeenSplash: boolean;
 }
 
 export interface HouseholdData {
@@ -113,9 +113,8 @@ export function seedData(): HouseholdData {
     settings: {
       horizonMonths: DEFAULT_HORIZON_MONTHS,
       startDate: thisMonth(),
-      useBudgetTotals: true,
-      useLatestBalances: true,
       milestoneAges: [...DEFAULT_MILESTONE_AGES],
+      hasSeenSplash: false,
       ...structuredClone(SEED_SETTINGS),
     },
   };

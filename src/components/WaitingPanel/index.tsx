@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { COST_DEFAULTS } from "../../costDefaults";
 import { ALL_MUNICIPALITIES, effectiveRate } from "../../data/localMarket";
 import { ratingSummary } from "../../data/schools";
 import {
@@ -33,7 +34,9 @@ export default function WaitingPanel() {
   const { assumptions } = useProjections();
   const settings = useStore((s) => s.settings);
 
-  const [reserve, setReserve] = useState(400);
+  const [reserve, setReserve] = useState(
+    COST_DEFAULTS.defaultReserveForSavingsUsd,
+  );
   const [bufferMonths, setBufferMonths] = useState(3);
   const horizon = Math.min(settings.horizonMonths, 240);
 
@@ -69,7 +72,7 @@ export default function WaitingPanel() {
           const timeline = affordabilityTimeline(assumptions, {
             medianPriceToday: m.medianPrice!,
             effectiveTaxRate: effectiveRate(m),
-            insuranceMonthly: 150,
+            insuranceMonthly: COST_DEFAULTS.flatMonthlyInsuranceUsd,
             months: horizon,
             reserveForSavings: reserve,
             cashTrack,
@@ -182,10 +185,16 @@ export default function WaitingPanel() {
                   key={`${m.countyKey}-${m.name}`}
                   className="border-b border-slate-100 last:border-0"
                 >
-                  <Td sticky className="bg-white py-2 pr-4 font-medium text-slate-900">
+                  <Td
+                    sticky
+                    className="bg-white py-2 pr-4 font-medium text-slate-900"
+                  >
                     {m.name}
                   </Td>
-                  <Td align="right" className="py-2 pr-4 tabular-nums text-slate-600">
+                  <Td
+                    align="right"
+                    className="py-2 pr-4 tabular-nums text-slate-600"
+                  >
                     {money(m.medianPrice!)}
                   </Td>
                   <Td className="py-2 pr-4 text-slate-600">

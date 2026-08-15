@@ -97,9 +97,8 @@ export default function CoResidentSection() {
               a.coResident.homePricePremium *
                 (a.home.downPaymentPct + a.home.closingCostPct),
             )}{" "}
-            more at closing, which pushes the purchase further out. Long run
-            it usually pays for itself; short run it makes the deposit
-            harder.
+            more at closing, which pushes the purchase further out. Long run it
+            usually pays for itself; short run it makes the deposit harder.
           </div>
         </>
       )}

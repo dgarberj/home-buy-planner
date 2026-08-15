@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   COUNTY_INFO,
+  countyInfoFor,
   effectiveRate,
   estimatedMonthlyTax,
   municipalitiesIn,
+  qualityPerDollar,
   rankedByTax,
   type Municipality,
 } from "../../data/localMarket";
+import { climateRiskFor } from "../../data/climateRisk";
 import { ratingBand } from "../../data/schools";
-import { money, moneyShort, pct } from "../../lib/format";
+import { money, moneyShort, ordinal, pct } from "../../lib/format";
+import { useStore } from "../../store/useStore";
 import { InfoTip } from "../ui";
 import CountyMapModal from "./CountyMapModal";
 import CountyMapTooltip from "./CountyMapTooltip";
@@ -59,6 +63,7 @@ export default function CountyMap({
   });
   const [open, setOpen] = useState<Municipality | null>(null);
   const [countyKey, setCountyKey] = useState("delaware");
+  const home = useStore((s) => s.assumptions.home);
   // Tax rate is the only metric sourced for all 112 municipalities, so it is
   // the default -- picking a price metric first showed a mostly empty map.
   const [metricKey, setMetricKey] = useState<MetricKey>("taxRate");
@@ -72,15 +77,21 @@ export default function CountyMap({
   const tileValue = (m: Municipality): { text: string; known: boolean } => {
     if (metricKey === "taxRate")
       return { text: pct(effectiveRate(m), 2), known: true };
+    if (metricKey === "valueScore") {
+      const q = qualityPerDollar(m, home);
+      return q === null
+        ? { text: "—", known: false }
+        : { text: q.toFixed(1), known: true };
+    }
     const basis = m.medianPrice ?? null;
     if (basis === null) return { text: "—", known: false };
     if (metricKey === "price") return { text: moneyShort(basis), known: true };
     return { text: money(estimatedMonthlyTax(basis, m)), known: true };
   };
 
-  const county =
-    COUNTY_INFO.find((c) => c.key === countyKey) ?? COUNTY_INFO[0]!;
+  const county = countyInfoFor(countyKey);
   const municipalities = municipalitiesIn(countyKey);
+  const risk = climateRiskFor(countyKey);
 
   /**
    * Delaware County has a hand-built geographic layout. The others do not, so
@@ -97,6 +108,23 @@ export default function CountyMap({
     : rankedByTax(countyKey);
   const rows = county.geographicLayout ? ROWS : Math.ceil(ordered.length / 7);
   const cols = county.geographicLayout ? COLS : 7;
+
+  /**
+   * Every tile's value, computed once per municipality instead of up to
+   * three times (fill known-check, label text, unit known-check) during the
+   * SVG render, and shared with the coverage-count banner above the map so
+   * that also stops re-scanning the whole county on its own.
+   */
+  const tileValues = useMemo(() => {
+    const map = new Map<string, { text: string; known: boolean }>();
+    for (const m of ordered) map.set(m.name, tileValue(m));
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tileValue closes over metricKey/home, both already deps
+  }, [ordered, metricKey, home]);
+  const knownCount = tileValues
+    .values()
+    .filter((v) => v.known)
+    .toArray().length;
 
   // Scale on EFFECTIVE rate so colours mean the same thing in every county.
   const rates = ordered.map((m) => effectiveRate(m));
@@ -150,15 +178,30 @@ export default function CountyMap({
         <InfoTip text={metric.hint} />
         {metricKey !== "taxRate" && (
           <span className="text-xs text-amber-700">
-            {municipalities.filter((m) => m.medianPrice).length} of{" "}
-            {municipalities.length} towns in this county have a sourced price —
-            the rest show &ldquo;no price&rdquo;
+            {knownCount} of {municipalities.length} towns in this county have{" "}
+            {metricKey === "valueScore"
+              ? "a sourced school district"
+              : "a sourced price"}{" "}
+            — the rest show &ldquo;
+            {metricKey === "valueScore" ? "—" : "no price"}&rdquo;
           </span>
         )}
       </div>
       <p className="mb-3 max-w-3xl text-xs leading-relaxed text-slate-500">
         {county.note}
       </p>
+      {risk && (
+        <p className="mb-3 max-w-3xl text-xs leading-relaxed text-slate-500">
+          <span className="font-medium text-slate-600">
+            FEMA hazard risk ({risk.riskRating.toLowerCase()},{" "}
+            {ordinal(risk.riskScore)} percentile nationally):
+          </span>{" "}
+          flooding {ordinal(risk.floodRiskScore)} pctl, heat{" "}
+          {ordinal(risk.heatWaveRiskScore)} pctl, wildfire{" "}
+          {ordinal(risk.wildfireRiskScore)} pctl. {risk.note} County-level only
+          — every town in {county.name} shares this figure.
+        </p>
+      )}
 
       <div className="overflow-x-auto">
         <svg
@@ -175,6 +218,7 @@ export default function CountyMap({
             const y = row * (TILE + GAP);
             const isHighlighted = highlighted.includes(m.name);
             const isHovered = hover?.name === m.name;
+            const value = tileValues.get(m.name)!;
             return (
               <g
                 key={m.name}
@@ -219,10 +263,10 @@ export default function CountyMap({
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    fill: tileValue(m).known ? "#0f172a" : "rgba(15,23,42,0.3)",
+                    fill: value.known ? "#0f172a" : "rgba(15,23,42,0.3)",
                   }}
                 >
-                  {tileValue(m).text}
+                  {value.text}
                 </text>
                 {/* Always labelled, so the number can never be misread as a
                     different quantity. */}
@@ -233,7 +277,7 @@ export default function CountyMap({
                   className="pointer-events-none"
                   style={{ fontSize: 9, fill: "rgba(15,23,42,0.55)" }}
                 >
-                  {tileValue(m).known ? metric.unit : "no price"}
+                  {value.known ? metric.unit : "no price"}
                 </text>
                 {/* School standing, where it is sourced. */}
                 <circle
@@ -270,7 +314,7 @@ export default function CountyMap({
             className="h-2.5 w-2.5 rounded-full"
             style={{ background: BAND_COLOUR.strong }}
           />
-          top-100 PA district
+          well above state average
         </span>
         <span className="flex items-center gap-2">
           <span
@@ -310,7 +354,9 @@ export default function CountyMap({
       </p>
 
       {/* --- Hover tooltip, following the cursor -------------------------- */}
-      {hover && <CountyMapTooltip hover={hover} cursor={cursor} price={price} />}
+      {hover && (
+        <CountyMapTooltip hover={hover} cursor={cursor} price={price} />
+      )}
 
       {/* --- Detail modal ------------------------------------------------- */}
       <CountyMapModal open={open} onClose={() => setOpen(null)} price={price} />

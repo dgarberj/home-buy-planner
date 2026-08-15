@@ -346,7 +346,9 @@ function computeHousing(
   // PMI falls away once enough of the house is actually yours. Note this
   // happens sooner when the home appreciates, not just as you pay down.
   const ltv = homeValue > 0 ? mortgageBalance / homeValue : 0;
-  const pmiPayment = isPmiRequired(ltv, home.pmiRemovedAtLtv) ? pmiFullMonthly : 0;
+  const pmiPayment = isPmiRequired(ltv, home.pmiRemovedAtLtv)
+    ? pmiFullMonthly
+    : 0;
 
   return {
     housingPayment:
