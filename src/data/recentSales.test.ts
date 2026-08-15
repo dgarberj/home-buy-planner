@@ -92,16 +92,25 @@ describe('staleness — docs/adr/0001-stale-data-threshold.md', () => {
     // Synthetic rather than pulled from RECENT_SALES: the committed sample
     // is fetched with a 12-month window in the first place (see the file
     // header), so it won't reliably contain a town whose entire sample has
-    // gone stale -- this proves the mechanism freshSalesIn/
-    // municipalitiesWithFreshSales are built on instead.
+    // gone stale. Exercises the real freshSalesIn via its injectable `sales`
+    // param, not a reimplemented filter, so this actually covers the
+    // function it claims to.
     const allStale = [
       { municipality: 'Ambler', address: '1 Test St', saleDate: '2023-01-01', salePrice: 100_000 },
       { municipality: 'Ambler', address: '2 Test St', saleDate: '2022-06-15', salePrice: 100_000 },
     ];
-    const fresh = allStale.filter((s) => !isSaleStale(s, asOf));
-    expect(fresh).toHaveLength(0);
+    expect(freshSalesIn('Ambler', asOf, allStale)).toHaveLength(0);
   });
 });
+
+function saleAt(salePrice: number, index: number) {
+  return {
+    municipality: 'Ambler',
+    address: `${index} Test St`,
+    saleDate: '2026-01-01',
+    salePrice,
+  };
+}
 
 describe('medianOf', () => {
   it('returns null for no sales', () => {
@@ -109,22 +118,12 @@ describe('medianOf', () => {
   });
 
   it('averages the two middle prices for an even count', () => {
-    const sales = [100_000, 400_000, 200_000, 300_000].map((salePrice, index) => ({
-      municipality: 'Ambler',
-      address: `${index} Test St`,
-      saleDate: '2026-01-01',
-      salePrice,
-    }));
+    const sales = [100_000, 400_000, 200_000, 300_000].map((price, index) => saleAt(price, index));
     expect(medianOf(sales)).toBe(250_000);
   });
 
   it('picks the single middle price for an odd count', () => {
-    const sales = [100_000, 300_000, 200_000].map((salePrice, index) => ({
-      municipality: 'Ambler',
-      address: `${index} Test St`,
-      saleDate: '2026-01-01',
-      salePrice,
-    }));
+    const sales = [100_000, 300_000, 200_000].map((price, index) => saleAt(price, index));
     expect(medianOf(sales)).toBe(200_000);
   });
 });

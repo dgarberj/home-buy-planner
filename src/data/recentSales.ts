@@ -483,10 +483,13 @@ export function isSaleStale(sale: RecentSale, asOf: Date = new Date()): boolean 
 
 /**
 Every record on file, unfiltered -- includes stale sales. Use for audit/tests;
-UI code should prefer `freshSalesIn`.
+UI code should prefer `freshSalesIn`. The `sales` param defaults to the
+committed data but can be overridden (e.g. in tests, to exercise a scenario
+the committed data doesn't happen to contain right now, like a town gone
+entirely stale) without reaching into module internals.
 */
-export function salesIn(municipality: string): RecentSale[] {
-  return RECENT_SALES.filter((s) => s.municipality === municipality);
+export function salesIn(municipality: string, sales: RecentSale[] = RECENT_SALES): RecentSale[] {
+  return sales.filter((s) => s.municipality === municipality);
 }
 
 /**
@@ -494,8 +497,12 @@ Sales on file that are still within the 1-year staleness threshold. This is
 what `medianOf` and the UI should be called with -- a 1989 sale is not market
 signal for a decision made today.
 */
-export function freshSalesIn(municipality: string, asOf: Date = new Date()): RecentSale[] {
-  return salesIn(municipality).filter((s) => !isSaleStale(s, asOf));
+export function freshSalesIn(
+  municipality: string,
+  asOf: Date = new Date(),
+  sales: RecentSale[] = RECENT_SALES,
+): RecentSale[] {
+  return salesIn(municipality, sales).filter((s) => !isSaleStale(s, asOf));
 }
 
 /**
