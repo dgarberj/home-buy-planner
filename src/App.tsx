@@ -22,6 +22,7 @@ import WaitingPanel from "./components/WaitingPanel";
 import MonthlyDataTable from "./components/MonthlyDataTable";
 import NavLinks from "./components/NavLinks";
 import RetirementMilestones from "./components/RetirementMilestones";
+import RetirementOutlookChart from "./components/Dashboard/RetirementOutlookChart";
 import ScenarioBuilder from "./components/ScenarioBuilder";
 import Splash from "./components/Splash";
 import SourcesPanel from "./components/SourcesPanel";
@@ -441,7 +442,10 @@ export default function App() {
                 title="Impact at retirement"
                 description="How the buy-early decision compounds by the time you stop working — and, just as importantly, where it doesn't."
               >
-                <RetirementMilestones />
+                <div className="space-y-5">
+                  <RetirementOutlookChart />
+                  <RetirementMilestones />
+                </div>
               </Section>
 
               <Section

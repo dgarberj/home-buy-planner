@@ -1,6 +1,6 @@
 import { useProjections } from "../../store/useProjections";
 import { Card } from "../ui";
-import NetWorthChart from "./NetWorthChart";
+import NearTermChart from "./NearTermChart";
 import ScenarioComparisonTable from "./ScenarioComparisonTable";
 import ScenarioStatCards from "./ScenarioStatCards";
 import SecondIncomeLeverCard from "./SecondIncomeLeverCard";
@@ -27,7 +27,7 @@ export default function Dashboard() {
     <div className="space-y-5">
       <SecondIncomeLeverCard />
       <VerdictsCard />
-      <NetWorthChart />
+      <NearTermChart />
       <ScenarioStatCards />
       <ScenarioComparisonTable />
     </div>

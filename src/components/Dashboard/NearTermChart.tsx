@@ -11,6 +11,12 @@ import {
   YAxis,
 } from "recharts";
 import type { MonthlyResult, ScenarioSummary } from "../../model/types";
+import {
+  CHART_AXIS_LINE_STYLE,
+  CHART_AXIS_TICK_STYLE,
+  CHART_GRID_STROKE,
+  CHART_TOOLTIP_STYLE,
+} from "../../lib/chartTheme";
 import { money, moneyShort, monthLabel } from "../../lib/format";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
@@ -18,37 +24,22 @@ import { Card } from "../ui";
 
 const METRICS = [
   {
-    key: "netWorth" as const,
-    label: "Net worth",
-    hint: "Cash + investments + retirement + home equity. The big picture.",
+    key: "cashBalance" as const,
+    label: "Cash buffer",
+    hint: "The emergency fund on its own. Investments get sold before this is allowed to go negative, so a dip here is the first warning sign.",
   },
   {
     key: "liquidSavings" as const,
     label: "Savings & investments",
     hint: "Everything outside retirement that you could get your hands on. This is the line that shows the risk.",
   },
-  {
-    key: "cashBalance" as const,
-    label: "Cash buffer",
-    hint: "The emergency fund on its own. Investments get sold before this is allowed to go negative, so a dip here is the first warning sign.",
-  },
-  {
-    key: "retirementBalance" as const,
-    label: "Retirement",
-    hint: "All retirement accounts combined. Buying a house does not change this — only a job loss that pauses contributions does.",
-  },
-  {
-    key: "homeEquity" as const,
-    label: "Home equity",
-    hint: "What the house is worth minus what you still owe.",
-  },
 ];
 
-export default function NetWorthChart() {
+export default function NearTermChart() {
   const { summaries, assumptions } = useProjections();
   const settings = useStore((s) => s.settings);
   const [metric, setMetric] =
-    useState<(typeof METRICS)[number]["key"]>("netWorth");
+    useState<(typeof METRICS)[number]["key"]>("cashBalance");
   const [xAxis, setXAxis] = useState<"date" | "age">("date");
 
   const active = METRICS.find((m) => m.key === metric)!;
@@ -110,7 +101,7 @@ export default function NetWorthChart() {
   return (
     <Card
       title={active.label + " over time"}
-      subtitle={active.hint}
+      subtitle={`Near-term: will the plan run dry before you buy? ${active.hint}`}
       right={
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
@@ -155,7 +146,7 @@ export default function NetWorthChart() {
             margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
           >
             <CartesianGrid
-              stroke="#e2e8f0"
+              stroke={CHART_GRID_STROKE}
               strokeDasharray="3 3"
               vertical={false}
             />
@@ -163,13 +154,13 @@ export default function NetWorthChart() {
               dataKey="month"
               ticks={yearTicks}
               tickFormatter={xLabel}
-              tick={{ fill: "#64748b", fontSize: 12 }}
-              axisLine={{ stroke: "#cbd5e1" }}
+              tick={CHART_AXIS_TICK_STYLE}
+              axisLine={CHART_AXIS_LINE_STYLE}
               tickLine={false}
             />
             <YAxis
               tickFormatter={moneyShort}
-              tick={{ fill: "#64748b", fontSize: 12 }}
+              tick={CHART_AXIS_TICK_STYLE}
               axisLine={false}
               tickLine={false}
               width={64}
@@ -181,12 +172,7 @@ export default function NetWorthChart() {
                   primaryAge + (Number(m) - 1) / 12,
                 )} · month ${m}`
               }
-              contentStyle={{
-                borderRadius: 12,
-                border: "1px solid #e2e8f0",
-                fontSize: 13,
-                boxShadow: "0 4px 16px rgba(15,23,42,0.08)",
-              }}
+              contentStyle={CHART_TOOLTIP_STYLE}
             />
             <Legend
               verticalAlign="bottom"
@@ -195,17 +181,16 @@ export default function NetWorthChart() {
             />
             {/* Zero line matters when cash goes negative. */}
             <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={1} />
-            {(metric === "liquidSavings" || metric === "cashBalance") &&
-              buyMarkers.map(({ s, row }) => (
-                <ReferenceLine
-                  key={s.scenarioId}
-                  x={row.month}
-                  stroke={s.color}
-                  strokeDasharray="4 4"
-                  strokeOpacity={0.5}
-                  label={{ value: "🏠", position: "top", fontSize: 14 }}
-                />
-              ))}
+            {buyMarkers.map(({ s, row }) => (
+              <ReferenceLine
+                key={s.scenarioId}
+                x={row.month}
+                stroke={s.color}
+                strokeDasharray="4 4"
+                strokeOpacity={0.5}
+                label={{ value: "🏠", position: "top", fontSize: 14 }}
+              />
+            ))}
             {summaries.map((s) => (
               <Line
                 key={s.scenarioId}
@@ -221,13 +206,12 @@ export default function NetWorthChart() {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      {(metric === "liquidSavings" || metric === "cashBalance") &&
-        buyMarkers.length > 0 && (
-          <p className="mt-2 text-xs text-slate-500">
-            Dashed lines mark the month each scenario buys. The drop is the down
-            payment and closing costs leaving the account.
-          </p>
-        )}
+      {buyMarkers.length > 0 && (
+        <p className="mt-2 text-xs text-slate-500">
+          Dashed lines mark the month each scenario buys. The drop is the down
+          payment and closing costs leaving the account.
+        </p>
+      )}
     </Card>
   );
 }

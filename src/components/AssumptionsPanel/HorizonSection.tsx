@@ -13,7 +13,7 @@ const HORIZON_PRESETS: { label: string; months: (age: number) => number }[] = [
   { label: "To 70", months: (age) => (70 - age) * 12 + 1 },
 ];
 
-const CANDIDATE_AGES = [50, 55, 60, 62, 65, 67, 70, 75];
+const CANDIDATE_AGES = [50, 55, 60, 62, 65, 67, 70, 75, 80];
 
 export default function HorizonSection() {
   const { assumptions: a, setAssumptions, settings, setSettings } = useStore();

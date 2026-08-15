@@ -210,12 +210,12 @@ export const SEED_SCENARIOS: ScenarioConfig[] = [
 /**
 Ages the dashboard reports net worth at.
 */
-export const DEFAULT_MILESTONE_AGES = [55, 60, 65, 67, 70];
+export const DEFAULT_MILESTONE_AGES = [65, 70, 75, 80];
 
 /**
 The projection runs until the primary person reaches this age.
 */
-export const DEFAULT_PROJECT_TO_AGE = 70;
+export const DEFAULT_PROJECT_TO_AGE = 80;
 
 /**
 Five years -- the window the house decision actually lives in.

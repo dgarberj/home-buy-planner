@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { money, monthLabel } from "../../lib/format";
+import {
+  RETIREMENT_METRICS as METRICS,
+  reachableMilestoneAges,
+  type RetirementMetricKey,
+} from "../../lib/retirementMetrics";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
 import { Callout, Card, InfoTip, Table, Td, Th } from "../ui";
@@ -12,29 +17,6 @@ import { Callout, Card, InfoTip, Table, Td, Th } from "../ui";
  * leaving someone to infer it from a chart.
  */
 
-const METRICS = [
-  {
-    key: "netWorthAtAge" as const,
-    label: "Net worth",
-    hint: "Everything added up: cash, investments, retirement accounts and home equity.",
-  },
-  {
-    key: "retirementAtAge" as const,
-    label: "Retirement accounts",
-    hint: "The 401(k)s and IRAs on their own.",
-  },
-  {
-    key: "investmentsAtAge" as const,
-    label: "Investments",
-    hint: "The taxable brokerage pot outside retirement — this is where buying early shows up most.",
-  },
-  {
-    key: "homeEquityAtAge" as const,
-    label: "Home equity",
-    hint: "What the house is worth minus what is still owed on it.",
-  },
-];
-
 /**
 Do the scenarios differ on this measure by enough to be worth remarking on?
 */
@@ -46,14 +28,15 @@ function spread(values: number[]): number {
 export default function RetirementMilestones() {
   const { summaries, assumptions } = useProjections();
   const settings = useStore((s) => s.settings);
-  const [metric, setMetric] =
-    useState<(typeof METRICS)[number]["key"]>("netWorthAtAge");
+  const [metric, setMetric] = useState<RetirementMetricKey>("netWorthAtAge");
 
   const active = METRICS.find((m) => m.key === metric)!;
 
   // Only show ages the projection actually reaches.
-  const ages = settings.milestoneAges.filter((age) =>
-    summaries.some((s) => s[metric][age] !== undefined),
+  const ages = reachableMilestoneAges(
+    settings.milestoneAges,
+    summaries,
+    metric,
   );
 
   if (summaries.length === 0) return null;
