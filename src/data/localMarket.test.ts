@@ -139,8 +139,8 @@ describe('median price coverage is partial, and known to be', () => {
   it('covers only a minority of towns — a gap in sourcing, not in the towns', () => {
     // Documented rather than hidden. If this number moves, it should move
     // because prices were added, not because towns were dropped.
-    expect(priced).toHaveLength(18);
-    expect(ALL_MUNICIPALITIES.length - priced.length).toBe(94);
+    expect(priced).toHaveLength(28);
+    expect(ALL_MUNICIPALITIES.length - priced.length).toBe(84);
   });
 });
 

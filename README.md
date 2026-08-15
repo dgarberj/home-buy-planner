@@ -38,7 +38,11 @@ src/data/seed.ts          Generic placeholder starting state (committed, no real
 src/data/sources.ts       Every external source, what it covers, how far to trust it
 src/data/localMarket.ts   Millage for 112 municipalities across three counties (real, sourced)
 src/data/schools.ts       District performance, only where sourced
+src/data/recentSales.ts   Recent home sales by municipality (real, sourced, Montgomery only so far)
+src/data/climateRisk.ts   FEMA National Risk Index scores by county
+src/data/freshness.ts     Staleness thresholds for sourced data -- see docs/adr/0001-stale-data-threshold.md
 src/data/mortgageInsurance.ts  PMI rates by credit score and deposit
+docs/adr/                 Architecture decision records for non-obvious design calls
 data/                     Your real numbers, gitignored
 ```
 

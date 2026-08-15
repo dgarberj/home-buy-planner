@@ -32,9 +32,14 @@ describe('recent sale records are usable', () => {
     }
   });
 
-  it('has no duplicate addresses', () => {
-    const addresses = RECENT_SALES.map((s) => s.address);
-    expect(new Set(addresses).size).toBe(addresses.length);
+  it('has no duplicate address+date pairs', () => {
+    // Keyed on address+date rather than address alone: a street can cross a
+    // municipal boundary (two different towns, same street name), and a
+    // property can genuinely sell twice within the window -- neither of
+    // those is a data error, but the same address selling twice on the same
+    // day would be.
+    const keys = RECENT_SALES.map((s) => `${s.address}::${s.saleDate}`);
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });
 
@@ -54,7 +59,7 @@ describe('municipalitiesWithSales / salesIn', () => {
   });
 
   it('returns an empty list for a town with no sales on file', () => {
-    expect(salesIn('Bryn Athyn')).toEqual([]);
+    expect(salesIn('Nonexistent Town')).toEqual([]);
   });
 });
 
@@ -77,18 +82,6 @@ describe('staleness — docs/adr/0001-stale-data-threshold.md', () => {
     expect(isSaleStale(oneYearAndADay, asOf)).toBe(true);
   });
 
-  it('documents that most of the committed sample predates this policy', () => {
-    // The ADR's stated consequence: most of RECENT_SALES was pulled before
-    // a 1-year threshold existed, so freshSalesIn should genuinely be
-    // filtering records out today, not just be a no-op pass-through.
-    const totalOnFile = RECENT_SALES.length;
-    const totalFresh = municipalitiesWithSales().reduce(
-      (sum, town) => sum + freshSalesIn(town).length,
-      0,
-    );
-    expect(totalFresh).toBeLessThan(totalOnFile);
-  });
-
   it('never lists a town under municipalitiesWithFreshSales unless it has a fresh sale', () => {
     for (const town of municipalitiesWithFreshSales()) {
       expect(freshSalesIn(town).length, town).toBeGreaterThan(0);
@@ -96,11 +89,17 @@ describe('staleness — docs/adr/0001-stale-data-threshold.md', () => {
   });
 
   it('drops a town entirely from the fresh list once all its sales are stale', () => {
-    // Pottstown's committed sample includes a 1990 sale alongside 2023/2025
-    // ones -- a mixed town should still show through fresh filtering, and the
-    // stale record specifically should not appear in freshSalesIn.
-    const fresh = freshSalesIn('Pottstown', asOf);
-    expect(fresh.some((s) => s.saleDate === '1990-03-19')).toBe(false);
+    // Synthetic rather than pulled from RECENT_SALES: the committed sample
+    // is fetched with a 12-month window in the first place (see the file
+    // header), so it won't reliably contain a town whose entire sample has
+    // gone stale -- this proves the mechanism freshSalesIn/
+    // municipalitiesWithFreshSales are built on instead.
+    const allStale = [
+      { municipality: 'Ambler', address: '1 Test St', saleDate: '2023-01-01', salePrice: 100_000 },
+      { municipality: 'Ambler', address: '2 Test St', saleDate: '2022-06-15', salePrice: 100_000 },
+    ];
+    const fresh = allStale.filter((s) => !isSaleStale(s, asOf));
+    expect(fresh).toHaveLength(0);
   });
 });
 
@@ -110,17 +109,22 @@ describe('medianOf', () => {
   });
 
   it('averages the two middle prices for an even count', () => {
-    const sales = salesIn('Conshohocken');
-    expect(sales.length % 2).toBe(0);
-    const prices = sales.map((s) => s.salePrice).toSorted((a, b) => a - b);
-    const expected = (prices[1]! + prices[2]!) / 2;
-    expect(medianOf(sales)).toBe(expected);
+    const sales = [100_000, 400_000, 200_000, 300_000].map((salePrice, index) => ({
+      municipality: 'Ambler',
+      address: `${index} Test St`,
+      saleDate: '2026-01-01',
+      salePrice,
+    }));
+    expect(medianOf(sales)).toBe(250_000);
   });
 
   it('picks the single middle price for an odd count', () => {
-    const sales = salesIn('Ambler');
-    expect(sales.length % 2).toBe(1);
-    const prices = sales.map((s) => s.salePrice).toSorted((a, b) => a - b);
-    expect(medianOf(sales)).toBe(prices[Math.floor(prices.length / 2)]);
+    const sales = [100_000, 300_000, 200_000].map((salePrice, index) => ({
+      municipality: 'Ambler',
+      address: `${index} Test St`,
+      saleDate: '2026-01-01',
+      salePrice,
+    }));
+    expect(medianOf(sales)).toBe(200_000);
   });
 });

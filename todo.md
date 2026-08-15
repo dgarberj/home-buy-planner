@@ -22,8 +22,9 @@ building this:
   `fetch-montco-sales.mjs` — real transaction data shouldn't ship unreviewed). Full
   automation means removing that human-in-the-loop step, which is a real trade-off,
   not just an engineering detail.
-- Delaware County has no scriptable source yet at all (see the spike below) — "every
-  data source" isn't uniformly fetchable today.
+- Delaware County has no scriptable source at all, and the spike below concluded it
+  isn't worth building one — "every data source" isn't uniformly fetchable today,
+  and won't be until the manual county data request comes through.
 
 ## Rework the "what can I buy" view
 
@@ -42,47 +43,64 @@ Needs a real design pass, not just a refactor — what "comprehensive" means her
 crime/flood/commute lands as?) and what the actual click-reduction targets are
 should get scoped before touching code.
 
-## Spike: scraping Delco recent home purchases
+## Spike: scraping Delco recent home purchases — CLOSED, no-go (2026-08-15)
 
 Delaware County's property search
 (`http://delcorealestate.co.delaware.pa.us/pt/search/advancedsearch.aspx?mode=advanced`)
 is a Tyler Technologies iasWorld Public Access portal — session-based ASP.NET
 WebForms (disclaimer click-through, `__VIEWSTATE` postbacks), not a REST/JSON API
-like Montgomery's ArcGIS feature service. Unknowns to resolve as part of the spike,
-before writing a real scraper:
+like Montgomery's ArcGIS feature service. Revisited the open unknowns on 2026-08-15:
 
-- Whether it has CAPTCHA/bot-detection in front of search (couldn't confirm — site
-  was in maintenance as of 2026-08-10).
-- What its actual Terms of Use say about automated/bulk access (the liability
-  disclaimer I read doesn't cover this; there's a separate "Search Disclaimer" page
-  that returned "page not registered" when fetched).
-- Whether it's even worth it per-property-lookup vs. Montgomery's bulk query model —
-  no bulk export exists here, so this would be address-by-address at best.
-- Fallback if scraping is off the table: emailing the county's GIS Manager (Anita
-  Bostwick, Board of Assessments) for a manual bulk data pull, same as noted in
-  `recentSales.ts`'s Montgomery-only caveat.
+- **Site reliability:** worse than "in maintenance" — the host's HTTPS certificate
+  has expired, so any TLS-validating client (including a real scraper library, not
+  just this fetch) fails the handshake outright before a disclaimer page ever loads.
+  Legacy WebForms portal + expired cert is not something to build automation against.
+- **CAPTCHA/bot-detection:** still unconfirmed either way — couldn't get past the
+  cert failure to find out. Moot given the point above.
+- **Terms of Use:** still nothing found that explicitly addresses automated/bulk
+  access — only a generic liability disclaimer (no warranty of accuracy, no
+  liability for misuse). The separate "Search Disclaimer" page is still unreachable.
+  Not a blocker on its own, but doesn't help the case for scraping either.
+- **No bulk alternative exists.** Checked Delaware County's own open-data catalog
+  (`delaware-county-pennsylvania-dcpd.hub.arcgis.com`, DCAT feed, 63 datasets) —
+  nothing is a per-parcel assessment/sales layer with price data. The closest hits
+  are "Property Maps" (a static page, not a service), a "Housing Dashboard"
+  (pre-aggregated, no individual transactions), and subdivision/land-development
+  layers (not sales). Unlike Montgomery, there's no ArcGIS feature service to query
+  in bulk — the WebForms portal really is the only public search, address-by-address,
+  no export.
+
+**Decision: don't build a Delco scraper.** No bulk source, unclear ToS, and the one
+public search UI is presently unreachable over HTTPS — too fragile and too
+address-by-address to be worth automating even if the cert gets fixed. The manual
+data request is the only real path forward:
+
+- **Anita Bostwick, GIS Manager, Board of Assessments** — (610) 891-4793,
+  BostwickA@co.delaware.pa.us. Confirmed current as of 2026-08-15
+  (`delcopa.gov/odmi/data-requests` lists the same contact for parcel/real-estate
+  data). Send the request per the "Also worth doing" item below — same
+  Montgomery-caveat pattern already documented in `recentSales.ts`.
 
 ## Also worth doing
 
-- **Expand Montgomery sales coverage for real.** `recentSales.ts` is still a
-  hand-pulled sample — 15 records across 5 of ~60 municipalities. Running
-  `fetch-montco-sales.mjs` properly (all towns, reviewed, pasted in) is the obvious
-  next step now that the freshness filtering exists to keep it honest.
 - **Apply the new staleness pattern to `localMarket.ts` too.** `docs/adr/0001-stale-data-threshold.md`
   and `freshness.ts` only gate `recentSales.ts` right now. `medianPrice`'s staleness
   lives as a free-text date inside `priceSource` (e.g. `"Zillow 2026"`), not a field
   `isStale()` can actually check — same underlying problem, different data file.
-- **Document `docs/adr/` and `freshness.ts` in the README.** The "Where things live"
-  table lists every other sourced file; these two aren't in it yet, so they're easy
-  to miss on a fresh clone.
-- **Close more of the municipality price gap.** Only 18 of 112 towns have a sourced
-  `medianPrice` (`localMarket.test.ts` pins this). Worth prioritizing the towns that
-  already have `recentSales.ts` comps, so the two datasets reinforce each other
-  instead of covering different towns.
-- **Delaware County: send the manual data request now, don't wait on the scrape spike.**
-  Emailing the county GIS Manager (Anita Bostwick, Board of Assessments) can happen in
-  parallel with the scraping spike above and is the more reliable path if that spike
-  hits a ToS or bot-detection wall.
+- **Close more of the municipality price gap.** Now 28 of 112 towns have a sourced
+  `medianPrice` (`localMarket.test.ts` pins this), up from 18 — 10 more Montgomery
+  towns added 2026-08-15 (Ambler, Collegeville, Hatboro, Jenkintown, Lansdale, North
+  Wales, Pottstown, Royersford, Souderton, West Conshohocken), prioritizing towns that
+  already have `recentSales.ts` comps. Skipped that pass: Plymouth (Zillow only has
+  reliable data for the "Plymouth Meeting" sub-area, not the township `localMarket.ts`
+  actually covers), Horsham (search kept surfacing a metro-area figure mislabeled as
+  town-specific), Trappe (Zillow only has a combined "Trappe Collegeville" page), and
+  Upper Dublin (no clean ZHVI figure available, only inconsistent sold-price
+  snippets) — still gaps, need a more targeted source than web search snippets.
+- **Delaware County: send the manual data request.** The scrape spike above is
+  closed (no-go) — emailing the county GIS Manager, Anita Bostwick
+  (BostwickA@co.delaware.pa.us, Board of Assessments), is now the only path to
+  Delco recent-sales data.
 - **Accessibility pass.** Range sliders (`Slider` in `src/components/ui/inputs.tsx`)
   aren't associated with their visible label for screen readers; computed verdicts
   that update as you type could use `aria-live`; worth a spot-check of keyboard
