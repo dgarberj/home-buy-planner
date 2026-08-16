@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { downloadText } from "../../lib/csv";
 import { encodeShareHash, isShareSupported } from "../../lib/share";
 import { useStore } from "../../store/useStore";
@@ -16,6 +17,7 @@ const LONG_LINK_WARNING_LENGTH = 6000;
  * meant to live in the same /data folder.
  */
 export default function DataToolbar() {
+  const { t } = useTranslation();
   const { exportData, importData, clearLocalOverrides } = useStore();
   const fileReference = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{
@@ -47,10 +49,13 @@ export default function DataToolbar() {
     if (!shareLink) return;
     try {
       await navigator.clipboard.writeText(shareLink);
-      flash("Link copied.");
+      flash(t("dataToolbar.linkCopied", "Link copied."));
     } catch {
       flash(
-        "Couldn't copy automatically -- select and copy the link below.",
+        t(
+          "dataToolbar.copyFailed",
+          "Couldn't copy automatically -- select and copy the link below.",
+        ),
         true,
       );
     }
@@ -66,14 +71,14 @@ export default function DataToolbar() {
         </span>
       )}
       <Button size="sm" onClick={() => setIsDataDrawerOpen(true)}>
-        Data
+        {t("dataToolbar.data", "Data")}
       </Button>
       <a
         href="https://github.com/dgarberj/home-buy-planner"
         target="_blank"
         rel="noreferrer"
-        title="View source on GitHub"
-        aria-label="View source on GitHub"
+        title={t("dataToolbar.viewSource", "View source on GitHub")}
+        aria-label={t("dataToolbar.viewSource", "View source on GitHub")}
         className="text-slate-500 transition hover:text-slate-900"
       >
         <svg
@@ -89,8 +94,11 @@ export default function DataToolbar() {
       <Drawer
         open={isDataDrawerOpen}
         onClose={() => setIsDataDrawerOpen(false)}
-        title="Data"
-        subtitle="Save, load and reset your numbers."
+        title={t("dataToolbar.data", "Data")}
+        subtitle={t(
+          "dataToolbar.drawerSubtitle",
+          "Save, load and reset your numbers.",
+        )}
       >
         <div className="flex flex-col items-start gap-2">
           {message && (
@@ -102,32 +110,46 @@ export default function DataToolbar() {
           )}
           <Button
             size="sm"
-            title="Save a JSON backup of your numbers"
+            title={t(
+              "dataToolbar.exportTitle",
+              "Save a JSON backup of your numbers",
+            )}
             onClick={() => {
               downloadText("household.json", exportData(), "application/json");
-              flash("Saved. Keep it in the data/ folder.");
+              flash(
+                t(
+                  "dataToolbar.saved",
+                  "Saved. Keep it in the data/ folder.",
+                ),
+              );
             }}
           >
-            Export
+            {t("dataToolbar.export", "Export")}
           </Button>
           <Button
             size="sm"
-            title="Load a JSON backup"
+            title={t("dataToolbar.importTitle", "Load a JSON backup")}
             onClick={() => fileReference.current?.click()}
           >
-            Import
+            {t("dataToolbar.import", "Import")}
           </Button>
           <Button
             size="sm"
             title={
               isShareSupported()
-                ? "Generate a link that loads your current numbers in another browser"
-                : "Share links aren't supported in this browser"
+                ? t(
+                    "dataToolbar.shareTitle.supported",
+                    "Generate a link that loads your current numbers in another browser",
+                  )
+                : t(
+                    "dataToolbar.shareTitle.unsupported",
+                    "Share links aren't supported in this browser",
+                  )
             }
             disabled={!isShareSupported()}
             onClick={openShareLink}
           >
-            Share link
+            {t("dataToolbar.shareLink", "Share link")}
           </Button>
           <input
             ref={fileReference}
@@ -138,41 +160,52 @@ export default function DataToolbar() {
               const file = event_.target.files?.[0];
               if (!file) return;
               const error = importData(await file.text());
-              flash(error ?? "Loaded.", !!error);
+              flash(error ?? t("dataToolbar.loaded", "Loaded."), !!error);
               event_.target.value = "";
             }}
           />
           <Button
             size="sm"
             variant="danger"
-            title="Discard edits saved in this browser and fall back to the local data file (or the example data, if there is none)"
+            title={t(
+              "dataToolbar.clearTitle",
+              "Discard edits saved in this browser and fall back to the local data file (or the example data, if there is none)",
+            )}
             onClick={() => {
               if (
                 !confirm(
-                  "Clear this browser's saved overrides? In-app edits not written back to data/household.json will be lost.",
+                  t(
+                    "dataToolbar.clearConfirm",
+                    "Clear this browser's saved overrides? In-app edits not written back to data/household.json will be lost.",
+                  ),
                 )
               ) {
                 return;
               }
 
               clearLocalOverrides();
-              flash("Local overrides cleared.");
+              flash(t("dataToolbar.cleared", "Local overrides cleared."));
             }}
           >
-            Clear local storage
+            {t("dataToolbar.clear", "Clear local storage")}
           </Button>
         </div>
       </Drawer>
       <Modal
         open={shareLink !== null}
         onClose={() => setShareLink(null)}
-        title="Share link"
-        subtitle="Anyone with this link can see everything below, in plain text -- income, balances, budget labels. Only send it somewhere you trust."
+        title={t("dataToolbar.shareLink", "Share link")}
+        subtitle={t(
+          "dataToolbar.shareModalSubtitle",
+          "Anyone with this link can see everything below, in plain text -- income, balances, budget labels. Only send it somewhere you trust.",
+        )}
         footer={
           <>
-            <Button onClick={() => setShareLink(null)}>Close</Button>
+            <Button onClick={() => setShareLink(null)}>
+              {t("dataToolbar.close", "Close")}
+            </Button>
             <Button variant="primary" onClick={copyShareLink}>
-              Copy link
+              {t("dataToolbar.copyLink", "Copy link")}
             </Button>
           </>
         }
@@ -186,9 +219,10 @@ export default function DataToolbar() {
         {shareLink && shareLink.length > LONG_LINK_WARNING_LENGTH && (
           <div className="mt-2">
             <Callout tone="warn">
-              This link is unusually long and may get truncated by some
-              messaging apps. If it doesn't work, try trimming old balance
-              snapshots first.
+              {t(
+                "dataToolbar.longLinkWarning",
+                "This link is unusually long and may get truncated by some messaging apps. If it doesn't work, try trimming old balance snapshots first.",
+              )}
             </Callout>
           </div>
         )}

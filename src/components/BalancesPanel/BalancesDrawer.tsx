@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type { BalanceSnapshot } from "../../model/types";
 import { money } from "../../lib/format";
 import {
@@ -18,29 +20,50 @@ import {
  * worth seeing at a glance.
  */
 
-const COLUMNS = [
-  { key: "checking", label: "Checking", hint: "Everyday spending account." },
-  {
-    key: "savings",
-    label: "Savings / HYSA",
-    hint: "Cash set aside, including the house fund.",
-  },
-  {
-    key: "investments",
-    label: "Investments",
-    hint: "Taxable brokerage. Not retirement accounts.",
-  },
-  {
-    key: "retirement",
-    label: "Retirement",
-    hint: "All 401(k)s and IRAs combined.",
-  },
-  {
-    key: "debt",
-    label: "Debt",
-    hint: "Everything owed: student loans, car loans, credit cards. Tracked for context; the projection does not amortise it separately.",
-  },
-] as const;
+function columns(t: TFunction) {
+  return [
+    {
+      key: "checking",
+      label: t("balancesPanel.columns.checking.label", "Checking"),
+      hint: t(
+        "balancesPanel.columns.checking.hint",
+        "Everyday spending account.",
+      ),
+    },
+    {
+      key: "savings",
+      label: t("balancesPanel.columns.savings.label", "Savings / HYSA"),
+      hint: t(
+        "balancesPanel.columns.savings.hint",
+        "Cash set aside, including the house fund.",
+      ),
+    },
+    {
+      key: "investments",
+      label: t("balancesPanel.columns.investments.label", "Investments"),
+      hint: t(
+        "balancesPanel.columns.investments.hint",
+        "Taxable brokerage. Not retirement accounts.",
+      ),
+    },
+    {
+      key: "retirement",
+      label: t("balancesPanel.columns.retirement.label", "Retirement"),
+      hint: t(
+        "balancesPanel.columns.retirement.hint",
+        "All 401(k)s and IRAs combined.",
+      ),
+    },
+    {
+      key: "debt",
+      label: t("balancesPanel.columns.debt.label", "Debt"),
+      hint: t(
+        "balancesPanel.columns.debt.hint",
+        "Everything owed: student loans, car loans, credit cards. Tracked for context; the projection does not amortise it separately.",
+      ),
+    },
+  ] as const;
+}
 
 export default function BalancesDrawer({
   open,
@@ -57,16 +80,22 @@ export default function BalancesDrawer({
   updateBalance: (id: string, patch: Partial<BalanceSnapshot>) => void;
   removeBalance: (id: string) => void;
 }) {
+  const { t } = useTranslation();
   const sorted = balances.toSorted((a, b) => a.date.localeCompare(b.date));
   const latestId = sorted.at(-1)?.id;
+  const COLUMNS = columns(t);
 
   return (
-    <Drawer open={open} onClose={onClose} title="Edit balance history">
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title={t("balancesPanel.drawerTitle", "Edit balance history")}
+    >
       <Table minWidthClassName="min-w-[860px]">
         <thead>
           <tr className="border-b border-slate-200 text-left">
             <Th sticky className="bg-white pb-2 pr-3">
-              Date
+              {t("balancesPanel.columns.date", "Date")}
             </Th>
             {COLUMNS.map((c) => (
               <Th key={c.key} align="right" className="pb-2 pr-3">
@@ -77,7 +106,7 @@ export default function BalancesDrawer({
               </Th>
             ))}
             <Th align="right" className="pb-2 pr-3">
-              Net
+              {t("balancesPanel.columns.net", "Net")}
             </Th>
             <Th />
           </tr>
@@ -106,7 +135,7 @@ export default function BalancesDrawer({
                     />
                     {isLatest && (
                       <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700">
-                        Start
+                        {t("balancesPanel.startBadge", "Start")}
                       </span>
                     )}
                   </div>
@@ -132,7 +161,7 @@ export default function BalancesDrawer({
                   <button
                     type="button"
                     onClick={() => removeBalance(row.id)}
-                    title="Remove snapshot"
+                    title={t("balancesPanel.removeSnapshot", "Remove snapshot")}
                     className="rounded-md px-2 py-1 text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-600 focus:opacity-100 group-hover:opacity-100"
                   >
                     ✕
@@ -145,7 +174,7 @@ export default function BalancesDrawer({
       </Table>
       <div className="mt-3">
         <Button size="sm" variant="ghost" onClick={() => addBalance()}>
-          + Add snapshot
+          {t("balancesPanel.addSnapshot", "+ Add snapshot")}
         </Button>
       </div>
     </Drawer>

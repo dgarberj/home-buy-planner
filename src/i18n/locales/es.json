@@ -742,5 +742,175 @@
         "hsaNote": "La HSA es dinero excelente, pero no se puede gastar en un pago inicial."
       }
     }
+  },
+  "budgetPanel": {
+    "title": "Presupuesto mensual",
+    "subtitle": "Cada dólar recurrente que entra y sale. Edita cualquier número directamente — la proyección se actualiza mientras escribes.",
+    "leftOverEachMonth": "Sobrante cada mes",
+    "editLineItems": "Editar tus partidas →",
+    "in": "Entra",
+    "out": "Sale",
+    "leftOver": "Sobrante",
+    "retirementNote": "Las aportaciones para la jubilación salen de aquí — configúralas en Supuestos.",
+    "perMonthSuffix": "/mes",
+    "groupEmpty": "Todavía no hay nada aquí.",
+    "addLine": "+ Agregar partida",
+    "columns": {
+      "what": "Qué",
+      "category": "Categoría",
+      "amount": "Monto",
+      "starts": "Empieza",
+      "ends": "Termina"
+    },
+    "removeItem": "Eliminar {{label}}",
+    "drawerTitle": "Editar partidas del presupuesto",
+    "groups": {
+      "income": {
+        "title": "Dinero que entra",
+        "hint": "Salario neto después de impuestos y deducciones — lo que realmente llega al banco."
+      },
+      "fixed": {
+        "title": "Gastos fijos",
+        "hint": "El mismo monto cada mes: alquiler, seguros, pagos de auto y préstamos, suscripciones."
+      },
+      "variable": {
+        "title": "Gastos variables",
+        "hint": "Gastos que varían cada mes: comestibles, restaurantes, compras, viajes."
+      },
+      "rent": {
+        "title": "Alquiler (desaparece al comprar)",
+        "hint": "El alquiler se rastrea aparte porque se reemplaza por el pago de la hipoteca el mes que compras. Todo lo demás continúa."
+      },
+      "commitments": {
+        "addLabel": "+ Agregar compromiso",
+        "title": "Compromisos con fecha de fin",
+        "hint": "Un contrato de alquiler, un préstamo, o un pago ordenado por un tribunal o contractual con una fecha de fin conocida. Estos se modelan distinto de los gastos comunes: nunca se ajustan por inflación, y NO se recortan durante una pérdida de empleo — no puedes dejar de pagar unilateralmente una obligación ordenada por un tribunal. El mes que termina uno, el flujo de caja mejora para siempre."
+      }
+    }
+  },
+  "balancesPanel": {
+    "title": "Historial de saldos",
+    "subtitle": "Registra los números reales cada mes o trimestre. La fila más reciente se convierte en el punto de partida de la proyección.",
+    "availableForAHouse": "Disponible para una casa",
+    "startHere": "Empieza aquí — edita tus saldos →",
+    "columns": {
+      "checking": {
+        "label": "Cuenta corriente",
+        "hint": "Cuenta de gastos del día a día."
+      },
+      "savings": {
+        "label": "Ahorros / HYSA",
+        "hint": "Efectivo reservado, incluido el fondo para la casa."
+      },
+      "investments": {
+        "label": "Inversiones",
+        "hint": "Cuenta de corretaje sujeta a impuestos. No son cuentas de jubilación."
+      },
+      "retirement": {
+        "label": "Jubilación",
+        "hint": "Todos los 401(k) e IRA combinados."
+      },
+      "debt": {
+        "label": "Deuda",
+        "hint": "Todo lo que se debe: préstamos estudiantiles, préstamos de auto, tarjetas de crédito. Se registra como contexto; la proyección no la amortiza por separado."
+      },
+      "date": "Fecha",
+      "net": "Neto"
+    },
+    "startBadge": "Inicio",
+    "removeSnapshot": "Eliminar registro",
+    "drawerTitle": "Editar historial de saldos",
+    "addSnapshot": "+ Agregar registro"
+  },
+  "drawdownPanel": {
+    "caveat": "<b>Lo que esto no incluye.</b> El impuesto sobre los retiros es una sola tasa efectiva fija aplicada solo al dinero de cuentas de jubilación — sin tramos, estado civil, impuesto estatal ni tratamiento de ganancias de capital. Tampoco incluye ingresos del Seguro Social ni pensión, ni distribuciones mínimas requeridas, ni imprevistos de salud — y, lo más importante, un rendimiento uniforme cada año. Los mercados reales entregan sus años malos en rachas, y una caída al principio de la jubilación hace mucho más daño que la misma caída después. Trata la edad en que se acaba el dinero como una referencia aproximada, no una fecha.",
+    "emptyState": {
+      "title": "¿Alcanzará el dinero?",
+      "body": "La edad {{age}} cae fuera de la ventana de proyección, así que todavía no hay nada que reducir. Extiende la ventana en Supuestos — el preajuste <b>Hasta los 70</b> cubre la mayoría de las edades de jubilación."
+    },
+    "dials": {
+      "title": "Plan de jubilación",
+      "subtitle": "Cómo se espera que vaya la jubilación. Estos son los controles detrás de cada número de abajo.",
+      "retirementAge": {
+        "label": "Jubilarse a la edad",
+        "hint": "Cuándo dejan de llegar los sueldos. Debe caer dentro de la ventana de proyección para poder modelarse."
+      },
+      "desiredSpend": {
+        "label": "Gasto mensual en la jubilación",
+        "hint": "El gasto total que quieres cubrir, en dinero de HOY. El modelo lo ajusta por inflación hasta el año de jubilación por ti. Incluye vivienda, salud y todo lo demás."
+      },
+      "withdrawalRate": {
+        "label": "Tasa de retiro",
+        "hint": "La parte del fondo que retiras cada año. 4% es la regla clásica — la tasa que un portafolio ha sostenido históricamente durante 30 años."
+      },
+      "taxRate": {
+        "label": "Tasa de impuesto sobre los retiros de jubilación",
+        "hint": "Se aplica solo al dinero retirado de saldos de 401(k)/IRA — no a tus ahorros e inversiones sujetos a impuestos, que ya están después de impuestos. Una tasa efectiva fija, no tu tramo marginal."
+      },
+      "returnAnnual": {
+        "label": "Rendimiento ya jubilado",
+        "hint": "Normalmente más bajo que mientras trabajas, ya que los portafolios se vuelven más conservadores cuando vives de ellos."
+      },
+      "inflationAnnual": {
+        "label": "Inflación en la jubilación",
+        "hint": "Qué tan rápido sube tu gasto una vez jubilado. En treinta años este es el supuesto más castigador del modelo."
+      },
+      "planToAge": {
+        "label": "Planear hasta la edad",
+        "hint": "Cuánto tiempo debe durar el dinero. Que se acabe antes de esto es el caso de fracaso."
+      },
+      "includeHomeEquity": {
+        "label": "Contar el valor de la casa como disponible",
+        "hint": "Desactivado por defecto: tienes que vivir en algún lugar. Actívalo solo si el plan realmente es reducir de tamaño o pedir prestado contra la casa."
+      }
+    },
+    "stats": {
+      "potAt": "Fondo a los {{age}}",
+      "potAtHint": "Cuentas de jubilación más ahorros e inversiones. El valor de la casa queda excluido a menos que lo hayas activado arriba.",
+      "potAtSub": "{{retirement}} jubilación · {{other}} otros",
+      "lastsUntil": "El dinero dura hasta",
+      "lastsUntilHint": "Simulado mes a mes: el saldo crece al rendimiento de jubilación y tu gasto, ajustado por inflación, sale de ahí.",
+      "ageValue": "edad {{age}}",
+      "pastValue": "más allá de {{age}}",
+      "yearsOfIncome": "{{years}} años de ingresos",
+      "stillLeft": "{{amount}} todavía disponible a los {{age}}",
+      "supports": "Al {{rate}}% ese fondo sostiene",
+      "supportsToday": "al año — unos {{amount}} en dinero de hoy.",
+      "coversTarget": "Cubre el objetivo de {{amount}}/mes con margen de sobra.",
+      "shortOfTarget": "Falta {{amount}} al año para el objetivo.",
+      "lifetimeTax": "va a impuestos sobre los retiros de cuentas de jubilación durante todo el plan."
+    },
+    "chart": {
+      "title": "El dinero disminuyendo",
+      "subtitle": "Saldo desde los {{retirementAge}} hasta los {{planToAge}} años, gastando {{amount}} al mes en dinero de hoy. Donde una línea llega a cero, el dinero se acabó.",
+      "axisAge": "edad {{age}}",
+      "tooltipAge": "Edad {{age}}"
+    }
+  },
+  "dataToolbar": {
+    "linkCopied": "Enlace copiado.",
+    "copyFailed": "No se pudo copiar automáticamente -- selecciona y copia el enlace de abajo.",
+    "data": "Datos",
+    "viewSource": "Ver el código fuente en GitHub",
+    "drawerSubtitle": "Guarda, carga y restablece tus números.",
+    "exportTitle": "Guardar una copia de seguridad en JSON de tus números",
+    "saved": "Guardado. Consérvalo en la carpeta data/.",
+    "export": "Exportar",
+    "importTitle": "Cargar una copia de seguridad en JSON",
+    "import": "Importar",
+    "shareTitle": {
+      "supported": "Generar un enlace que carga tus números actuales en otro navegador",
+      "unsupported": "Los enlaces para compartir no son compatibles con este navegador"
+    },
+    "shareLink": "Enlace para compartir",
+    "loaded": "Cargado.",
+    "clearTitle": "Descartar las ediciones guardadas en este navegador y volver al archivo de datos local (o a los datos de ejemplo, si no hay ninguno)",
+    "clearConfirm": "¿Borrar los cambios guardados de este navegador? Las ediciones dentro de la app que no se hayan escrito en data/household.json se perderán.",
+    "cleared": "Cambios locales borrados.",
+    "clear": "Borrar almacenamiento local",
+    "close": "Cerrar",
+    "copyLink": "Copiar enlace",
+    "shareModalSubtitle": "Cualquiera con este enlace puede ver todo lo de abajo, en texto plano -- ingresos, saldos, etiquetas del presupuesto. Envíalo solo a alguien de tu confianza.",
+    "longLinkWarning": "Este enlace es inusualmente largo y algunas apps de mensajería podrían truncarlo. Si no funciona, prueba recortando registros de saldo antiguos primero."
   }
 }

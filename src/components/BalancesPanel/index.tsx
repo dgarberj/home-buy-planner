@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { deriveStartingBalances } from "../../lib/derive";
 import { money } from "../../lib/format";
 import { useStore } from "../../store/useStore";
@@ -12,18 +13,22 @@ import BalancesDrawer from "./BalancesDrawer";
  */
 
 export default function BalancesPanel() {
+  const { t } = useTranslation();
   const { balances, addBalance, updateBalance, removeBalance } = useStore();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const starting = deriveStartingBalances(balances);
 
   return (
     <Card
-      title="Balance history"
-      subtitle="Log the real numbers every month or quarter. The newest row becomes the projection's starting point."
+      title={t("balancesPanel.title", "Balance history")}
+      subtitle={t(
+        "balancesPanel.subtitle",
+        "Log the real numbers every month or quarter. The newest row becomes the projection's starting point.",
+      )}
       right={
         <div className="text-right">
           <div className="whitespace-nowrap text-xs font-medium uppercase tracking-wide text-slate-500">
-            Available for a house
+            {t("balancesPanel.availableForAHouse", "Available for a house")}
           </div>
           <div className="whitespace-nowrap text-2xl font-semibold tabular-nums text-slate-900">
             {money(starting.liquid)}
@@ -37,7 +42,10 @@ export default function BalancesPanel() {
           variant="primary"
           onClick={() => setIsDrawerOpen(true)}
         >
-          Start here — edit your balances →
+          {t(
+            "balancesPanel.startHere",
+            "Start here — edit your balances →",
+          )}
         </Button>
       </div>
       <BalancesDrawer

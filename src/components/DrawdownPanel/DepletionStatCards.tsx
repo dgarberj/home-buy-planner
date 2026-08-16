@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { DrawdownResult } from "../../engine/drawdown";
 import type { ScenarioSummary } from "../../model/types";
 import { money } from "../../lib/format";
@@ -25,6 +26,7 @@ export default function DepletionStatCards({
   withdrawalRate: number;
   desiredMonthlySpendToday: number;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {results.map(({ summary, result }) => {
@@ -51,33 +53,70 @@ export default function DepletionStatCards({
 
             <div className="mt-4 space-y-4">
               <Stat
-                label={`Pot at ${retirementAge}`}
-                hint="Retirement accounts plus savings and investments. Home equity is excluded unless you switched it on above."
+                label={t("drawdownPanel.stats.potAt", "Pot at {{age}}", {
+                  age: retirementAge,
+                })}
+                hint={t(
+                  "drawdownPanel.stats.potAtHint",
+                  "Retirement accounts plus savings and investments. Home equity is excluded unless you switched it on above.",
+                )}
                 value={money(result.portfolioAtRetirement)}
-                sub={`${money(result.retirementAccountsAtRetirement)} retirement · ${money(
-                  result.liquidAtRetirement,
-                )} other`}
+                sub={t(
+                  "drawdownPanel.stats.potAtSub",
+                  "{{retirement}} retirement · {{other}} other",
+                  {
+                    retirement: money(result.retirementAccountsAtRetirement),
+                    other: money(result.liquidAtRetirement),
+                  },
+                )}
               />
               <Stat
-                label="Money lasts until"
-                hint="Simulated month by month: the balance grows at the retirement return and your inflating spending comes out of it."
+                label={t("drawdownPanel.stats.lastsUntil", "Money lasts until")}
+                hint={t(
+                  "drawdownPanel.stats.lastsUntilHint",
+                  "Simulated month by month: the balance grows at the retirement return and your inflating spending comes out of it.",
+                )}
                 value={
-                  isRunsOut ? `age ${lastsTo.toFixed(1)}` : `past ${planToAge}`
+                  isRunsOut
+                    ? t("drawdownPanel.stats.ageValue", "age {{age}}", {
+                        age: lastsTo.toFixed(1),
+                      })
+                    : t("drawdownPanel.stats.pastValue", "past {{age}}", {
+                        age: planToAge,
+                      })
                 }
                 tone={depletionTone(isRunsOut, lastsTo, planToAge)}
                 sub={
                   isRunsOut
-                    ? `${result.yearsOfIncome.toFixed(1)} years of income`
-                    : `${money(result.balanceAtPlanEnd)} still left at ${planToAge}`
+                    ? t(
+                        "drawdownPanel.stats.yearsOfIncome",
+                        "{{years}} years of income",
+                        { years: result.yearsOfIncome.toFixed(1) },
+                      )
+                    : t(
+                        "drawdownPanel.stats.stillLeft",
+                        "{{amount}} still left at {{age}}",
+                        {
+                          amount: money(result.balanceAtPlanEnd),
+                          age: planToAge,
+                        },
+                      )
                 }
               />
               <div className="border-t border-slate-100 pt-3 text-xs text-slate-500">
-                At {(withdrawalRate * 100).toFixed(1)}% that pot supports{" "}
+                {t(
+                  "drawdownPanel.stats.supports",
+                  "At {{rate}}% that pot supports",
+                  { rate: (withdrawalRate * 100).toFixed(1) },
+                )}{" "}
                 <strong className="text-slate-700">
                   {money(result.sustainableAnnualIncome)}
                 </strong>{" "}
-                a year — about {money(result.sustainableAnnualIncomeToday)} in
-                today&rsquo;s money.
+                {t(
+                  "drawdownPanel.stats.supportsToday",
+                  "a year — about {{amount}} in today's money.",
+                  { amount: money(result.sustainableAnnualIncomeToday) },
+                )}
                 <span
                   className={`mt-1 block font-semibold ${
                     result.meetsTargetAtWithdrawalRate
@@ -86,8 +125,16 @@ export default function DepletionStatCards({
                   }`}
                 >
                   {result.meetsTargetAtWithdrawalRate
-                    ? `Covers the ${money(desiredMonthlySpendToday)}/mo target with room to spare.`
-                    : `${money(result.annualShortfall)} a year short of the target.`}
+                    ? t(
+                        "drawdownPanel.stats.coversTarget",
+                        "Covers the {{amount}}/mo target with room to spare.",
+                        { amount: money(desiredMonthlySpendToday) },
+                      )
+                    : t(
+                        "drawdownPanel.stats.shortOfTarget",
+                        "{{amount}} a year short of the target.",
+                        { amount: money(result.annualShortfall) },
+                      )}
                 </span>
               </div>
               {result.lifetimeTaxPaid > 0 && (
@@ -95,7 +142,10 @@ export default function DepletionStatCards({
                   <strong className="text-slate-700">
                     {money(result.lifetimeTaxPaid)}
                   </strong>{" "}
-                  goes to tax on retirement-account withdrawals over the plan.
+                  {t(
+                    "drawdownPanel.stats.lifetimeTax",
+                    "goes to tax on retirement-account withdrawals over the plan.",
+                  )}
                 </div>
               )}
             </div>

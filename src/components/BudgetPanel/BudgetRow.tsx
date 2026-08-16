@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { BudgetItem } from "../../model/types";
 import { useStore } from "../../store/useStore";
 import { DateInput, INLINE_INPUT, MoneyInput } from "../ui";
@@ -9,6 +10,7 @@ export default function BudgetRow({
   item: BudgetItem;
   dated?: boolean;
 }) {
+  const { t } = useTranslation();
   const { updateBudgetItem, removeBudgetItem } = useStore();
 
   return (
@@ -68,7 +70,9 @@ export default function BudgetRow({
         <button
           type="button"
           onClick={() => removeBudgetItem(item.id)}
-          title={`Remove ${item.label}`}
+          title={t("budgetPanel.removeItem", "Remove {{label}}", {
+            label: item.label,
+          })}
           className="rounded-md px-2 py-1 text-slate-300 opacity-0 transition hover:bg-red-50 hover:text-red-600 focus:opacity-100 group-hover:opacity-100"
         >
           ✕

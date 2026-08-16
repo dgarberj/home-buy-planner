@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type { BudgetItem } from "../../model/types";
 import { isObligation, type deriveBudgetTotals } from "../../lib/derive";
 import { Drawer } from "../ui";
@@ -10,31 +12,39 @@ import BudgetGroup from "./BudgetGroup";
  * seeing at a glance.
  */
 
-const GROUPS: {
-  type: BudgetItem["type"];
-  title: string;
-  hint: string;
-  accent: string;
-}[] = [
-  {
-    type: "income",
-    title: "Money in",
-    hint: "Take-home pay after tax and deductions — what actually arrives in the bank.",
-    accent: "text-emerald-700",
-  },
-  {
-    type: "fixed",
-    title: "Fixed costs",
-    hint: "Same amount every month: rent, insurance, car and loan payments, subscriptions.",
-    accent: "text-slate-700",
-  },
-  {
-    type: "variable",
-    title: "Variable costs",
-    hint: "Spending that moves around month to month: groceries, dining, shopping, travel.",
-    accent: "text-slate-700",
-  },
-];
+function groups(
+  t: TFunction,
+): { type: BudgetItem["type"]; title: string; hint: string; accent: string }[] {
+  return [
+    {
+      type: "income",
+      title: t("budgetPanel.groups.income.title", "Money in"),
+      hint: t(
+        "budgetPanel.groups.income.hint",
+        "Take-home pay after tax and deductions — what actually arrives in the bank.",
+      ),
+      accent: "text-emerald-700",
+    },
+    {
+      type: "fixed",
+      title: t("budgetPanel.groups.fixed.title", "Fixed costs"),
+      hint: t(
+        "budgetPanel.groups.fixed.hint",
+        "Same amount every month: rent, insurance, car and loan payments, subscriptions.",
+      ),
+      accent: "text-slate-700",
+    },
+    {
+      type: "variable",
+      title: t("budgetPanel.groups.variable.title", "Variable costs"),
+      hint: t(
+        "budgetPanel.groups.variable.hint",
+        "Spending that moves around month to month: groceries, dining, shopping, travel.",
+      ),
+      accent: "text-slate-700",
+    },
+  ];
+}
 
 export default function BudgetDrawer({
   open,
@@ -55,10 +65,15 @@ export default function BudgetDrawer({
   obligationsTotal: number;
   addBudgetItem: (item?: Partial<BudgetItem>) => void;
 }) {
+  const { t } = useTranslation();
   return (
-    <Drawer open={open} onClose={onClose} title="Edit budget line items">
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title={t("budgetPanel.drawerTitle", "Edit budget line items")}
+    >
       <div className="grid gap-4">
-        {GROUPS.map((g) => (
+        {groups(t).map((g) => (
           <BudgetGroup
             key={g.type}
             title={g.title}
@@ -74,8 +89,14 @@ export default function BudgetDrawer({
 
       <div className="mt-4 grid gap-4">
         <BudgetGroup
-          title="Rent (goes away when you buy)"
-          hint="Rent is tracked on its own because it is replaced by the mortgage payment the month you buy. Everything else carries on."
+          title={t(
+            "budgetPanel.groups.rent.title",
+            "Rent (goes away when you buy)",
+          )}
+          hint={t(
+            "budgetPanel.groups.rent.hint",
+            "Rent is tracked on its own because it is replaced by the mortgage payment the month you buy. Everything else carries on.",
+          )}
           items={rentItems}
           total={totals.rent}
           onAdd={() =>
@@ -89,9 +110,15 @@ export default function BudgetDrawer({
         />
         <BudgetGroup
           dated
-          addLabel="+ Add commitment"
-          title="Commitments with an end date"
-          hint="A lease, a loan, or a court-ordered or contractual payment with a known end date. These are modelled differently from ordinary expenses: they never inflate, and they are NOT cut during a job loss — you cannot unilaterally stop paying a court-ordered obligation. The month one ends, cash flow steps up for good."
+          addLabel={t("budgetPanel.groups.commitments.addLabel", "+ Add commitment")}
+          title={t(
+            "budgetPanel.groups.commitments.title",
+            "Commitments with an end date",
+          )}
+          hint={t(
+            "budgetPanel.groups.commitments.hint",
+            "A lease, a loan, or a court-ordered or contractual payment with a known end date. These are modelled differently from ordinary expenses: they never inflate, and they are NOT cut during a job loss — you cannot unilaterally stop paying a court-ordered obligation. The month one ends, cash flow steps up for good.",
+          )}
           items={obligationItems}
           total={obligationsTotal}
           onAdd={() => {

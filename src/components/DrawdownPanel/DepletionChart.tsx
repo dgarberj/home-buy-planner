@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 import type { DrawdownResult } from "../../engine/drawdown";
 import type { ScenarioSummary } from "../../model/types";
 import { money, moneyShort } from "../../lib/format";
@@ -24,6 +25,7 @@ export default function DepletionChart({
   planToAge: number;
   desiredMonthlySpendToday: number;
 }) {
+  const { t } = useTranslation();
   /**
   One row per year, one column per scenario, for the depletion chart.
   */
@@ -40,10 +42,16 @@ export default function DepletionChart({
 
   return (
     <Card
-      title="The money running down"
-      subtitle={`Balance from age ${retirementAge} to ${planToAge}, spending ${money(
-        desiredMonthlySpendToday,
-      )} a month in today's money. Where a line hits zero, the money is gone.`}
+      title={t("drawdownPanel.chart.title", "The money running down")}
+      subtitle={t(
+        "drawdownPanel.chart.subtitle",
+        "Balance from age {{retirementAge}} to {{planToAge}}, spending {{amount}} a month in today's money. Where a line hits zero, the money is gone.",
+        {
+          retirementAge,
+          planToAge,
+          amount: money(desiredMonthlySpendToday),
+        },
+      )}
     >
       <div className="h-[320px] w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -58,7 +66,9 @@ export default function DepletionChart({
             />
             <XAxis
               dataKey="age"
-              tickFormatter={(a: number) => `age ${a}`}
+              tickFormatter={(a: number) =>
+                t("drawdownPanel.chart.axisAge", "age {{age}}", { age: a })
+              }
               tick={{ fill: "#64748b", fontSize: 12 }}
               axisLine={{ stroke: "#cbd5e1" }}
               tickLine={false}
@@ -72,7 +82,9 @@ export default function DepletionChart({
             />
             <Tooltip
               formatter={(value) => money(Number(value))}
-              labelFormatter={(a) => `Age ${a}`}
+              labelFormatter={(a) =>
+                t("drawdownPanel.chart.tooltipAge", "Age {{age}}", { age: a })
+              }
               contentStyle={{
                 borderRadius: 12,
                 border: "1px solid #e2e8f0",

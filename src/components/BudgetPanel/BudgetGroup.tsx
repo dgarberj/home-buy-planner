@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { BudgetItem } from "../../model/types";
 import { money } from "../../lib/format";
 import { Button, InfoTip } from "../ui";
@@ -10,7 +11,7 @@ export default function BudgetGroup({
   total,
   onAdd,
   dated = false,
-  addLabel = "+ Add line",
+  addLabel,
 }: {
   title: string;
   hint: string;
@@ -20,6 +21,7 @@ export default function BudgetGroup({
   dated?: boolean;
   addLabel?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-slate-200">
       <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-3 py-2">
@@ -29,12 +31,16 @@ export default function BudgetGroup({
         </h4>
         <span className="text-sm font-semibold tabular-nums text-slate-900">
           {money(total)}
-          <span className="ml-1 text-xs font-normal text-slate-400">/mo</span>
+          <span className="ml-1 text-xs font-normal text-slate-400">
+            {t("budgetPanel.perMonthSuffix", "/mo")}
+          </span>
         </span>
       </div>
       <div className={`px-2 py-1 ${dated ? "overflow-x-auto" : ""}`}>
         {items.length === 0 ? (
-          <p className="px-2 py-3 text-sm text-slate-400">Nothing here yet.</p>
+          <p className="px-2 py-3 text-sm text-slate-400">
+            {t("budgetPanel.groupEmpty", "Nothing here yet.")}
+          </p>
         ) : (
           <table
             className={`w-full table-fixed ${dated ? "min-w-[560px]" : ""}`}
@@ -61,11 +67,21 @@ export default function BudgetGroup({
             {dated && (
               <thead>
                 <tr className="text-left text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                  <th className="px-2 pb-1">What</th>
-                  <th className="px-2 pb-1">Category</th>
-                  <th className="px-2 pb-1 text-right">Amount</th>
-                  <th className="px-2 pb-1">Starts</th>
-                  <th className="px-2 pb-1">Ends</th>
+                  <th className="px-2 pb-1">
+                    {t("budgetPanel.columns.what", "What")}
+                  </th>
+                  <th className="px-2 pb-1">
+                    {t("budgetPanel.columns.category", "Category")}
+                  </th>
+                  <th className="px-2 pb-1 text-right">
+                    {t("budgetPanel.columns.amount", "Amount")}
+                  </th>
+                  <th className="px-2 pb-1">
+                    {t("budgetPanel.columns.starts", "Starts")}
+                  </th>
+                  <th className="px-2 pb-1">
+                    {t("budgetPanel.columns.ends", "Ends")}
+                  </th>
                   <th />
                 </tr>
               </thead>
@@ -80,7 +96,7 @@ export default function BudgetGroup({
       </div>
       <div className="border-t border-slate-100 px-3 py-2">
         <Button size="sm" variant="ghost" onClick={onAdd}>
-          {addLabel}
+          {addLabel ?? t("budgetPanel.addLine", "+ Add line")}
         </Button>
       </div>
     </div>
