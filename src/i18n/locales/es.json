@@ -1433,6 +1433,13 @@
     "years_other": "{{count}} años",
     "months_one": "{{count}} mes",
     "months_other": "{{count}} meses",
-    "zeroMonths": "0 meses"
+    "zeroMonths": "0 meses",
+    "monthPhrase": "mes {{month}} ({{label}})"
+  },
+  "ui": {
+    "section": {
+      "hide": "Ocultar",
+      "show": "Mostrar"
+    }
   }
 }

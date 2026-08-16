@@ -25,7 +25,7 @@ export function verdict(
       "Cash bottoms out at {{amount}} in {{date}}",
       {
         amount: money(s.minCashBuffer),
-        date: monthPhrase(startDate, s.minCashBufferMonth),
+        date: monthPhrase(startDate, s.minCashBufferMonth, t),
       },
     );
     const buyingClause = buyRow
@@ -46,7 +46,7 @@ export function verdict(
         "dashboard.verdict.buyingWorks",
         "Buying in {{date}} works — it takes {{upfront}} up front and leaves {{leftover}} in the bank",
         {
-          date: monthPhrase(startDate, buyRow.month),
+          date: monthPhrase(startDate, buyRow.month, t),
           upfront: money(buyRow.purchaseOutflow),
           leftover: money(buyRow.liquidSavings),
         },
@@ -58,7 +58,7 @@ export function verdict(
         ? t(
             "dashboard.verdict.rentingReady",
             "Renting throughout. You'd have enough for a down payment by {{date}}",
-            { date: monthPhrase(startDate, s.readinessMonth) },
+            { date: monthPhrase(startDate, s.readinessMonth, t) },
           )
         : t(
             "dashboard.verdict.rentingNotReady",

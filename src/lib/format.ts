@@ -88,8 +88,15 @@ export function monthLabel(startDate: string, month: number): string {
 /**
 "month 14 (Oct 2027)" -- the phrasing used in the plain-English callouts.
 */
-export function monthPhrase(startDate: string, month: number): string {
-  return `month ${month} (${monthLabel(startDate, month)})`;
+export function monthPhrase(
+  startDate: string,
+  month: number,
+  t: TFunction,
+): string {
+  return t("format.monthPhrase", `month ${month} ({{label}})`, {
+    month,
+    label: monthLabel(startDate, month),
+  });
 }
 
 /**

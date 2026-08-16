@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 /**
  * A collapsible page section. The page is one continuous scroll rather than a
@@ -20,6 +21,7 @@ export default function Section({
   defaultOpen?: boolean;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(defaultOpen);
 
   return (
@@ -40,7 +42,7 @@ export default function Section({
           aria-expanded={open}
           className="mt-1 shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
         >
-          {open ? "Hide" : "Show"}
+          {open ? t("ui.section.hide", "Hide") : t("ui.section.show", "Show")}
         </button>
       </header>
       {open && children}
