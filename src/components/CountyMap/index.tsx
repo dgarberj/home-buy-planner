@@ -237,7 +237,7 @@ export default function CountyMap({
               "FEMA hazard risk ({{rating}}, {{percentile}} percentile nationally):",
               {
                 rating: risk.riskRating.toLowerCase(),
-                percentile: ordinal(risk.riskScore),
+                percentile: ordinal(risk.riskScore, t),
               },
             )}
           </span>{" "}
@@ -245,9 +245,9 @@ export default function CountyMap({
             "countyMap.hazardBreakdown",
             "flooding {{flood}} pctl, heat {{heat}} pctl, wildfire {{wildfire}} pctl.",
             {
-              flood: ordinal(risk.floodRiskScore),
-              heat: ordinal(risk.heatWaveRiskScore),
-              wildfire: ordinal(risk.wildfireRiskScore),
+              flood: ordinal(risk.floodRiskScore, t),
+              heat: ordinal(risk.heatWaveRiskScore, t),
+              wildfire: ordinal(risk.wildfireRiskScore, t),
             },
           )}{" "}
           {risk.note}{" "}

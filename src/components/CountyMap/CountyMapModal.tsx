@@ -372,21 +372,21 @@ export default function CountyMapModal({
                 <StatRow
                   label={t("countyMap.modal.inlandFlooding", "Inland flooding")}
                   value={t("countyMap.modal.pctl", "{{n}} pctl", {
-                    n: ordinal(risk.floodRiskScore),
+                    n: ordinal(risk.floodRiskScore, t),
                   })}
                   sub={risk.floodRiskRating}
                 />
                 <StatRow
                   label={t("countyMap.modal.heatWave", "Heat wave")}
                   value={t("countyMap.modal.pctl", "{{n}} pctl", {
-                    n: ordinal(risk.heatWaveRiskScore),
+                    n: ordinal(risk.heatWaveRiskScore, t),
                   })}
                   sub={risk.heatWaveRiskRating}
                 />
                 <StatRow
                   label={t("countyMap.modal.wildfire", "Wildfire")}
                   value={t("countyMap.modal.pctl", "{{n}} pctl", {
-                    n: ordinal(risk.wildfireRiskScore),
+                    n: ordinal(risk.wildfireRiskScore, t),
                   })}
                   sub={risk.wildfireRiskRating}
                 />
@@ -396,7 +396,7 @@ export default function CountyMapModal({
                     "Composite risk (all 18 hazards)",
                   )}
                   value={t("countyMap.modal.pctl", "{{n}} pctl", {
-                    n: ordinal(risk.riskScore),
+                    n: ordinal(risk.riskScore, t),
                   })}
                   emphasize
                 />

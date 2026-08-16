@@ -147,7 +147,7 @@ export default function ScenarioCard({
               max={24}
               accent={scenario.color}
               onChange={(v) => setOverride({ durationMonths: v })}
-              display={duration(jl.durationMonths)}
+              display={duration(jl.durationMonths, t)}
             />
             <Slider
               label={t(

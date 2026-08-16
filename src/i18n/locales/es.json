@@ -1426,5 +1426,13 @@
       "redLabel": "rojo",
       "redMeaning": "negativo — dinero que no tienes"
     }
+  },
+  "format": {
+    "ordinal": "{{n}}.º",
+    "years_one": "{{count}} año",
+    "years_other": "{{count}} años",
+    "months_one": "{{count}} mes",
+    "months_other": "{{count}} meses",
+    "zeroMonths": "0 meses"
   }
 }

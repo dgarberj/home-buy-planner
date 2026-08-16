@@ -1,5 +1,13 @@
+import type { TFunction } from "i18next";
+
 /**
 Display helpers. Nothing here affects the model -- formatting only.
+
+Currency/date figures always stay `en-US` regardless of UI language (this is
+a US-market tool), so most helpers below take no `t`. `ordinal()` and
+`duration()` are the exception -- they hand-roll English words ("1st",
+"2 months") that would otherwise leak into an otherwise-Spanish sentence, so
+they take a `TFunction` and route through the catalog.
 */
 
 export const money = (n: number, digits = 0) =>
@@ -13,24 +21,32 @@ export const money = (n: number, digits = 0) =>
 /**
 "1st", "2nd", "3rd", "94th", "93rd" -- for percentile labels.
 */
-export function ordinal(n: number): string {
+export function ordinal(n: number, t: TFunction): string {
   const rounded = Math.round(n);
   const module100 = rounded % 100;
-  if (module100 >= 11 && module100 <= 13) return `${rounded}th`;
-  switch (rounded % 10) {
-    case 1: {
-      return `${rounded}st`;
-    }
-    case 2: {
-      return `${rounded}nd`;
-    }
-    case 3: {
-      return `${rounded}rd`;
-    }
-    default: {
-      return `${rounded}th`;
+  let suffix: string;
+  if (module100 >= 11 && module100 <= 13) {
+    suffix = "th";
+  } else {
+    switch (rounded % 10) {
+      case 1: {
+        suffix = "st";
+        break;
+      }
+      case 2: {
+        suffix = "nd";
+        break;
+      }
+      case 3: {
+        suffix = "rd";
+        break;
+      }
+      default: {
+        suffix = "th";
+      }
     }
   }
+  return t("format.ordinal", `${rounded}${suffix}`, { n: rounded });
 }
 
 /**
@@ -79,11 +95,15 @@ export function monthPhrase(startDate: string, month: number): string {
 /**
 "1 year 2 months"
 */
-export function duration(months: number): string {
+export function duration(months: number, t: TFunction): string {
   const y = Math.floor(months / 12);
   const m = months % 12;
   const parts: string[] = [];
-  if (y) parts.push(`${y} year${y === 1 ? "" : "s"}`);
-  if (m) parts.push(`${m} month${m === 1 ? "" : "s"}`);
-  return parts.join(" ") || "0 months";
+  if (y) {
+    parts.push(t("format.years", `${y} year${y === 1 ? "" : "s"}`, { count: y }));
+  }
+  if (m) {
+    parts.push(t("format.months", `${m} month${m === 1 ? "" : "s"}`, { count: m }));
+  }
+  return parts.length > 0 ? parts.join(" ") : t("format.zeroMonths", "0 months");
 }
