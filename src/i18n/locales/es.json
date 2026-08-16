@@ -13,5 +13,110 @@
     "drawdown": "¿Alcanzará?",
     "detail": "Mes a mes",
     "sources": "Fuentes"
+  },
+  "app": {
+    "mobileNav": {
+      "hideLevers": "Ocultar palancas",
+      "showLevers": "Mostrar palancas"
+    },
+    "howToRead": {
+      "title": "Cómo leer esto",
+      "subtitle": "60 segundos sobre lo que significan los números",
+      "intro": "Esta herramienta responde una sola pregunta: <b>¿cuándo podremos comprar una casa, y estaríamos bien si uno de los dos perdiera el trabajo?</b>",
+      "li1": "<b>Empieza por arriba.</b> El presupuesto es cada dólar recurrente que entra y sale. Cambia cualquier número y todo lo que sigue se actualiza al instante.",
+      "li2": "<b>Los escenarios son versiones del futuro.</b> Cada uno elige un mes para comprar y si ocurre una pérdida de empleo. Mueve los controles — para eso están.",
+      "li3": "<b>\"Lista para comprar\"</b> es el primer mes en que nuestros ahorros cubrirían el pago inicial y los costos de cierre. La casa se encarece mientras ahorramos, así que esperar no es gratis.",
+      "li4": "<b>\"Efectivo mínimo\"</b> es el punto más bajo que alcanzan nuestros ahorros disponibles. Es el número de resiliencia. Por debajo de cero, en rojo, significa que el plan no se sostiene solo.",
+      "li5": "<b>Los compromisos son distintos de los gastos.</b> Una obligación fija con una fecha de fin conocida nunca se ajusta por inflación ni se recorta en una crisis — y el mes que termina, ese dinero queda libre para siempre.",
+      "li6": "<b>Nada aquí es una predicción.</b> Es aritmética sobre los supuestos que ingresamos. Cambia un supuesto y obtienes una respuesta distinta, igual de convincente en apariencia — por eso vale la pena probar los extremos."
+    },
+    "clusters": {
+      "setup": "Preparación",
+      "where": "Dónde",
+      "results": "Resultados"
+    },
+    "share": {
+      "brokenLink": "Ese enlace compartido está roto o incompleto.",
+      "versionMismatch": "Este enlace se creó con una versión distinta de la app y no se puede cargar aquí.",
+      "errorTitle": "No se pudo cargar el enlace compartido",
+      "close": "Cerrar",
+      "confirmTitle": "¿Cargar escenario compartido?",
+      "confirmSubtitle": "Esto reemplaza todo el presupuesto, saldos y escenarios guardados actualmente en este navegador.",
+      "cancel": "Cancelar",
+      "loadButton": "Cargar datos compartidos",
+      "confirmBody": "Alguien compartió un enlace con sus números completos incluidos. Cargarlo sobrescribe lo que está guardado actualmente en este navegador — exporta una copia de seguridad primero si quieres conservarlo."
+    },
+    "header": {
+      "title": "Home Buy Planner",
+      "about": "Sobre esta herramienta"
+    },
+    "sections": {
+      "balances": {
+        "eyebrow": "Paso 1",
+        "title": "Lo que realmente tenemos",
+        "description": "Una instantánea de los saldos reales, registrada cada mes o trimestre. La más reciente es donde empieza la proyección."
+      },
+      "budget": {
+        "eyebrow": "Paso 2",
+        "title": "Lo que entra y lo que sale",
+        "description": "Tu presupuesto real. Todo lo marcado como ESTIMADO sigue siendo una suposición — corregirlo, empezando por el salario neto, hace que todo lo demás sea más confiable."
+      },
+      "contributions": {
+        "eyebrow": "Paso 3",
+        "title": "Aportaciones para la jubilación",
+        "description": "Lo que estás ahorrando cada año, frente a los objetivos — y lo que eso deja disponible para el pago inicial."
+      },
+      "assumptions": {
+        "eyebrow": "Paso 4",
+        "title": "Supuestos",
+        "description": "Las tasas y condiciones detrás de la proyección: aumentos salariales, inflación, rendimiento de inversiones y la casa a la que aspiramos. Pasa el cursor sobre cualquier ? para ver qué significa."
+      },
+      "market": {
+        "eyebrow": "Paso 5",
+        "title": "Dónde comprar",
+        "description": "Tasas de impuestos reales de 2026 del condado de Delaware. La misma casa puede costar varios cientos más al mes solo según de qué lado de la línea municipal esté."
+      },
+      "lender": {
+        "eyebrow": "El obstáculo real",
+        "title": "Lo que un prestamista permitirá",
+        "description": "Un cálculo distinto al tuyo — ingreso bruto, obligaciones fijas contadas como deuda, mantenimiento ignorado. El menor de los dos límites es el que manda."
+      },
+      "waiting": {
+        "eyebrow": "La disyuntiva",
+        "title": "¿Vale la pena esperar?",
+        "description": "Si ahorrar más tiempo realmente pone una mejor casa a nuestro alcance — y cuál de las dos restricciones nos está frenando de verdad."
+      },
+      "scenarios": {
+        "eyebrow": "Paso 6",
+        "title": "Escenarios a comparar",
+        "description": "Comprar temprano o comprar más tarde, con o sin pérdida de empleo. Agrega tantos como quieras."
+      },
+      "dashboard": {
+        "eyebrow": "La respuesta",
+        "title": "Panel",
+        "description": "Cómo divergen los escenarios en los próximos años, y si cada uno se sostiene."
+      },
+      "retirement": {
+        "eyebrow": "La visión a largo plazo",
+        "title": "Impacto en la jubilación",
+        "description": "Cómo se acumula la decisión de comprar antes para cuando dejes de trabajar — y, tan importante como eso, dónde no lo hace."
+      },
+      "drawdown": {
+        "eyebrow": "La pregunta real",
+        "title": "¿Alcanzará el dinero?",
+        "description": "Un fondo de dinero a los 65 no significa nada por sí solo. Esto es lo que realmente sostiene, y cuándo se agota."
+      },
+      "detail": {
+        "eyebrow": "Los comprobantes",
+        "title": "Mes a mes",
+        "description": "El resultado sin procesar de la proyección, una fila por mes, para verificar el funcionamiento del modelo."
+      },
+      "sources": {
+        "eyebrow": "Los comprobantes",
+        "title": "De dónde vienen los números",
+        "description": "Cada cifra externa en esta app, con un enlace, lo que cubre y cuánto confiar en ella."
+      }
+    },
+    "footer": "Tus números se guardan solo en este navegador. Usa Exportar para conservar una copia de seguridad."
   }
 }
