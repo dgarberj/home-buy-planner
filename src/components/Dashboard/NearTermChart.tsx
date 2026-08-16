@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   CartesianGrid,
   Legend,
@@ -36,6 +37,7 @@ const METRICS = [
 ];
 
 export default function NearTermChart() {
+  const { t } = useTranslation();
   const { summaries, assumptions } = useProjections();
   const settings = useStore((s) => s.settings);
   const [metric, setMetric] =
@@ -43,14 +45,17 @@ export default function NearTermChart() {
   const [xAxis, setXAxis] = useState<"date" | "age">("date");
 
   const active = METRICS.find((m) => m.key === metric)!;
+  const activeLabel = t(`dashboard.nearTerm.metrics.${active.key}.label`, active.label);
+  const activeHint = t(`dashboard.nearTerm.metrics.${active.key}.hint`, active.hint);
   const primaryAge = assumptions.household.primaryAge;
+  const ageWord = t("dashboard.nearTerm.age", "age");
 
   /**
   Label a month as either a calendar date or the primary person's age.
   */
   const xLabel = (m: number) =>
     xAxis === "age"
-      ? `age ${Math.floor(primaryAge + (m - 1) / 12)}`
+      ? `${ageWord} ${Math.floor(primaryAge + (m - 1) / 12)}`
       : monthLabel(settings.startDate, m);
 
   /**
@@ -100,8 +105,8 @@ export default function NearTermChart() {
 
   return (
     <Card
-      title={active.label + " over time"}
-      subtitle={`Near-term: will the plan run dry before you buy? ${active.hint}`}
+      title={`${activeLabel} ${t("dashboard.nearTerm.overTime", "over time")}`}
+      subtitle={`${t("dashboard.nearTerm.subtitlePrefix", "Near-term: will the plan run dry before you buy?")} ${activeHint}`}
       right={
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
@@ -116,7 +121,9 @@ export default function NearTermChart() {
                     : "text-slate-500 hover:text-slate-900"
                 }`}
               >
-                {mode}
+                {mode === "date"
+                  ? t("dashboard.nearTerm.xAxis.date", "date")
+                  : t("dashboard.nearTerm.xAxis.age", "age")}
               </button>
             ))}
           </div>
@@ -132,7 +139,7 @@ export default function NearTermChart() {
                     : "text-slate-500 hover:text-slate-900"
                 }`}
               >
-                {m.label}
+                {t(`dashboard.nearTerm.metrics.${m.key}.label`, m.label)}
               </button>
             ))}
           </div>
@@ -168,9 +175,9 @@ export default function NearTermChart() {
             <Tooltip
               formatter={(value) => money(Number(value))}
               labelFormatter={(m) =>
-                `${monthLabel(settings.startDate, Number(m))} · age ${Math.floor(
+                `${monthLabel(settings.startDate, Number(m))} · ${ageWord} ${Math.floor(
                   primaryAge + (Number(m) - 1) / 12,
-                )} · month ${m}`
+                )} · ${t("dashboard.nearTerm.month", "month")} ${m}`
               }
               contentStyle={CHART_TOOLTIP_STYLE}
             />
@@ -208,8 +215,10 @@ export default function NearTermChart() {
       </div>
       {buyMarkers.length > 0 && (
         <p className="mt-2 text-xs text-slate-500">
-          Dashed lines mark the month each scenario buys. The drop is the down
-          payment and closing costs leaving the account.
+          {t(
+            "dashboard.nearTerm.buyMarkersCaption",
+            "Dashed lines mark the month each scenario buys. The drop is the down payment and closing costs leaving the account.",
+          )}
         </p>
       )}
     </Card>

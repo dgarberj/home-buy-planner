@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { money, monthLabel } from "../../lib/format";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
@@ -13,6 +14,7 @@ function thinnestCashTone(
 }
 
 export default function ScenarioStatCards() {
+  const { t } = useTranslation();
   const { summaries } = useProjections();
   const settings = useStore((s) => s.settings);
 
@@ -40,61 +42,118 @@ export default function ScenarioStatCards() {
 
             <div className="mt-4 space-y-4">
               <Stat
-                label="House ready"
-                hint="The first month your savings would cover the down payment plus closing costs on the target house, which is itself getting more expensive while you save."
+                label={t("dashboard.statCards.houseReady.label", "House ready")}
+                hint={t(
+                  "dashboard.statCards.houseReady.hint",
+                  "The first month your savings would cover the down payment plus closing costs on the target house, which is itself getting more expensive while you save.",
+                )}
                 value={
                   s.readinessMonth
                     ? monthLabel(settings.startDate, s.readinessMonth)
-                    : "Not on track"
+                    : t("dashboard.statCards.houseReady.notOnTrack", "Not on track")
                 }
                 tone={s.readinessMonth ? "good" : "bad"}
                 sub={
                   s.readinessMonth
-                    ? `month ${s.readinessMonth} · needs ${money(s.readinessCashRequired)}`
-                    : `${money(s.readinessCashRequired)} needed, not reached in this window`
+                    ? t(
+                        "dashboard.statCards.houseReady.subReady",
+                        "month {{month}} · needs {{amount}}",
+                        {
+                          month: s.readinessMonth,
+                          amount: money(s.readinessCashRequired),
+                        },
+                      )
+                    : t(
+                        "dashboard.statCards.houseReady.subNotReady",
+                        "{{amount}} needed, not reached in this window",
+                        { amount: money(s.readinessCashRequired) },
+                      )
                 }
               />
               <Stat
-                label="Thinnest cash"
-                hint="The lowest your spendable savings ever get across the whole projection. This is the resilience number — if it goes below zero, the plan does not fund itself."
+                label={t("dashboard.statCards.thinnestCash.label", "Thinnest cash")}
+                hint={t(
+                  "dashboard.statCards.thinnestCash.hint",
+                  "The lowest your spendable savings ever get across the whole projection. This is the resilience number — if it goes below zero, the plan does not fund itself.",
+                )}
                 value={money(s.minCashBuffer)}
                 tone={thinnestCashTone(s.goesNegative, s.minCashBuffer)}
-                sub={`lowest point: ${monthLabel(settings.startDate, s.minCashBufferMonth)}`}
+                sub={t(
+                  "dashboard.statCards.thinnestCash.sub",
+                  "lowest point: {{date}}",
+                  { date: monthLabel(settings.startDate, s.minCashBufferMonth) },
+                )}
               />
               <div className="border-t border-slate-100 pt-3 text-xs text-slate-500">
                 {buyRow ? (
                   <>
-                    Buys {monthLabel(settings.startDate, buyRow.month)} ·{" "}
-                    {money(buyRow.purchaseOutflow)} up front ·{" "}
-                    {money(buyRow.housingPayment)}/mo housing
+                    {t(
+                      "dashboard.statCards.buys",
+                      "Buys {{date}} · {{upfront}} up front · {{monthly}}/mo housing",
+                      {
+                        date: monthLabel(settings.startDate, buyRow.month),
+                        upfront: money(buyRow.purchaseOutflow),
+                        monthly: money(buyRow.housingPayment),
+                      },
+                    )}
                     {s.mortgagePaidOffMonth && (
                       <span className="mt-1 block">
-                        Mortgage clear{" "}
-                        {monthLabel(settings.startDate, s.mortgagePaidOffMonth)}{" "}
-                        · {money(s.totalInterestPaid)} interest
+                        {t(
+                          "dashboard.statCards.mortgageClear",
+                          "Mortgage clear {{date}} · {{interest}} interest",
+                          {
+                            date: monthLabel(
+                              settings.startDate,
+                              s.mortgagePaidOffMonth,
+                            ),
+                            interest: money(s.totalInterestPaid),
+                          },
+                        )}
                       </span>
                     )}
                     {s.totalMaintenancePaid > 0 && (
                       <span className="mt-1 block">
-                        {money(s.totalMaintenancePaid)} upkeep over the window
+                        {t(
+                          "dashboard.statCards.upkeep",
+                          "{{amount}} upkeep over the window",
+                          { amount: money(s.totalMaintenancePaid) },
+                        )}
                         {s.totalPmiPaid > 0 &&
-                          ` · ${money(s.totalPmiPaid)} mortgage insurance`}
+                          ` · ${t(
+                            "dashboard.statCards.mortgageInsurance",
+                            "{{amount}} mortgage insurance",
+                            { amount: money(s.totalPmiPaid) },
+                          )}`}
                       </span>
                     )}
                     {s.totalPmiPaid > 0 && s.pmiEndsMonth && (
                       <span className="mt-1 block">
-                        Mortgage insurance ends{" "}
-                        {monthLabel(settings.startDate, s.pmiEndsMonth)}
+                        {t(
+                          "dashboard.statCards.pmiEnds",
+                          "Mortgage insurance ends {{date}}",
+                          {
+                            date: monthLabel(
+                              settings.startDate,
+                              s.pmiEndsMonth,
+                            ),
+                          },
+                        )}
                       </span>
                     )}
                     {!s.fundedAtPurchase && (
                       <span className="mt-1 block font-semibold text-red-600">
-                        Not enough saved by then.
+                        {t(
+                          "dashboard.statCards.notEnoughSaved",
+                          "Not enough saved by then.",
+                        )}
                       </span>
                     )}
                   </>
                 ) : (
-                  "Keeps renting for the whole window."
+                  t(
+                    "dashboard.statCards.keepsRenting",
+                    "Keeps renting for the whole window.",
+                  )
                 )}
               </div>
             </div>

@@ -118,5 +118,116 @@
       }
     },
     "footer": "Tus números se guardan solo en este navegador. Usa Exportar para conservar una copia de seguridad."
+  },
+  "dashboard": {
+    "title": "Panel",
+    "noScenarios": "No hay escenarios activados. Activa uno arriba para ver una proyección.",
+    "nearTerm": {
+      "metrics": {
+        "cashBalance": {
+          "label": "Colchón de efectivo",
+          "hint": "El fondo de emergencia por sí solo. Las inversiones se venden antes de que esto pueda volverse negativo, así que una caída aquí es la primera señal de alerta."
+        },
+        "liquidSavings": {
+          "label": "Ahorros e inversiones",
+          "hint": "Todo fuera de la jubilación a lo que podrías acceder. Esta es la línea que muestra el riesgo."
+        }
+      },
+      "age": "edad",
+      "month": "mes",
+      "overTime": "a lo largo del tiempo",
+      "subtitlePrefix": "Corto plazo: ¿se agotará el plan antes de comprar?",
+      "xAxis": {
+        "date": "fecha",
+        "age": "edad"
+      },
+      "buyMarkersCaption": "Las líneas punteadas marcan el mes en que cada escenario compra. La caída es el pago inicial y los costos de cierre saliendo de la cuenta."
+    },
+    "retirementOutlook": {
+      "metrics": {
+        "netWorthAtAge": {
+          "label": "Patrimonio neto",
+          "hint": "Todo sumado: efectivo, inversiones, cuentas de jubilación y plusvalía de la vivienda."
+        },
+        "retirementAtAge": {
+          "label": "Cuentas de jubilación",
+          "hint": "Los 401(k) e IRA por sí solos."
+        },
+        "investmentsAtAge": {
+          "label": "Inversiones",
+          "hint": "El fondo de corretaje sujeto a impuestos fuera de la jubilación — aquí es donde más se nota comprar antes."
+        },
+        "homeEquityAtAge": {
+          "label": "Plusvalía de la vivienda",
+          "hint": "Lo que vale la casa menos lo que todavía se debe por ella."
+        }
+      },
+      "age": "edad",
+      "titleEmpty": "En la jubilación, a lo largo del tiempo",
+      "emptyBody": "La proyección solo llega hasta los {{endAge}} años, así que ninguna de tus edades hito se ha alcanzado todavía. Extiende la ventana de proyección en Supuestos — el ajuste preestablecido <b>Hasta los 65</b> o <b>Hasta los 70</b> es la forma más rápida.",
+      "atEachMilestone": "en cada edad hito",
+      "subtitlePrefix": "Largo plazo: ¿qué tan separados terminan los escenarios?"
+    },
+    "secondIncome": {
+      "assumesPrefix": "— toda cifra a continuación asume que esto",
+      "happens": "sucede",
+      "doesNotHappen": "no sucede",
+      "hint": "Cámbialo para ver cómo se recalcula todo el plan. Apagado es la base más segura; encendido es para lo que estás planeando.",
+      "summary": "{{amount}}/mes desde {{date}}, menos {{childcare}} de cuidado infantil"
+    },
+    "comparison": {
+      "title": "Lado a lado",
+      "subtitle": "Dónde se encuentra cada escenario al final del año 1, 3 y 5.",
+      "scenario": "Escenario",
+      "netWorthAtYear": "Patrimonio neto · año {{y}}",
+      "thinnestCash": "Efectivo mínimo",
+      "houseReady": "Lista para comprar"
+    },
+    "statCards": {
+      "houseReady": {
+        "label": "Lista para comprar",
+        "hint": "El primer mes en que tus ahorros cubrirían el pago inicial más los costos de cierre de la casa objetivo, que a su vez se encarece mientras ahorras.",
+        "notOnTrack": "Fuera de plazo",
+        "subReady": "mes {{month}} · necesita {{amount}}",
+        "subNotReady": "se necesitan {{amount}}, no se alcanza en esta ventana"
+      },
+      "thinnestCash": {
+        "label": "Efectivo mínimo",
+        "hint": "El punto más bajo que alcanzan tus ahorros disponibles en toda la proyección. Es el número de resiliencia — si baja de cero, el plan no se sostiene solo.",
+        "sub": "punto más bajo: {{date}}"
+      },
+      "buys": "Compra {{date}} · {{upfront}} inicial · {{monthly}}/mes de vivienda",
+      "mortgageClear": "Hipoteca saldada {{date}} · {{interest}} de intereses",
+      "upkeep": "{{amount}} de mantenimiento durante la ventana",
+      "mortgageInsurance": "{{amount}} de seguro hipotecario",
+      "pmiEnds": "El seguro hipotecario termina {{date}}",
+      "notEnoughSaved": "No se ahorró lo suficiente para entonces.",
+      "keepsRenting": "Sigue alquilando durante toda la ventana."
+    },
+    "verdict": {
+      "cardTitle": "Qué significa esto",
+      "cardSubtitle": "Una lectura en lenguaje sencillo de cada escenario que tienes activado.",
+      "bottomOut": "El efectivo toca fondo en {{amount}} en {{date}}",
+      "buyingClause": ", tras comprar en {{date}}",
+      "runsOutOfMoney": "Este plan se queda sin dinero.",
+      "buyingWorks": "Comprar en {{date}} funciona — se necesitan {{upfront}} por adelantado y quedan {{leftover}} en el banco",
+      "rentingReady": "Alquilando todo el tiempo. Tendrías suficiente para un pago inicial hacia {{date}}",
+      "rentingNotReady": "Alquilando todo el tiempo, y el pago inicial no se financia dentro de esta ventana",
+      "throughJobLoss": "y aun así superarías la pérdida de empleo, con {{amount}} en el punto más bajo",
+      "thinCushion": "Ese es un colchón delgado — vale la pena revisarlo con más detalle."
+    }
+  },
+  "retirementMilestones": {
+    "title": "En la jubilación",
+    "subtitlePrefix": "Dónde termina cada escenario a medida que envejeces.",
+    "scenario": "Escenario",
+    "ageColumn": "Edad {{age}}",
+    "partnerAge": "pareja {{age}}",
+    "mortgageClear": "hipoteca saldada {{date}}",
+    "bestHighlighted": "El mejor valor de cada columna está resaltado.",
+    "whereItShowsUp": "<b>Dónde se nota realmente comprar antes.</b> Tus aportaciones a la jubilación no cambian al comprar una casa — así que a los {{finalAge}} años las cuentas de jubilación difieren solo en {{retirementGapMoney}} entre estos escenarios, y esa diferencia proviene enteramente de pausar las aportaciones durante una pérdida de empleo. El efecto real del momento de compra se nota en la <b>plusvalía de la vivienda y las inversiones</b>: el pago de la hipoteca es fijo durante treinta años mientras el alquiler sigue subiendo, así que el excedente mensual de quien es propietario crece con el tiempo y se acumula. A los {{finalAge}} años eso suma una diferencia de {{gapMoney}} en {{metricLabel}}.",
+    "savingUpTitle": "Esto proyecta el ahorro, no vivir de él.",
+    "savingUpTip": "Modelar el retiro de fondos en la jubilación necesitaría tasas de retiro, tratamiento fiscal por tipo de cuenta, Seguro Social y distribuciones mínimas requeridas — un modelo mucho más grande que este.",
+    "savingUpBody": "\"Patrimonio neto a los {{finalAge}}\" significa lo que habrás acumulado para entonces. No dice nada sobre impuestos al retirar, Seguro Social, costos de salud, ni cuánto durará el dinero."
   }
 }

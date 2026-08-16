@@ -1,34 +1,39 @@
+import { useTranslation } from "react-i18next";
 import { money, monthLabel } from "../../lib/format";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";
 import { Card, Table, Td, Th } from "../ui";
 
 export default function ScenarioComparisonTable() {
+  const { t } = useTranslation();
   const { summaries } = useProjections();
   const settings = useStore((s) => s.settings);
   const years = [1, 3, 5].filter((y) => y * 12 <= settings.horizonMonths);
 
   return (
     <Card
-      title="Side by side"
-      subtitle="Where each scenario stands at the end of year 1, 3 and 5."
+      title={t("dashboard.comparison.title", "Side by side")}
+      subtitle={t(
+        "dashboard.comparison.subtitle",
+        "Where each scenario stands at the end of year 1, 3 and 5.",
+      )}
     >
       <Table minWidthClassName="min-w-[760px]">
         <thead>
           <tr className="border-b border-slate-200">
             <Th sticky className="bg-white pb-2 pr-4">
-              Scenario
+              {t("dashboard.comparison.scenario", "Scenario")}
             </Th>
             {years.map((y) => (
               <Th key={y} align="right" className="pb-2 pr-4">
-                Net worth · year {y}
+                {t("dashboard.comparison.netWorthAtYear", "Net worth · year {{y}}", { y })}
               </Th>
             ))}
             <Th align="right" className="pb-2 pr-4">
-              Thinnest cash
+              {t("dashboard.comparison.thinnestCash", "Thinnest cash")}
             </Th>
             <Th align="right" className="pb-2">
-              House ready
+              {t("dashboard.comparison.houseReady", "House ready")}
             </Th>
           </tr>
         </thead>

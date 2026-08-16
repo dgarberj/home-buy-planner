@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useProjections } from "../../store/useProjections";
 import { Card } from "../ui";
 import NearTermChart from "./NearTermChart";
@@ -11,13 +12,17 @@ import VerdictsCard from "./VerdictsCard";
  * and know whether the plan works -- without being walked through it.
  */
 export default function Dashboard() {
+  const { t } = useTranslation();
   const { summaries } = useProjections();
 
   if (summaries.length === 0) {
     return (
-      <Card title="Dashboard">
+      <Card title={t("dashboard.title", "Dashboard")}>
         <p className="py-10 text-center text-sm text-slate-400">
-          No scenarios are switched on. Turn one on above to see a projection.
+          {t(
+            "dashboard.noScenarios",
+            "No scenarios are switched on. Turn one on above to see a projection.",
+          )}
         </p>
       </Card>
     );

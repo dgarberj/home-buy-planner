@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { worstVerdict } from "../Dashboard/VerdictsCard";
 import { TONE_CLASSES } from "../ui";
 import { useProjections } from "../../store/useProjections";
@@ -11,10 +12,11 @@ import { useStore } from "../../store/useStore";
  * a block.
  */
 export default function VerdictStrip() {
+  const { t } = useTranslation();
   const { summaries } = useProjections();
   const settings = useStore((s) => s.settings);
 
-  const worst = worstVerdict(summaries, settings.startDate);
+  const worst = worstVerdict(summaries, settings.startDate, t);
   if (!worst) return null;
 
   return (

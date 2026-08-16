@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { money, monthLabel } from "../../lib/format";
 import {
   RETIREMENT_METRICS as METRICS,
@@ -26,11 +27,20 @@ function spread(values: number[]): number {
 }
 
 export default function RetirementMilestones() {
+  const { t } = useTranslation();
   const { summaries, assumptions } = useProjections();
   const settings = useStore((s) => s.settings);
   const [metric, setMetric] = useState<RetirementMetricKey>("netWorthAtAge");
 
   const active = METRICS.find((m) => m.key === metric)!;
+  const activeLabel = t(
+    `dashboard.retirementOutlook.metrics.${active.key}.label`,
+    active.label,
+  );
+  const activeHint = t(
+    `dashboard.retirementOutlook.metrics.${active.key}.hint`,
+    active.hint,
+  );
 
   // Only show ages the projection actually reaches.
   const ages = reachableMilestoneAges(
@@ -45,12 +55,18 @@ export default function RetirementMilestones() {
     const primaryAge = assumptions.household.primaryAge;
     const endAge = primaryAge + Math.floor(settings.horizonMonths / 12);
     return (
-      <Card title="At retirement">
+      <Card title={t("retirementMilestones.title", "At retirement")}>
         <Callout tone="neutral">
-          The projection only runs to age {endAge}, so none of your milestone
-          ages are reached yet. Stretch the projection window in Assumptions —
-          the <strong>To 65</strong> or <strong>To 70</strong> preset is the
-          quickest way.
+          <Trans
+            i18nKey="dashboard.retirementOutlook.emptyBody"
+            values={{ endAge }}
+            components={{ b: <strong /> }}
+          >
+            The projection only runs to age {{ endAge }}, so none of your
+            milestone ages are reached yet. Stretch the projection window in
+            Assumptions — the <b>To 65</b> or <b>To 70</b> preset is the
+            quickest way.
+          </Trans>
         </Callout>
       </Card>
     );
@@ -76,8 +92,8 @@ export default function RetirementMilestones() {
 
   return (
     <Card
-      title="At retirement"
-      subtitle={`Where each scenario lands as you age. ${active.hint}`}
+      title={t("retirementMilestones.title", "At retirement")}
+      subtitle={`${t("retirementMilestones.subtitlePrefix", "Where each scenario lands as you age.")} ${activeHint}`}
       right={
         <div className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
           {METRICS.map((m) => (
@@ -91,7 +107,7 @@ export default function RetirementMilestones() {
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              {m.label}
+              {t(`dashboard.retirementOutlook.metrics.${m.key}.label`, m.label)}
             </button>
           ))}
         </div>
@@ -101,13 +117,17 @@ export default function RetirementMilestones() {
         <thead>
           <tr className="border-b border-slate-200">
             <Th sticky className="bg-white pb-2 pr-4">
-              Scenario
+              {t("retirementMilestones.scenario", "Scenario")}
             </Th>
             {ages.map((age) => (
               <Th key={age} align="right" className="pb-2 pr-4">
-                <div>Age {age}</div>
+                <div>
+                  {t("retirementMilestones.ageColumn", "Age {{age}}", { age })}
+                </div>
                 <div className="font-normal normal-case tracking-normal text-slate-400">
-                  partner {partnerAgeAt(age)}
+                  {t("retirementMilestones.partnerAge", "partner {{age}}", {
+                    age: partnerAgeAt(age),
+                  })}
                 </div>
               </Th>
             ))}
@@ -131,8 +151,16 @@ export default function RetirementMilestones() {
                 </div>
                 {s.mortgagePaidOffMonth && (
                   <div className="ml-4.5 mt-0.5 text-xs text-slate-400">
-                    mortgage clear{" "}
-                    {monthLabel(settings.startDate, s.mortgagePaidOffMonth)}
+                    {t(
+                      "retirementMilestones.mortgageClear",
+                      "mortgage clear {{date}}",
+                      {
+                        date: monthLabel(
+                          settings.startDate,
+                          s.mortgagePaidOffMonth,
+                        ),
+                      },
+                    )}
                   </div>
                 )}
               </Td>
@@ -159,30 +187,57 @@ export default function RetirementMilestones() {
       </Table>
 
       <p className="mt-3 text-xs text-slate-500">
-        Best value in each column is highlighted.
+        {t(
+          "retirementMilestones.bestHighlighted",
+          "Best value in each column is highlighted.",
+        )}
       </p>
 
       {/* --- The part that is easy to get wrong ------------------------- */}
       <div className="mt-5 space-y-3">
         <Callout tone="neutral">
-          <strong>Where buying early actually shows up.</strong> Your retirement
-          contributions do not change when you buy a house — so at age{" "}
-          {finalAge} the retirement accounts differ by only{" "}
-          {money(retirementGap)} across these scenarios, and that difference
-          comes entirely from contributions pausing during a job loss. The real
-          effect of buy timing lands in{" "}
-          <strong>home equity and investments</strong>: a mortgage payment is
-          fixed for thirty years while rent keeps inflating, so an owner's
-          monthly surplus grows over time and compounds. At age {finalAge} that
-          adds up to a {money(gap)} spread in {active.label.toLowerCase()}.
+          <Trans
+            i18nKey="retirementMilestones.whereItShowsUp"
+            values={{
+              finalAge,
+              retirementGapMoney: money(retirementGap),
+              gapMoney: money(gap),
+              metricLabel: activeLabel.toLowerCase(),
+            }}
+            components={{ b: <strong /> }}
+          >
+            <b>Where buying early actually shows up.</b> Your retirement
+            contributions do not change when you buy a house — so at age{" "}
+            {{ finalAge }} the retirement accounts differ by only{" "}
+            {{ retirementGapMoney: money(retirementGap) }} across these
+            scenarios, and that difference comes entirely from contributions
+            pausing during a job loss. The real effect of buy timing lands
+            in <b>home equity and investments</b>: a mortgage payment is
+            fixed for thirty years while rent keeps inflating, so an owner's
+            monthly surplus grows over time and compounds. At age{" "}
+            {{ finalAge }} that adds up to a {{ gapMoney: money(gap) }}{" "}
+            spread in {{ metricLabel: activeLabel.toLowerCase() }}.
+          </Trans>
         </Callout>
 
         <Callout tone="warn">
-          <strong>This projects saving up, not living off it.</strong>
-          <InfoTip text="Modelling retirement drawdown would need withdrawal rates, tax treatment per account type, Social Security and required minimum distributions — a much bigger model than this one." />{" "}
-          "Net worth at {finalAge}" means what you will have built by then. It
-          says nothing about taxes on withdrawal, Social Security, healthcare
-          costs, or how long the money lasts.
+          <strong>
+            {t(
+              "retirementMilestones.savingUpTitle",
+              "This projects saving up, not living off it.",
+            )}
+          </strong>
+          <InfoTip
+            text={t(
+              "retirementMilestones.savingUpTip",
+              "Modelling retirement drawdown would need withdrawal rates, tax treatment per account type, Social Security and required minimum distributions — a much bigger model than this one.",
+            )}
+          />{" "}
+          {t(
+            "retirementMilestones.savingUpBody",
+            '"Net worth at {{finalAge}}" means what you will have built by then. It says nothing about taxes on withdrawal, Social Security, healthcare costs, or how long the money lasts.',
+            { finalAge },
+          )}
         </Callout>
       </div>
     </Card>
