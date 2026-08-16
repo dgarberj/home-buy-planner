@@ -66,7 +66,16 @@ export default function SecondIncomeSection() {
                   <button
                     key={o.key}
                     type="button"
-                    title={`${o.hoursNote} — ${o.note}`}
+                    title={[
+                      t(
+                        `assumptions.secondIncome.presets.${o.key}.hoursNote`,
+                        o.hoursNote,
+                      ),
+                      t(
+                        `assumptions.secondIncome.presets.${o.key}.note`,
+                        o.note,
+                      ),
+                    ].join(" — ")}
                     onClick={() =>
                       setAssumptions({
                         secondIncome: {
@@ -80,7 +89,10 @@ export default function SecondIncomeSection() {
                     className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs transition hover:bg-slate-50"
                   >
                     <span className="block font-medium text-slate-900">
-                      {o.label}
+                      {t(
+                        `assumptions.secondIncome.presets.${o.key}.label`,
+                        o.label,
+                      )}
                     </span>
                     <span className="block text-slate-500">
                       {t(

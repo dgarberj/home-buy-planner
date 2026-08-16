@@ -435,7 +435,22 @@
         "title": "Empieza con una opción realista",
         "hint": "Datos salariales reales de 2026 para el área metropolitana de Filadelfia. El salario neto es a la tasa marginal — un segundo ingreso se suma al primero, así que cada dólar se grava en la parte superior de tu tramo.",
         "summary": "{{gross}} bruto · {{net}}/mes neto",
-        "childcare": "{{amount}} cuidado infantil"
+        "childcare": "{{amount}} cuidado infantil",
+        "part-time-evenings": {
+          "label": "Medio tiempo, noches y fines de semana",
+          "hoursNote": "20 hrs/semana a $17/hr",
+          "note": "Sin cuidado infantil, porque siempre hay alguien en casa. La contra es que casi nunca coinciden libres al mismo tiempo, y aporta poco avance profesional."
+        },
+        "full-time-entry": {
+          "label": "Tiempo completo, nivel inicial (licenciatura en administración)",
+          "hoursNote": "40 hrs/semana",
+          "note": "Cerca del percentil 25 para administración de empresas en Filadelfia. Necesita cuidado infantil de tiempo completo hasta la edad escolar."
+        },
+        "full-time-established": {
+          "label": "Tiempo completo, ya establecido",
+          "hoursNote": "40 hrs/semana",
+          "note": "El promedio de Filadelfia para administración de empresas en todos los niveles de experiencia. Se llega aquí tras varios años de trabajo de tiempo completo — las noches de medio tiempo no bastan."
+        }
       },
       "who": {
         "label": "Quién",
