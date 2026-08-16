@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { CONVENTIONAL_97, pmiRateFor } from "../../../data/mortgageInsurance";
 import type { HousingBudget } from "../../../engine/affordability";
 import { money, pct } from "../../../lib/format";
@@ -28,6 +29,7 @@ export default function BudgetControls({
   ceilingPrice: number;
   typicalEffectiveTaxRate: number;
 }) {
+  const { t } = useTranslation();
   const home = assumptions.home;
   const pmiRate = pmiRateFor(home.downPaymentPct, creditScore);
 
@@ -35,37 +37,58 @@ export default function BudgetControls({
     <div className="rounded-xl bg-slate-50 p-4">
       <div className="grid gap-4 sm:grid-cols-3">
         <Field
-          label="Reserve for saving"
-          hint="Held back from the housing budget each month so you keep building a buffer after moving in."
+          label={t("marketPanel.budgetControls.reserve.label", "Reserve for saving")}
+          hint={t(
+            "marketPanel.budgetControls.reserve.hint",
+            "Held back from the housing budget each month so you keep building a buffer after moving in.",
+          )}
         >
           <MoneyInput value={reserve} step={50} onChange={setReserve} />
         </Field>
         <div>
-          <SectionTitle>Available for housing</SectionTitle>
+          <SectionTitle>
+            {t(
+              "marketPanel.budgetControls.availableForHousing",
+              "Available for housing",
+            )}
+          </SectionTitle>
           <p className="whitespace-nowrap text-2xl font-semibold tabular-nums">
             {money(budget.monthlyBudget)}
-            <span className="ml-1 text-sm font-normal text-slate-400">/mo</span>
+            <span className="ml-1 text-sm font-normal text-slate-400">
+              {t("marketPanel.budgetControls.perMonthSuffix", "/mo")}
+            </span>
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            all-in: loan, tax, insurance, mortgage insurance and upkeep
+            {t(
+              "marketPanel.budgetControls.allIn",
+              "all-in: loan, tax, insurance, mortgage insurance and upkeep",
+            )}
           </p>
         </div>
         <div>
-          <SectionTitle>Rough ceiling</SectionTitle>
+          <SectionTitle>
+            {t("marketPanel.budgetControls.roughCeiling", "Rough ceiling")}
+          </SectionTitle>
           <p className="whitespace-nowrap text-2xl font-semibold tabular-nums">
             {money(ceilingPrice)}
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            at a typical {pct(typicalEffectiveTaxRate, 1)} effective tax rate —
-            higher-tax towns buy less
+            {t(
+              "marketPanel.budgetControls.ceilingNote",
+              "at a typical {{rate}} effective tax rate — higher-tax towns buy less",
+              { rate: pct(typicalEffectiveTaxRate, 1) },
+            )}
           </p>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 border-t border-slate-200 pt-4 sm:grid-cols-3">
         <Field
-          label="Credit score"
-          hint="Sets the mortgage-insurance rate. The gap between 760+ and 680 is enormous on a small deposit."
+          label={t("marketPanel.budgetControls.creditScore.label", "Credit score")}
+          hint={t(
+            "marketPanel.budgetControls.creditScore.hint",
+            "Sets the mortgage-insurance rate. The gap between 760+ and 680 is enormous on a small deposit.",
+          )}
         >
           <NumberInput
             value={creditScore}
@@ -76,8 +99,11 @@ export default function BudgetControls({
           />
         </Field>
         <Field
-          label="Down payment"
-          hint="3% is the Conventional 97 minimum. 20% avoids mortgage insurance entirely."
+          label={t("marketPanel.budgetControls.downPayment.label", "Down payment")}
+          hint={t(
+            "marketPanel.budgetControls.downPayment.hint",
+            "3% is the Conventional 97 minimum. 20% avoids mortgage insurance entirely.",
+          )}
         >
           <div className="flex flex-wrap gap-1.5">
             {[0.03, 0.05, 0.1, 0.2].map((dp) => (
@@ -97,14 +123,31 @@ export default function BudgetControls({
           </div>
         </Field>
         <div>
-          <SectionTitle>Mortgage insurance</SectionTitle>
+          <SectionTitle>
+            {t(
+              "marketPanel.budgetControls.mortgageInsurance",
+              "Mortgage insurance",
+            )}
+          </SectionTitle>
           <p className="whitespace-nowrap text-xl font-semibold tabular-nums">
-            {pmiRate > 0 ? `${pct(pmiRate, 2)} of the loan a year` : "None"}
+            {pmiRate > 0
+              ? t(
+                  "marketPanel.budgetControls.pmiRate",
+                  "{{rate}} of the loan a year",
+                  { rate: pct(pmiRate, 2) },
+                )
+              : t("marketPanel.budgetControls.pmiNone", "None")}
           </p>
           <p className="mt-1 text-xs text-slate-500">
             {pmiRate > 0
-              ? "Applied automatically below"
-              : "Deposit is 20% or more"}
+              ? t(
+                  "marketPanel.budgetControls.pmiAppliedBelow",
+                  "Applied automatically below",
+                )
+              : t(
+                  "marketPanel.budgetControls.pmiDepositCovered",
+                  "Deposit is 20% or more",
+                )}
           </p>
         </div>
       </div>
@@ -118,12 +161,20 @@ export default function BudgetControls({
             })
           }
         >
-          Save this mortgage-insurance rate to assumptions
+          {t(
+            "marketPanel.budgetControls.savePmiRate",
+            "Save this mortgage-insurance rate to assumptions",
+          )}
         </Button>
         <p className="text-xs text-slate-500">
-          {CONVENTIONAL_97.note} Rates here are indicative published tables —
-          insurers price individually on credit, debt-to-income and property
-          type, so get a real quote before committing.
+          {t(
+            "marketPanel.budgetControls.conventional97Note",
+            CONVENTIONAL_97.note,
+          )}{" "}
+          {t(
+            "marketPanel.budgetControls.ratesIndicative",
+            "Rates here are indicative published tables — insurers price individually on credit, debt-to-income and property type, so get a real quote before committing.",
+          )}
         </p>
       </div>
     </div>

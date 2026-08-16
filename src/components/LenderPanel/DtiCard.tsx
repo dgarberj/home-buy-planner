@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from "react-i18next";
 import { ALL_MUNICIPALITIES } from "../../data/localMarket";
 import type { DtiResult } from "../../engine/lending";
 import { money, pct } from "../../lib/format";
@@ -25,6 +26,13 @@ const DTI_TEXT_COLOUR = {
   declined: "text-red-600",
 } as const;
 
+const VERDICT_KEY = {
+  comfortable: "lenderPanel.dti.verdict.comfortable",
+  workable: "lenderPanel.dti.verdict.workable",
+  tight: "lenderPanel.dti.verdict.tight",
+  declined: "lenderPanel.dti.verdict.declined",
+} as const;
+
 export default function DtiCard({
   townName,
   setTownName,
@@ -48,15 +56,22 @@ export default function DtiCard({
   instalmentDebts: number;
   dti: DtiResult;
 }) {
+  const { t } = useTranslation();
   return (
     <Card
-      title="What a lender will allow"
-      subtitle="A different question from the rest of this app, and the one that decides whether you get the loan."
+      title={t("lenderPanel.dti.title", "What a lender will allow")}
+      subtitle={t(
+        "lenderPanel.dti.subtitle",
+        "A different question from the rest of this app, and the one that decides whether you get the loan.",
+      )}
     >
       <div className="grid gap-4 sm:grid-cols-3">
         <Field
-          label="Town"
-          hint="Sets the tax rate and the median price tested."
+          label={t("lenderPanel.dti.town.label", "Town")}
+          hint={t(
+            "lenderPanel.dti.town.hint",
+            "Sets the tax rate and the median price tested.",
+          )}
         >
           <Select value={townName} onChange={setTownName}>
             {ALL_MUNICIPALITIES.filter((m) => m.medianPrice).map((m) => (
@@ -67,8 +82,14 @@ export default function DtiCard({
           </Select>
         </Field>
         <Field
-          label="Credit card minimums"
-          hint="Underwriters use the statement minimum even if you clear the balance every month."
+          label={t(
+            "lenderPanel.dti.creditCardMinimums.label",
+            "Credit card minimums",
+          )}
+          hint={t(
+            "lenderPanel.dti.creditCardMinimums.hint",
+            "Underwriters use the statement minimum even if you clear the balance every month.",
+          )}
         >
           <MoneyInput
             value={revolvingMinimums}
@@ -77,14 +98,16 @@ export default function DtiCard({
           />
         </Field>
         <div>
-          <SectionTitle>Back-end DTI</SectionTitle>
+          <SectionTitle>
+            {t("lenderPanel.dti.backEndDti", "Back-end DTI")}
+          </SectionTitle>
           <p
             className={`whitespace-nowrap text-3xl font-semibold tabular-nums ${DTI_TEXT_COLOUR[dti.verdict]}`}
           >
             {pct(dti.backEnd, 1)}
           </p>
           <p className="mt-1 text-xs capitalize text-slate-500">
-            {dti.verdict}
+            {t(VERDICT_KEY[dti.verdict], dti.verdict)}
           </p>
         </div>
       </div>
@@ -97,7 +120,10 @@ export default function DtiCard({
                 scope="row"
                 className="py-2 text-left font-normal text-slate-600"
               >
-                Gross monthly income
+                {t(
+                  "lenderPanel.dti.table.grossMonthlyIncome",
+                  "Gross monthly income",
+                )}
               </th>
               <td className="py-2 text-right tabular-nums">
                 {money(grossMonthlyIncome)}
@@ -108,8 +134,17 @@ export default function DtiCard({
                 scope="row"
                 className="py-2 text-left font-normal text-slate-600"
               >
-                Proposed housing on {money(price)}
-                <InfoTip text="Principal, interest, tax, insurance and mortgage insurance. Upkeep is excluded, because a lender excludes it — which is exactly why their maximum is not a safe maximum." />
+                {t(
+                  "lenderPanel.dti.table.proposedHousing",
+                  "Proposed housing on {{price}}",
+                  { price: money(price) },
+                )}
+                <InfoTip
+                  text={t(
+                    "lenderPanel.dti.table.proposedHousingHint",
+                    "Principal, interest, tax, insurance and mortgage insurance. Upkeep is excluded, because a lender excludes it — which is exactly why their maximum is not a safe maximum.",
+                  )}
+                />
               </th>
               <td className="py-2 text-right tabular-nums">
                 {money(lenderHousing)}
@@ -120,8 +155,13 @@ export default function DtiCard({
                 scope="row"
                 className="py-2 text-left font-normal text-slate-600"
               >
-                Support payments
-                <InfoTip text="Counted as debt, not as a living cost. Fannie Mae includes support with more than ten months remaining." />
+                {t("lenderPanel.dti.table.supportPayments", "Support payments")}
+                <InfoTip
+                  text={t(
+                    "lenderPanel.dti.table.supportPaymentsHint",
+                    "Counted as debt, not as a living cost. Fannie Mae includes support with more than ten months remaining.",
+                  )}
+                />
               </th>
               <td className="py-2 text-right tabular-nums text-amber-700">
                 {money(supportPaid)}
@@ -132,7 +172,10 @@ export default function DtiCard({
                 scope="row"
                 className="py-2 text-left font-normal text-slate-600"
               >
-                Car and other instalment debts
+                {t(
+                  "lenderPanel.dti.table.instalmentDebts",
+                  "Car and other instalment debts",
+                )}
               </th>
               <td className="py-2 text-right tabular-nums">
                 {money(instalmentDebts)}
@@ -143,7 +186,10 @@ export default function DtiCard({
                 scope="row"
                 className="py-2 text-left font-normal text-slate-600"
               >
-                Credit card minimums
+                {t(
+                  "lenderPanel.dti.table.creditCardMinimums",
+                  "Credit card minimums",
+                )}
               </th>
               <td className="py-2 text-right tabular-nums">
                 {money(revolvingMinimums)}
@@ -154,7 +200,10 @@ export default function DtiCard({
                 scope="row"
                 className="py-2 text-left font-medium text-slate-900"
               >
-                Total counted against you
+                {t(
+                  "lenderPanel.dti.table.totalCountedAgainstYou",
+                  "Total counted against you",
+                )}
               </th>
               <td className="py-2 text-right font-semibold tabular-nums">
                 {money(dti.totalDebts)}
@@ -167,16 +216,27 @@ export default function DtiCard({
       <Callout tone={TONE[dti.verdict]}>
         {dti.supportShare > 0 && (
           <>
-            <strong>
-              Support payments alone use {pct(dti.supportShare, 1)} of your
-              ratio
-            </strong>{" "}
-            before a mortgage is even considered.{" "}
+            <Trans
+              i18nKey="lenderPanel.dti.supportShare"
+              components={{ b: <strong /> }}
+              values={{ share: pct(dti.supportShare, 1) }}
+            >
+              <b>
+                Support payments alone use {"{{share}}"} of your ratio
+              </b>{" "}
+              before a mortgage is even considered.{" "}
+            </Trans>
           </>
         )}
-        That leaves {money(dti.headroomAt.conservative)} of housing payment at
-        the comfortable 36% limit, {money(dti.headroomAt.manual)} at 45%, and{" "}
-        {money(dti.headroomAt.automated)} at the 50% automated ceiling.
+        {t(
+          "lenderPanel.dti.headroom",
+          "That leaves {{conservative}} of housing payment at the comfortable 36% limit, {{manual}} at 45%, and {{automated}} at the 50% automated ceiling.",
+          {
+            conservative: money(dti.headroomAt.conservative),
+            manual: money(dti.headroomAt.manual),
+            automated: money(dti.headroomAt.automated),
+          },
+        )}
       </Callout>
     </Card>
   );

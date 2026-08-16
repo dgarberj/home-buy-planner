@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   clrFactorFor,
   countyInfoFor,
@@ -10,6 +11,11 @@ import { districtFor, PA_STATE_AVERAGE } from "../../data/schools";
 import { money, ordinal, pct } from "../../lib/format";
 import { useStore } from "../../store/useStore";
 import { Button, Modal } from "../ui";
+
+const COUNTY_KEY_LABEL: Record<string, string> = {
+  delaware: "marketPanel.townCard.county.delaware",
+  montgomery: "marketPanel.townCard.county.montgomery",
+};
 
 /**
  * One label/value/sub-value line, shared by the schools and hazard-risk
@@ -61,6 +67,7 @@ export default function CountyMapModal({
   onClose: () => void;
   price: number;
 }) {
+  const { t } = useTranslation();
   const assumptions = useStore((s) => s.assumptions);
   const settings = useStore((s) => s.settings);
   const setSettings = useStore((s) => s.setSettings);
@@ -74,7 +81,13 @@ export default function CountyMapModal({
       open={open !== null}
       onClose={onClose}
       title={open?.name ?? ""}
-      subtitle={open ? `${open.schoolDistrict} school district` : undefined}
+      subtitle={
+        open
+          ? t("countyMap.modal.schoolDistrictSubtitle", "{{district}} school district", {
+              district: open.schoolDistrict,
+            })
+          : undefined
+      }
       footer={
         open && (
           <>
@@ -87,10 +100,12 @@ export default function CountyMapModal({
                 })
               }
             >
-              {onShortlist ? "Remove from shortlist" : "Add to shortlist"}
+              {onShortlist
+                ? t("countyMap.modal.removeFromShortlist", "Remove from shortlist")
+                : t("countyMap.modal.addToShortlist", "Add to shortlist")}
             </Button>
             <Button variant="primary" onClick={onClose}>
-              Done
+              {t("countyMap.modal.done", "Done")}
             </Button>
           </>
         )
@@ -102,7 +117,7 @@ export default function CountyMapModal({
           {open.medianPrice && (
             <section>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                What houses cost here
+                {t("countyMap.modal.whatHousesCost", "What houses cost here")}
               </h3>
               <p className="mt-2 text-2xl font-semibold tabular-nums">
                 {money(open.medianPrice)}
@@ -113,10 +128,16 @@ export default function CountyMapModal({
 
           <section>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Monthly cost of{" "}
               {open.medianPrice
-                ? "the median house here"
-                : `a ${money(price)} house`}
+                ? t(
+                    "countyMap.modal.monthlyCostOfMedian",
+                    "Monthly cost of the median house here",
+                  )
+                : t(
+                    "countyMap.modal.monthlyCostOfPrice",
+                    "Monthly cost of a {{price}} house",
+                    { price: money(price) },
+                  )}
             </h3>
             <dl className="mt-3 space-y-1.5 text-sm">
               {(() => {
@@ -129,32 +150,51 @@ export default function CountyMapModal({
                   <>
                     <div className="flex justify-between gap-4">
                       <dt className="text-slate-600">
-                        Principal &amp; interest
+                        {t(
+                          "countyMap.modal.principalInterest",
+                          "Principal & interest",
+                        )}
                       </dt>
                       <dd className="tabular-nums">{money(c.pi)}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-slate-600">Property + school tax</dt>
+                      <dt className="text-slate-600">
+                        {t(
+                          "countyMap.modal.propertySchoolTax",
+                          "Property + school tax",
+                        )}
+                      </dt>
                       <dd className="tabular-nums font-medium">
                         {money(c.tax)}
                       </dd>
                     </div>
                     {c.pmi > 0 && (
                       <div className="flex justify-between gap-4">
-                        <dt className="text-slate-600">Mortgage insurance</dt>
+                        <dt className="text-slate-600">
+                          {t(
+                            "countyMap.modal.mortgageInsurance",
+                            "Mortgage insurance",
+                          )}
+                        </dt>
                         <dd className="tabular-nums">{money(c.pmi)}</dd>
                       </div>
                     )}
                     <div className="flex justify-between gap-4">
-                      <dt className="text-slate-600">Insurance (est.)</dt>
+                      <dt className="text-slate-600">
+                        {t("countyMap.modal.insuranceEst", "Insurance (est.)")}
+                      </dt>
                       <dd className="tabular-nums">{money(c.insurance)}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <dt className="text-slate-600">Upkeep accrual</dt>
+                      <dt className="text-slate-600">
+                        {t("countyMap.modal.upkeepAccrual", "Upkeep accrual")}
+                      </dt>
                       <dd className="tabular-nums">{money(c.upkeep)}</dd>
                     </div>
                     <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
-                      <dt className="font-medium text-slate-900">All in</dt>
+                      <dt className="font-medium text-slate-900">
+                        {t("countyMap.modal.allIn", "All in")}
+                      </dt>
                       <dd className="tabular-nums text-lg font-semibold">
                         {money(c.total)}
                       </dd>
@@ -168,38 +208,59 @@ export default function CountyMapModal({
           {/* --- Where the tax comes from ------------------------------ */}
           <section>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Millage breakdown
+              {t("countyMap.modal.millageBreakdown", "Millage breakdown")}
             </h3>
             <dl className="mt-3 space-y-1.5 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="text-slate-600">County</dt>
+                <dt className="text-slate-600">
+                  {t("countyMap.modal.county", "County")}
+                </dt>
                 <dd className="tabular-nums">{open.county.toFixed(4)}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-slate-600">Township / borough</dt>
+                <dt className="text-slate-600">
+                  {t(
+                    "countyMap.modal.townshipBorough",
+                    "Township / borough",
+                  )}
+                </dt>
                 <dd className="tabular-nums">{open.local.toFixed(4)}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-slate-600">School district</dt>
+                <dt className="text-slate-600">
+                  {t("countyMap.modal.schoolDistrict", "School district")}
+                </dt>
                 <dd className="tabular-nums font-medium">
                   {open.school.toFixed(4)}
                 </dd>
               </div>
               <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
-                <dt className="font-medium text-slate-900">Total</dt>
+                <dt className="font-medium text-slate-900">
+                  {t("countyMap.modal.total", "Total")}
+                </dt>
                 <dd className="tabular-nums font-semibold">
-                  {open.total.toFixed(4)} mills
+                  {t("countyMap.modal.mills", "{{value}} mills", {
+                    value: open.total.toFixed(4),
+                  })}
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-slate-600">
-                  Effective rate on market value
+                  {t(
+                    "countyMap.modal.effectiveRateOnMarketValue",
+                    "Effective rate on market value",
+                  )}
                 </dt>
                 <dd className="tabular-nums">{pct(effectiveRate(open), 2)}</dd>
               </div>
               {open.wageTax > 0 && (
                 <div className="flex justify-between gap-4">
-                  <dt className="text-slate-600">Local wage tax on earnings</dt>
+                  <dt className="text-slate-600">
+                    {t(
+                      "countyMap.modal.localWageTaxOnEarnings",
+                      "Local wage tax on earnings",
+                    )}
+                  </dt>
                   <dd className="tabular-nums text-amber-700">
                     {pct(open.wageTax, 2)}
                   </dd>
@@ -207,57 +268,89 @@ export default function CountyMapModal({
               )}
             </dl>
             <p className="mt-2 text-xs leading-relaxed text-slate-500">
-              The school slice is usually the biggest, and it is the one that
-              varies most across the county.
+              {t(
+                "countyMap.modal.schoolSliceNote",
+                "The school slice is usually the biggest, and it is the one that varies most across the county.",
+              )}
             </p>
           </section>
 
           {/* --- Schools ----------------------------------------------- */}
           <section>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              {open.schoolDistrict} schools
+              {t("countyMap.modal.districtSchools", "{{district}} schools", {
+                district: open.schoolDistrict,
+              })}
             </h3>
             {detail && detail.mathProficiency !== null ? (
               <dl className="mt-3 space-y-1.5 text-sm">
                 <StatRow
-                  label="Maths proficient"
+                  label={t("countyMap.modal.mathsProficient", "Maths proficient")}
                   value={`${detail.mathProficiency}%`}
-                  sub={`state average ${PA_STATE_AVERAGE.math}%`}
+                  sub={t(
+                    "countyMap.modal.stateAverage",
+                    "state average {{pct}}%",
+                    { pct: PA_STATE_AVERAGE.math },
+                  )}
                 />
                 {detail.readingProficiency !== null && (
                   <StatRow
-                    label="Reading proficient"
+                    label={t(
+                      "countyMap.modal.readingProficient",
+                      "Reading proficient",
+                    )}
                     value={`${detail.readingProficiency}%`}
-                    sub={`state average ${PA_STATE_AVERAGE.reading}%`}
+                    sub={t(
+                      "countyMap.modal.stateAverage",
+                      "state average {{pct}}%",
+                      { pct: PA_STATE_AVERAGE.reading },
+                    )}
                   />
                 )}
                 {detail.graduationRate !== null && (
                   <StatRow
-                    label="4-year graduation rate"
+                    label={t(
+                      "countyMap.modal.graduationRate",
+                      "4-year graduation rate",
+                    )}
                     value={`${detail.graduationRate}%`}
-                    sub={`state average ${PA_STATE_AVERAGE.graduation}%`}
+                    sub={t(
+                      "countyMap.modal.stateAverage",
+                      "state average {{pct}}%",
+                      { pct: PA_STATE_AVERAGE.graduation },
+                    )}
                   />
                 )}
                 {detail.persistentAttendance !== null && (
                   <StatRow
-                    label="Attending 90%+ of days"
+                    label={t(
+                      "countyMap.modal.attendance",
+                      "Attending 90%+ of days",
+                    )}
                     value={`${detail.persistentAttendance}%`}
-                    sub={`state average ${PA_STATE_AVERAGE.persistentAttendance}%`}
+                    sub={t(
+                      "countyMap.modal.stateAverage",
+                      "state average {{pct}}%",
+                      { pct: PA_STATE_AVERAGE.persistentAttendance },
+                    )}
                   />
                 )}
                 {detail.sourceSchoolCount !== null && (
                   <p className="pt-1 text-xs text-slate-400">
-                    Averaged across {detail.sourceSchoolCount} school
-                    {detail.sourceSchoolCount === 1 ? "" : "s"} in this
-                    district.
+                    {t(
+                      "countyMap.modal.averagedAcross",
+                      `Averaged across {{count}} school${detail.sourceSchoolCount === 1 ? "" : "s"} in this district.`,
+                      { count: detail.sourceSchoolCount },
+                    )}
                   </p>
                 )}
               </dl>
             ) : (
               <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-900">
-                No performance figures sourced for this district. That is an
-                absence of data, not a bad score — look it up before it sways a
-                decision.
+                {t(
+                  "countyMap.modal.noPerformanceFigures",
+                  "No performance figures sourced for this district. That is an absence of data, not a bad score — look it up before it sways a decision.",
+                )}
               </p>
             )}
             {detail?.note && (
@@ -271,47 +364,62 @@ export default function CountyMapModal({
           {risk && (
             <section>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {countyInfoFor(open.countyKey).name} hazard risk
+                {t("countyMap.modal.countyHazardRisk", "{{county}} hazard risk", {
+                  county: countyInfoFor(open.countyKey).name,
+                })}
               </h3>
               <dl className="mt-3 space-y-1.5 text-sm">
                 <StatRow
-                  label="Inland flooding"
-                  value={`${ordinal(risk.floodRiskScore)} pctl`}
+                  label={t("countyMap.modal.inlandFlooding", "Inland flooding")}
+                  value={t("countyMap.modal.pctl", "{{n}} pctl", {
+                    n: ordinal(risk.floodRiskScore),
+                  })}
                   sub={risk.floodRiskRating}
                 />
                 <StatRow
-                  label="Heat wave"
-                  value={`${ordinal(risk.heatWaveRiskScore)} pctl`}
+                  label={t("countyMap.modal.heatWave", "Heat wave")}
+                  value={t("countyMap.modal.pctl", "{{n}} pctl", {
+                    n: ordinal(risk.heatWaveRiskScore),
+                  })}
                   sub={risk.heatWaveRiskRating}
                 />
                 <StatRow
-                  label="Wildfire"
-                  value={`${ordinal(risk.wildfireRiskScore)} pctl`}
+                  label={t("countyMap.modal.wildfire", "Wildfire")}
+                  value={t("countyMap.modal.pctl", "{{n}} pctl", {
+                    n: ordinal(risk.wildfireRiskScore),
+                  })}
                   sub={risk.wildfireRiskRating}
                 />
                 <StatRow
-                  label="Composite risk (all 18 hazards)"
-                  value={`${ordinal(risk.riskScore)} pctl`}
+                  label={t(
+                    "countyMap.modal.compositeRisk",
+                    "Composite risk (all 18 hazards)",
+                  )}
+                  value={t("countyMap.modal.pctl", "{{n}} pctl", {
+                    n: ordinal(risk.riskScore),
+                  })}
                   emphasize
                 />
               </dl>
               <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                National percentiles from FEMA&rsquo;s National Risk Index — how
-                this county compares to the rest of the US, not a probability.
-                County-level only: every town in this county shares these
-                figures. {risk.note}
+                {t(
+                  "countyMap.modal.hazardFooter",
+                  "National percentiles from FEMA's National Risk Index — how this county compares to the rest of the US, not a probability. County-level only: every town in this county shares these figures.",
+                )}{" "}
+                {risk.note}
               </p>
             </section>
           )}
 
           <p className="border-t border-slate-100 pt-4 text-xs leading-relaxed text-slate-500">
-            Pennsylvania taxes assessed value, and buying does not trigger a
-            reassessment. This converts a sale price using {open.countyKey}
-            &rsquo;s county-wide drift factor of {clrFactorFor(open)}, so it is
-            reliable for ranking places and not for budgeting a specific house.
-            Raw millage is NOT comparable across county lines — only the
-            effective rate is. Check the actual assessment before making an
-            offer.
+            {t(
+              "countyMap.modal.assessmentFooter",
+              "Pennsylvania taxes assessed value, and buying does not trigger a reassessment. This converts a sale price using {{county}}'s county-wide drift factor of {{clrFactor}}, so it is reliable for ranking places and not for budgeting a specific house. Raw millage is NOT comparable across county lines — only the effective rate is. Check the actual assessment before making an offer.",
+              {
+                county: t(COUNTY_KEY_LABEL[open.countyKey] ?? "", open.countyKey),
+                clrFactor: clrFactorFor(open),
+              },
+            )}
           </p>
         </div>
       )}

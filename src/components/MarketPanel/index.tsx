@@ -1,3 +1,4 @@
+import { Trans } from "react-i18next";
 import { DELCO_CLR_FACTOR } from "../../data/localMarket";
 import { Callout } from "../ui";
 import NeighbouringCountiesCard from "./NeighbouringCountiesCard";
@@ -18,15 +19,21 @@ export default function MarketPanel() {
       <NeighbouringCountiesCard />
 
       <Callout tone="bad">
-        <strong>Read this before trusting any number above.</strong>{" "}
-        Pennsylvania taxes the <em>assessed</em> value, not what you pay.
-        Delaware County last reassessed for 2021 using 2020 values, and{" "}
-        <strong>buying does not trigger a reassessment</strong> — so two
-        identical houses next door to each other can carry very different bills,
-        permanently. These estimates divide the sale price by the state&rsquo;s
-        common level ratio factor ({DELCO_CLR_FACTOR}), which is a county-wide
-        average. Use this table to rank places; look up the actual assessment
-        before making an offer on an actual house.
+        <Trans
+          i18nKey="marketPanel.assessmentCaveat"
+          components={{ b: <strong />, i: <em /> }}
+          values={{ clrFactor: DELCO_CLR_FACTOR }}
+        >
+          <b>Read this before trusting any number above.</b> Pennsylvania
+          taxes the <i>assessed</i> value, not what you pay. Delaware County
+          last reassessed for 2021 using 2020 values, and{" "}
+          <b>buying does not trigger a reassessment</b> — so two identical
+          houses next door to each other can carry very different bills,
+          permanently. These estimates divide the sale price by the state's
+          common level ratio factor ({"{{clrFactor}}"}), which is a
+          county-wide average. Use this table to rank places; look up the
+          actual assessment before making an offer on an actual house.
+        </Trans>
       </Callout>
     </div>
   );

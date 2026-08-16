@@ -912,5 +912,351 @@
     "copyLink": "Copiar enlace",
     "shareModalSubtitle": "Cualquiera con este enlace puede ver todo lo de abajo, en texto plano -- ingresos, saldos, etiquetas del presupuesto. Envíalo solo a alguien de tu confianza.",
     "longLinkWarning": "Este enlace es inusualmente largo y algunas apps de mensajería podrían truncarlo. Si no funciona, prueba recortando registros de saldo antiguos primero."
+  },
+  "lenderPanel": {
+    "dti": {
+      "title": "Lo que un prestamista permitirá",
+      "subtitle": "Una pregunta distinta al resto de esta app, y la que decide si obtienes el préstamo.",
+      "town": {
+        "label": "Municipio",
+        "hint": "Fija la tasa de impuesto y el precio medio probado."
+      },
+      "creditCardMinimums": {
+        "label": "Mínimos de tarjetas de crédito",
+        "hint": "Los suscriptores usan el mínimo del estado de cuenta aunque pagues el saldo completo cada mes."
+      },
+      "backEndDti": "DTI total (back-end)",
+      "verdict": {
+        "comfortable": "cómodo",
+        "workable": "manejable",
+        "tight": "ajustado",
+        "declined": "rechazado"
+      },
+      "table": {
+        "grossMonthlyIncome": "Ingreso bruto mensual",
+        "proposedHousing": "Vivienda propuesta a {{price}}",
+        "proposedHousingHint": "Principal, interés, impuesto, seguro y seguro hipotecario. El mantenimiento queda excluido, porque un prestamista lo excluye — precisamente por lo que su máximo no es un máximo seguro.",
+        "supportPayments": "Pagos de manutención",
+        "supportPaymentsHint": "Se cuentan como deuda, no como costo de vida. Fannie Mae incluye la manutención con más de diez meses restantes.",
+        "instalmentDebts": "Auto y otras deudas a plazos",
+        "creditCardMinimums": "Mínimos de tarjetas de crédito",
+        "totalCountedAgainstYou": "Total contado en tu contra"
+      },
+      "supportShare": "<b>Solo los pagos de manutención usan {{share}} de tu proporción</b> antes de considerar siquiera una hipoteca. ",
+      "headroom": "Eso deja {{conservative}} de pago de vivienda en el límite cómodo del 36%, {{manual}} al 45%, y {{automated}} en el techo automatizado del 50%."
+    },
+    "ceilings": {
+      "title": "Dos techos distintos",
+      "subtitle": "El tuyo se trata de con qué puedes vivir. El suyo se trata del ingreso bruto. El más pequeño de los dos manda.",
+      "table": {
+        "ceiling": "Techo",
+        "buys": "Compra",
+        "whichBinds": "Cuál limita",
+        "lenderAt": "Prestamista al {{pct}}",
+        "theLender": "el prestamista",
+        "yourBudget": "tu presupuesto",
+        "yourOwnBudget": "Tu propio presupuesto"
+      },
+      "limitKey": {
+        "conservative": "conservador",
+        "manual": "manual",
+        "automated": "automatizado"
+      },
+      "timing": {
+        "headline": "Elegir el momento de la solicitud vale {{amount}}",
+        "body": "de casa. Las deudas a plazos con diez o menos pagos restantes generalmente se excluyen del DTI, así que solicitar una vez que el préstamo del auto esté casi terminado eleva lo que calificas de {{withInstalments}} a {{withoutInstalments}} — sin cambiar nada de tus finanzas."
+      },
+      "notPreapproval": {
+        "headline": "Esto no es una preaprobación.",
+        "body": "Un suscriptor revisa recibos de sueldo, declaraciones de impuestos y una consulta de crédito, y aplica ajustes que este modelo desconoce por completo. Trátalo como una forma de evitar enamorarte de una casa que un prestamista rechazaría."
+      }
+    }
+  },
+  "marketPanel": {
+    "assessmentCaveat": "<b>Lee esto antes de confiar en cualquier número de arriba.</b> Pensilvania grava el valor <i>catastral</i>, no lo que pagas. El condado de Delaware se reevaluó por última vez para 2021 usando valores de 2020, y <b>comprar no dispara una reevaluación</b> — así que dos casas idénticas una junto a la otra pueden tener facturas muy distintas, de forma permanente. Estas estimaciones dividen el precio de venta por el factor de nivel común del estado ({{clrFactor}}), que es un promedio de todo el condado. Usa esta tabla para ordenar lugares; busca la evaluación real antes de hacer una oferta por una casa concreta.",
+    "neighbouringCounties": {
+      "title": "El condado de Delaware frente a sus vecinos",
+      "subtitle": "Precios medianos de venta y tasas de impuesto efectivas típicas.",
+      "effectiveTax": "Impuesto efectivo típico {{rate}} — unos",
+      "perMonthOnMedian": "{{amount}}/mes",
+      "onMedianHouse": "en la casa mediana.",
+      "delawarecounty": {
+        "priceNote": "Precio mediano de venta de Redfin, mayo 2026 (baja 2.2% interanual)",
+        "note": "Enorme variación por municipio: alrededor de 0.9% en Thornbury y Marple hasta más de 3% en los distritos de William Penn y Southeast Delco. De qué lado de esa línea caigas vale más que casi cualquier otra decisión aquí."
+      },
+      "chestercounty": {
+        "priceNote": "Valor mediano de vivienda del Censo de EE. UU. (otra fuente dice $485,600)",
+        "note": "Tasa de impuesto más baja pero precios mucho más altos, así que el costo mensual suele ser peor. Escuelas sólidas."
+      },
+      "montgomerycounty": {
+        "priceNote": "Precio mediano de venta de Redfin, febrero 2026 (baja 3.4% interanual)",
+        "note": "Punto medio tanto en precio como en impuesto. Amplia variación por municipio, igual que Delco."
+      },
+      "philadelphiacounty": {
+        "priceNote": "Precio mediano de venta de Redfin, marzo 2026 (sin cambio interanual)",
+        "note": "Mucho más barato de comprar y una sola tasa para toda la ciudad, pero un impuesto sobre el salario del 3.75% a los residentes — para un salario de $125k eso es unos $4,700 al año, lo que anula la mayor parte del ahorro en vivienda. Las escuelas son la otra consideración."
+      }
+    },
+    "townExplorer": {
+      "title": "Lo que realmente puedes pagar, y dónde",
+      "subtitle": "Cada municipio evaluado contra su PROPIO precio mediano de vivienda, no uno hipotético. Ordenar solo por tasa de impuesto te lleva a lugares que no puedes comprar.",
+      "priceOverride": {
+        "label": "Probar un precio hipotético en vez del propio mediano de cada municipio",
+        "hint": "Desactivado por defecto: las cifras de abajo usan el precio mediano propio de cada municipio, consistente con su distintivo de alcance. Actívalo para preguntar 'cuánto costaría $X aquí' en su lugar."
+      },
+      "priceToTest": "Precio a probar",
+      "taxTrap": "<b>La trampa en la tabla de impuestos.</b> Las tasas más bajas están bajo las mejores escuelas, y esos son exactamente los lugares que no puedes comprar. Radnor tiene 1.26% con una mediana de $1,206,000. Marple tiene 1.09% con una mediana de $651,500. Una tasa barata en una casa fuera de alcance no vale nada. Los municipios de abajo están preseleccionados para evitar esa trampa.",
+      "hideAllTowns": "Ocultar los {{count}} municipios",
+      "browseAllTowns": "Explorar los {{count}} municipios",
+      "countyMap": {
+        "title": "Mapa del condado",
+        "subtitle": "Cada municipio, coloreado por impuesto. Haz clic en uno para fijarlo."
+      }
+    },
+    "budgetControls": {
+      "reserve": {
+        "label": "Reserva para ahorro",
+        "hint": "Se retiene del presupuesto de vivienda cada mes para que sigas construyendo un colchón después de mudarte."
+      },
+      "availableForHousing": "Disponible para vivienda",
+      "perMonthSuffix": "/mes",
+      "allIn": "todo incluido: préstamo, impuesto, seguro, seguro hipotecario y mantenimiento",
+      "roughCeiling": "Techo aproximado",
+      "ceilingNote": "a una tasa de impuesto efectiva típica del {{rate}} — los municipios con más impuesto compran menos",
+      "creditScore": {
+        "label": "Puntaje crediticio",
+        "hint": "Fija la tasa del seguro hipotecario. La diferencia entre 760+ y 680 es enorme con un depósito pequeño."
+      },
+      "downPayment": {
+        "label": "Pago inicial",
+        "hint": "3% es el mínimo del Conventional 97. 20% evita el seguro hipotecario por completo."
+      },
+      "mortgageInsurance": "Seguro hipotecario",
+      "pmiRate": "{{rate}} del préstamo al año",
+      "pmiNone": "Ninguno",
+      "pmiAppliedBelow": "Aplicado automáticamente abajo",
+      "pmiDepositCovered": "El depósito es del 20% o más",
+      "savePmiRate": "Guardar esta tasa de seguro hipotecario en los supuestos",
+      "conventional97Note": "Sin prima inicial, y la prima mensual desaparece al 80% LTV. Con buen crédito esto suele superar a FHA durante toda la vida del préstamo.",
+      "ratesIndicative": "Las tasas aquí son tablas publicadas indicativas — las aseguradoras cotizan individualmente según crédito, deuda-ingreso y tipo de propiedad, así que consigue una cotización real antes de comprometerte."
+    },
+    "townCard": {
+      "reach": {
+        "comfortable": "Cómodo",
+        "stretch": "Un esfuerzo",
+        "outOfReach": "Fuera de alcance",
+        "unknown": "Desconocido"
+      },
+      "county": {
+        "delaware": "delaware",
+        "montgomery": "montgomery"
+      },
+      "caveatUnknown": "Sin precio disponible — ordenado solo por impuesto y escuelas",
+      "caveatOutOfReach": "Con precio pero fuera de alcance — incluido para completar la lista",
+      "perMonth": "{{amount}}/mes",
+      "value": "valor {{score}}",
+      "pin": "Fijar",
+      "unpin": "Quitar",
+      "pinnedBadge": "Fijado ✕"
+    },
+    "allTowns": {
+      "sortBy": "Ordenar por",
+      "sortCost": "Costo mensual",
+      "sortValue": "Puntaje de valor",
+      "sortHint": "Calidad escolar (competencia media en matemáticas/lectura) por cada $1,000/mes de costo total de propiedad, con el precio de la MISMA casa de referencia en todas partes para que cada municipio se ordene, no solo los que tienen un precio mediano disponible. Los municipios cuyo distrito no está disponible se ordenan al final.",
+      "columns": {
+        "town": "Municipio",
+        "county": "Condado",
+        "medianPrice": "Precio mediano",
+        "medianPriceHint": "Valor típico de vivienda de Zillow o Redfin, 2026. Los municipios sin precio disponible se listan al final en vez de estimarse.",
+        "taxRate": "Tasa de impuesto",
+        "allInPerMonth": "Todo incluido / mes",
+        "allInPerMonthHint": "Lo que la casa típica aquí te costaría mensualmente: préstamo, impuesto de propiedad y escolar, seguro, seguro hipotecario y mantenimiento.",
+        "cashToClose": "Efectivo al cierre",
+        "reach": "Alcance",
+        "schools": "Escuelas",
+        "valueScore": "Puntaje de valor"
+      },
+      "wageTax": "{{rate}} impuesto sobre el salario",
+      "notSourced": "no disponible",
+      "pinned": "Fijado",
+      "pricedOnly": {
+        "label": "Mostrar solo municipios con precio disponible",
+        "hint": "Activado por defecto para mantener la tabla en municipios que realmente puedes comparar por costo. El resto sigue teniendo datos completos de impuesto y escuelas — un precio faltante es un vacío en lo que pude obtener, no una razón para ocultarlos para siempre."
+      },
+      "footerCount": "Mostrando {{visible}} de {{total}} municipios en tres condados. {{priced}} tienen un precio mediano disponible; el resto se ordena por tasa de impuesto y muestra",
+      "footerPriceGoes": "donde iría un precio."
+    },
+    "townDetail": {
+      "affordability": "Asequibilidad",
+      "perMonth": "{{amount}}/mes",
+      "testPrice": "(precio de prueba)",
+      "loanPayment": "Pago del préstamo",
+      "propertyTax": "Impuesto de propiedad + escolar",
+      "mortgageInsurance": "Seguro hipotecario",
+      "insuranceUpkeep": "Seguro + mantenimiento",
+      "noSourcedPrice": "No hay precio mediano disponible para {{name}} -- no se puede fijar precio a una casa específica aquí sin un anulador de \"precio a probar\".",
+      "effectiveTaxRate": "Tasa de impuesto efectiva {{rate}}",
+      "cashToClose": "efectivo al cierre {{amount}}",
+      "schools": "Escuelas",
+      "schoolsNotSourced": "Rendimiento escolar no disponible para {{district}}.",
+      "recentSales": "Ventas recientes",
+      "freshSalesCount": "{{count}} venta reciente",
+      "freshSalesCount_other": "{{count}} ventas recientes",
+      "staleExcluded": "({{count}} más excluidas por antiguas, más allá del umbral de {{threshold}})",
+      "columns": {
+        "address": "Dirección",
+        "sold": "Vendida",
+        "price": "Precio",
+        "beds": "Recámaras",
+        "baths": "Baños",
+        "sqft": "Pies²",
+        "built": "Construida"
+      },
+      "bathsHalf": "{{baths}} + {{half}} medio",
+      "medianOfFreshSales": "Mediana de las ventas recientes mostradas: {{amount}}. Un puñado de registros, no una estadística de mercado — ve <b>Fuentes</b> abajo para saber qué es y qué no es esto.",
+      "climateRisk": "Riesgo climático",
+      "climateCountyWide": "A nivel de condado, no específico del municipio — cada municipio en {{county}} comparte estas cifras.",
+      "flood": "Inundación",
+      "heat": "Calor",
+      "wildfire": "Incendio forestal",
+      "closingCosts": "Costos de cierre",
+      "closingCostsSummary": "Unos {{total}} ({{pct}} del precio) a {{price}}."
+    }
+  },
+  "countyMap": {
+    "assessmentsDivided": "evaluaciones ÷ {{clrFactor}} para llegar al valor de mercado",
+    "tilesShow": "Los mosaicos muestran",
+    "coverage": "{{known}} de {{total}} municipios en este condado tienen {{whatIsSourced}} — el resto muestra “{{blankLabel}}”",
+    "sourcedSchoolDistrict": "un distrito escolar disponible",
+    "sourcedPrice": "un precio disponible",
+    "noPrice": "sin precio",
+    "femaHazard": "Riesgo de peligro FEMA ({{rating}}, percentil {{percentile}} a nivel nacional):",
+    "hazardBreakdown": "inundación pctl {{flood}}, calor pctl {{heat}}, incendio forestal pctl {{wildfire}}.",
+    "hazardCountyLevel": "Solo a nivel de condado — cada municipio en {{county}} comparte esta cifra.",
+    "svgAriaLabel": "Mapa de mosaicos de los municipios del condado de Delaware coloreados por tasa de impuesto de propiedad",
+    "tileAriaLabel": "{{name}}, escuelas de {{district}}",
+    "legend": {
+      "lowTax": "impuesto bajo ({{pct}} del valor)",
+      "highTax": "impuesto alto ({{pct}})",
+      "wellAbove": "bien por encima del promedio estatal",
+      "above": "por encima del promedio estatal",
+      "below": "por debajo",
+      "notSourced": "no disponible",
+      "shortlisted": "en la lista corta"
+    },
+    "footerCaption": "Cada mosaico muestra <b>{{metricLabel}}</b>, etiquetado “{{unit}}”. El color siempre es la tasa de impuesto. Las cifras de impuesto usan la propia vivienda mediana de cada municipio, así que nada aquí es una casa hipotética. Haz clic en cualquier municipio para ver el desglose completo.",
+    "footerGeographic": "Los mosaicos están dispuestos aproximadamente de forma geográfica, pero son esquemáticos, no límites reales.",
+    "footerRanked": "Los mosaicos están ordenados por tasa de impuesto, el más barato primero — sin geografía implícita.",
+    "metrics": {
+      "price": {
+        "label": "Precio mediano de vivienda",
+        "unit": "mediana",
+        "hint": "Valor típico de vivienda en este municipio. En blanco donde no se pudo obtener un precio — lo cual es una falta de datos, no un municipio barato."
+      },
+      "taxMonthly": {
+        "label": "Impuesto de propiedad al mes",
+        "unit": "impuesto/mes",
+        "hint": "Impuesto mensual de propiedad y escolar sobre la vivienda mediana propia de este municipio, para que las cifras sean comparables como costos vividos en vez de sobre una casa hipotética."
+      },
+      "taxRate": {
+        "label": "Tasa de impuesto",
+        "unit": "del valor",
+        "hint": "Impuesto anual de propiedad y escolar como porcentaje del valor de mercado. La única cifra que se compara directamente entre condados."
+      },
+      "valueScore": {
+        "label": "Puntaje de valor",
+        "unit": "pts/$1k",
+        "hint": "Calidad escolar (competencia media en matemáticas/lectura) por cada $1,000/mes de costo total de propiedad, con el precio de la MISMA casa de referencia en todas partes. En blanco donde el distrito no está disponible."
+      }
+    },
+    "tooltip": {
+      "schools": "escuelas de {{district}}",
+      "medianHomePrice": "Precio mediano de vivienda",
+      "notSourced": "no disponible",
+      "propertyTaxOnThat": "Impuesto de propiedad sobre eso",
+      "propertyTaxOnPrice": "Impuesto de propiedad sobre {{price}}",
+      "perMonth": "{{amount}} / mes",
+      "taxRate": "Tasa de impuesto",
+      "ofValue": "{{rate}} del valor",
+      "totalMillage": "Milaje total",
+      "mills": "{{value}} milésimas",
+      "schoolPerformanceNotSourced": "Rendimiento escolar no disponible",
+      "wageTax": "{{rate}} impuesto local sobre el salario",
+      "clickForBreakdown": "Haz clic para el desglose completo"
+    },
+    "modal": {
+      "schoolDistrictSubtitle": "Distrito escolar de {{district}}",
+      "removeFromShortlist": "Quitar de la lista corta",
+      "addToShortlist": "Agregar a la lista corta",
+      "done": "Listo",
+      "whatHousesCost": "Lo que cuestan las casas aquí",
+      "monthlyCostOfMedian": "Costo mensual de la casa mediana aquí",
+      "monthlyCostOfPrice": "Costo mensual de una casa de {{price}}",
+      "principalInterest": "Principal e interés",
+      "propertySchoolTax": "Impuesto de propiedad + escolar",
+      "mortgageInsurance": "Seguro hipotecario",
+      "insuranceEst": "Seguro (est.)",
+      "upkeepAccrual": "Acumulación de mantenimiento",
+      "allIn": "Todo incluido",
+      "millageBreakdown": "Desglose del milaje",
+      "county": "Condado",
+      "townshipBorough": "Municipio / distrito",
+      "schoolDistrict": "Distrito escolar",
+      "total": "Total",
+      "mills": "{{value}} milésimas",
+      "effectiveRateOnMarketValue": "Tasa efectiva sobre el valor de mercado",
+      "localWageTaxOnEarnings": "Impuesto local sobre el salario",
+      "schoolSliceNote": "La parte escolar suele ser la más grande, y es la que más varía en todo el condado.",
+      "districtSchools": "Escuelas de {{district}}",
+      "mathsProficient": "Competencia en matemáticas",
+      "readingProficient": "Competencia en lectura",
+      "graduationRate": "Tasa de graduación en 4 años",
+      "attendance": "Asistiendo el 90%+ de los días",
+      "stateAverage": "promedio estatal {{pct}}%",
+      "averagedAcross": "Promediado entre {{count}} escuela de este distrito.",
+      "averagedAcross_other": "Promediado entre {{count}} escuelas de este distrito.",
+      "noPerformanceFigures": "No hay cifras de rendimiento disponibles para este distrito. Eso es una falta de datos, no una mala puntuación — investígalo antes de que influya en una decisión.",
+      "countyHazardRisk": "Riesgo de peligro de {{county}}",
+      "inlandFlooding": "Inundación fluvial",
+      "heatWave": "Ola de calor",
+      "wildfire": "Incendio forestal",
+      "compositeRisk": "Riesgo compuesto (los 18 peligros)",
+      "pctl": "percentil {{n}}",
+      "hazardFooter": "Percentiles nacionales del Índice Nacional de Riesgo de FEMA — cómo se compara este condado con el resto de EE. UU., no una probabilidad. Solo a nivel de condado: cada municipio en este condado comparte estas cifras.",
+      "assessmentFooter": "Pensilvania grava el valor catastral, y comprar no dispara una reevaluación. Esto convierte un precio de venta usando el factor de ajuste de {{county}} de {{clrFactor}} en todo el condado, así que es confiable para ordenar lugares y no para presupuestar una casa específica. El milaje bruto NO es comparable entre condados — solo la tasa efectiva lo es. Verifica la evaluación real antes de hacer una oferta."
+    }
+  },
+  "sourcesPanel": {
+    "staleBadge": "ANTIGUO",
+    "staleTooltip": "Obtenido hace más de {{maxAge}}, el propio umbral de esta fuente según docs/adr/0001-stale-data-threshold.md. Vuelve a obtenerlo antes de confiar en él.",
+    "reliability": {
+      "official": {
+        "label": "Oficial",
+        "note": "Publicado por el organismo que fija o administra la cifra. Trátalo como autoritativo."
+      },
+      "commercial": {
+        "label": "Estimación comercial",
+        "note": "Una estimación privada. La metodología no está completamente publicada y distintos proveedores discrepan, a veces mucho."
+      },
+      "secondary": {
+        "label": "Reporte secundario",
+        "note": "Reportado de segunda mano. Está bien para ordenar, vale la pena verificarlo antes de actuar."
+      }
+    },
+    "retrieved": "Obtenido",
+    "goesStale": "Se vuelve antiguo",
+    "stalenessThreshold": "Umbral de antigüedad",
+    "staleSummary": "{{count}} fuente pasó su umbral de antigüedad.",
+    "staleSummary_other": "{{count}} fuentes pasaron su umbral de antigüedad.",
+    "staleListItem": "{{title}} (más antigua que {{threshold}})",
+    "staleFooter": "Consulta docs/adr/0001-stale-data-threshold.md y vuelve a obtener estos datos antes de confiar en ellos.",
+    "countSummary": "{{total}} fuentes, {{official}} de ellas oficiales.",
+    "countSummaryBody": "Todo lo que el modelo no obtuvo de tus propios números aparece aquí con un enlace, lo que cubre, cuándo lo obtuve y con qué frecuencia se vuelve antiguo. Donde solo existe una estimación comercial, se indica así — una tabla de milaje oficial y una cifra de Zillow no son el mismo tipo de dato.",
+    "usedBy": "Usado por:",
+    "notSourced": {
+      "headline": "Lo que no está disponible.",
+      "body": "Tus propias cifras — sueldo, gasto, saldos, obligaciones fijas — vienen de ti, y las que siguen marcadas como ESTIMADO en el archivo de datos son suposiciones que hice. Los precios de vivienda existen para solo 18 de 112 municipios, y el rendimiento escolar para aproximadamente la mitad de los distritos. Esos vacíos se muestran en blanco en toda la app en vez de rellenarse con números que parezcan plausibles."
+    }
   }
 }

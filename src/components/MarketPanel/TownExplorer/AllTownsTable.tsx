@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ALL_MUNICIPALITIES,
   compareNullableDesc,
@@ -11,6 +12,18 @@ import type { Assumptions } from "../../../model/types";
 import { Button, InfoTip, Table, Td, Th, Toggle } from "../../ui";
 import { REACH_LABEL, REACH_STYLE } from "./reach";
 
+const REACH_KEY: Record<string, string> = {
+  comfortable: "marketPanel.townCard.reach.comfortable",
+  stretch: "marketPanel.townCard.reach.stretch",
+  "out-of-reach": "marketPanel.townCard.reach.outOfReach",
+  unknown: "marketPanel.townCard.reach.unknown",
+};
+
+const COUNTY_KEY_LABEL: Record<string, string> = {
+  delaware: "marketPanel.townCard.county.delaware",
+  montgomery: "marketPanel.townCard.county.montgomery",
+};
+
 export default function AllTownsTable({
   assumptions,
   rows,
@@ -22,6 +35,7 @@ export default function AllTownsTable({
   pinned: string[];
   onTogglePin: (name: string) => void;
 }) {
+  const { t } = useTranslation();
   const [sortMode, setSortMode] = useState<"cost" | "valueScore">("cost");
   const [pricedOnly, setPricedOnly] = useState(true);
 
@@ -52,7 +66,9 @@ export default function AllTownsTable({
   return (
     <div>
       <div className="flex items-center gap-2 text-xs">
-        <span className="text-slate-500">Sort by</span>
+        <span className="text-slate-500">
+          {t("marketPanel.allTowns.sortBy", "Sort by")}
+        </span>
         <div className="inline-flex overflow-hidden rounded-lg border border-slate-200">
           <button
             type="button"
@@ -63,7 +79,7 @@ export default function AllTownsTable({
                 : "bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
-            Monthly cost
+            {t("marketPanel.allTowns.sortCost", "Monthly cost")}
           </button>
           <button
             type="button"
@@ -74,12 +90,15 @@ export default function AllTownsTable({
                 : "bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
-            Value score
+            {t("marketPanel.allTowns.sortValue", "Value score")}
           </button>
         </div>
         <InfoTip
           placement="bottom"
-          text="School quality (mean maths/reading proficiency) per $1,000/month of all-in ownership cost, pricing the SAME reference house everywhere so every municipality is ranked, not just the ones with a sourced median price. Towns whose district isn't sourced sort last."
+          text={t(
+            "marketPanel.allTowns.sortHint",
+            "School quality (mean maths/reading proficiency) per $1,000/month of all-in ownership cost, pricing the SAME reference house everywhere so every municipality is ranked, not just the ones with a sourced median price. Towns whose district isn't sourced sort last.",
+          )}
         />
       </div>
 
@@ -87,37 +106,49 @@ export default function AllTownsTable({
         <thead>
           <tr className="border-b border-slate-200">
             <Th sticky className="bg-white pb-2 pr-4">
-              Town
+              {t("marketPanel.allTowns.columns.town", "Town")}
             </Th>
-            <Th className="pb-2 pr-4">County</Th>
+            <Th className="pb-2 pr-4">
+              {t("marketPanel.allTowns.columns.county", "County")}
+            </Th>
             <Th align="right" className="pb-2 pr-4">
               <span className="inline-flex items-center">
-                Median price
+                {t("marketPanel.allTowns.columns.medianPrice", "Median price")}
                 <InfoTip
                   placement="bottom"
-                  text="Typical home value from Zillow or Redfin, 2026. Towns with no sourced price are listed at the bottom rather than guessed at."
+                  text={t(
+                    "marketPanel.allTowns.columns.medianPriceHint",
+                    "Typical home value from Zillow or Redfin, 2026. Towns with no sourced price are listed at the bottom rather than guessed at.",
+                  )}
                 />
               </span>
             </Th>
             <Th align="right" className="pb-2 pr-4">
-              Tax rate
+              {t("marketPanel.allTowns.columns.taxRate", "Tax rate")}
             </Th>
             <Th align="right" className="pb-2 pr-4">
               <span className="inline-flex items-center">
-                All-in / month
+                {t("marketPanel.allTowns.columns.allInPerMonth", "All-in / month")}
                 <InfoTip
                   placement="bottom"
-                  text="What the typical house here would cost you monthly: loan, property and school tax, insurance, mortgage insurance and upkeep."
+                  text={t(
+                    "marketPanel.allTowns.columns.allInPerMonthHint",
+                    "What the typical house here would cost you monthly: loan, property and school tax, insurance, mortgage insurance and upkeep.",
+                  )}
                 />
               </span>
             </Th>
             <Th align="right" className="pb-2 pr-4">
-              Cash to close
+              {t("marketPanel.allTowns.columns.cashToClose", "Cash to close")}
             </Th>
-            <Th className="pb-2 pr-4">Reach</Th>
-            <Th className="pb-2 pr-4">Schools</Th>
+            <Th className="pb-2 pr-4">
+              {t("marketPanel.allTowns.columns.reach", "Reach")}
+            </Th>
+            <Th className="pb-2 pr-4">
+              {t("marketPanel.allTowns.columns.schools", "Schools")}
+            </Th>
             <Th align="right" className="pb-2 pr-4">
-              Value score
+              {t("marketPanel.allTowns.columns.valueScore", "Value score")}
             </Th>
             <Th />
           </tr>
@@ -138,12 +169,17 @@ export default function AllTownsTable({
                   {row.m.name}
                   {row.m.wageTax >= 0.02 && (
                     <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                      {pct(row.m.wageTax, 2)} wage tax
+                      {t("marketPanel.allTowns.wageTax", "{{rate}} wage tax", {
+                        rate: pct(row.m.wageTax, 2),
+                      })}
                     </span>
                   )}
                 </Td>
                 <Td className="py-2 pr-4 capitalize text-slate-500">
-                  {row.m.countyKey}
+                  {t(
+                    COUNTY_KEY_LABEL[row.m.countyKey] ?? "",
+                    row.m.countyKey,
+                  )}
                 </Td>
                 <Td
                   align="right"
@@ -181,12 +217,14 @@ export default function AllTownsTable({
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${REACH_STYLE[row.reach]}`}
                   >
-                    {REACH_LABEL[row.reach]}
+                    {t(REACH_KEY[row.reach] ?? "", REACH_LABEL[row.reach])}
                   </span>
                 </Td>
                 <Td className="py-2 pr-4 text-xs text-slate-500">
                   {ratingSummary(row.m.schoolDistrict) ?? (
-                    <span className="text-slate-300">not sourced</span>
+                    <span className="text-slate-300">
+                      {t("marketPanel.allTowns.notSourced", "not sourced")}
+                    </span>
                   )}
                 </Td>
                 <Td
@@ -201,7 +239,9 @@ export default function AllTownsTable({
                 </Td>
                 <Td align="right" className="py-2">
                   <Button size="sm" onClick={() => onTogglePin(row.m.name)}>
-                    {isPinned ? "Pinned" : "Pin"}
+                    {isPinned
+                      ? t("marketPanel.allTowns.pinned", "Pinned")
+                      : t("marketPanel.townCard.pin", "Pin")}
                   </Button>
                 </Td>
               </tr>
@@ -214,15 +254,27 @@ export default function AllTownsTable({
         <Toggle
           checked={pricedOnly}
           onChange={setPricedOnly}
-          label="Only show towns with a sourced price"
-          hint="On by default to keep the table to towns you can actually compare by cost. The rest still have complete tax and school data — a missing price is a gap in what I could source, not a reason to hide them for good."
+          label={t(
+            "marketPanel.allTowns.pricedOnly.label",
+            "Only show towns with a sourced price",
+          )}
+          hint={t(
+            "marketPanel.allTowns.pricedOnly.hint",
+            "On by default to keep the table to towns you can actually compare by cost. The rest still have complete tax and school data — a missing price is a gap in what I could source, not a reason to hide them for good.",
+          )}
         />
         <p className="text-xs text-slate-500">
-          Showing {visible.length} of {ALL_MUNICIPALITIES.length} municipalities
-          across three counties. {pricedCount} have a sourced median price; the
-          rest are sorted by tax rate and show{" "}
-          <span className="text-slate-400">&mdash;</span> where a price would
-          go.
+          {t(
+            "marketPanel.allTowns.footerCount",
+            "Showing {{visible}} of {{total}} municipalities across three counties. {{priced}} have a sourced median price; the rest are sorted by tax rate and show",
+            {
+              visible: visible.length,
+              total: ALL_MUNICIPALITIES.length,
+              priced: pricedCount,
+            },
+          )}{" "}
+          <span className="text-slate-400">&mdash;</span>{" "}
+          {t("marketPanel.allTowns.footerPriceGoes", "where a price would go.")}
         </p>
       </div>
     </div>

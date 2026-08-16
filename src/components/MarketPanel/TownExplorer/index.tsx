@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { COST_DEFAULTS } from "../../../costDefaults";
 import { useRankedTowns } from "../../../hooks/useRankedTowns";
 import {
@@ -13,6 +14,7 @@ import BudgetControls from "./BudgetControls";
 import TownCard from "./TownCard";
 
 export default function TownExplorer() {
+  const { t } = useTranslation();
   const assumptions = useStore((s) => s.assumptions);
   const setAssumptions = useStore((s) => s.setAssumptions);
   const settings = useStore((s) => s.settings);
@@ -91,8 +93,14 @@ export default function TownExplorer() {
   return (
     <div className="space-y-5">
       <Card
-        title="What you can actually afford, and where"
-        subtitle="Each town judged against its OWN median house price, not a hypothetical one. Ranking by tax rate alone points you at places you cannot buy."
+        title={t(
+          "marketPanel.townExplorer.title",
+          "What you can actually afford, and where",
+        )}
+        subtitle={t(
+          "marketPanel.townExplorer.subtitle",
+          "Each town judged against its OWN median house price, not a hypothetical one. Ranking by tax rate alone points you at places you cannot buy.",
+        )}
       >
         <BudgetControls
           assumptions={assumptions}
@@ -110,12 +118,23 @@ export default function TownExplorer() {
           <Toggle
             checked={priceOverrideEnabled}
             onChange={setPriceOverrideEnabled}
-            label="Test a hypothetical price instead of each town's own median"
-            hint="Off by default: figures below use each town's own sourced median price, consistent with its reach badge. Turn this on to ask 'what would $X cost here' instead."
+            label={t(
+              "marketPanel.townExplorer.priceOverride.label",
+              "Test a hypothetical price instead of each town's own median",
+            )}
+            hint={t(
+              "marketPanel.townExplorer.priceOverride.hint",
+              "Off by default: figures below use each town's own sourced median price, consistent with its reach badge. Turn this on to ask 'what would $X cost here' instead.",
+            )}
           />
           {priceOverrideEnabled && (
             <div className="mt-2 w-44">
-              <Field label="Price to test">
+              <Field
+                label={t(
+                  "marketPanel.townExplorer.priceToTest",
+                  "Price to test",
+                )}
+              >
                 <MoneyInput
                   value={priceOverride}
                   step={5000}
@@ -128,11 +147,16 @@ export default function TownExplorer() {
 
         <div className="mt-4">
           <Callout tone="warn">
-            <strong>The trap in the tax table.</strong> The lowest rates sit
-            under the best schools, and those are exactly the places you cannot
-            buy. Radnor is 1.26% with a $1,206,000 median. Marple is 1.09% with
-            a $651,500 median. A cheap rate on a house out of reach is worth
-            nothing. The towns below are pre-picked to avoid that trap.
+            <Trans
+              i18nKey="marketPanel.townExplorer.taxTrap"
+              components={{ b: <strong /> }}
+            >
+              <b>The trap in the tax table.</b> The lowest rates sit under the
+              best schools, and those are exactly the places you cannot buy.
+              Radnor is 1.26% with a $1,206,000 median. Marple is 1.09% with a
+              $651,500 median. A cheap rate on a house out of reach is worth
+              nothing. The towns below are pre-picked to avoid that trap.
+            </Trans>
           </Callout>
         </div>
 
@@ -185,7 +209,15 @@ export default function TownExplorer() {
             onClick={() => setShowAllTowns((v) => !v)}
             className="text-sm font-medium text-blue-700 hover:underline"
           >
-            {showAllTowns ? "Hide" : "Browse"} all 112 towns
+            {showAllTowns
+              ? t("marketPanel.townExplorer.hideAllTowns", "Hide all {{count}} towns", {
+                  count: 112,
+                })
+              : t(
+                  "marketPanel.townExplorer.browseAllTowns",
+                  "Browse all {{count}} towns",
+                  { count: 112 },
+                )}
           </button>
           {showAllTowns && (
             <div className="mt-3">
@@ -201,8 +233,11 @@ export default function TownExplorer() {
       </Card>
 
       <Card
-        title="County map"
-        subtitle="Every municipality, coloured by tax. Click a town to pin it."
+        title={t("marketPanel.townExplorer.countyMap.title", "County map")}
+        subtitle={t(
+          "marketPanel.townExplorer.countyMap.subtitle",
+          "Every municipality, coloured by tax. Click a town to pin it.",
+        )}
       >
         <CountyMap
           price={

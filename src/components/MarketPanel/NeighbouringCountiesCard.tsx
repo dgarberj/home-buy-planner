@@ -1,12 +1,24 @@
+import { useTranslation } from "react-i18next";
 import { NEIGHBOURING_COUNTIES } from "../../data/localMarket";
 import { money, pct } from "../../lib/format";
 import { Card } from "../ui";
 
+function slug(name: string): string {
+  return name.toLowerCase().replaceAll(/[^a-z]+/g, "");
+}
+
 export default function NeighbouringCountiesCard() {
+  const { t } = useTranslation();
   return (
     <Card
-      title="Delaware County against its neighbours"
-      subtitle="Median sale prices and typical all-in effective tax rates."
+      title={t(
+        "marketPanel.neighbouringCounties.title",
+        "Delaware County against its neighbours",
+      )}
+      subtitle={t(
+        "marketPanel.neighbouringCounties.subtitle",
+        "Median sale prices and typical all-in effective tax rates.",
+      )}
     >
       <div className="grid gap-4 md:grid-cols-2">
         {NEIGHBOURING_COUNTIES.map((c) => (
@@ -19,16 +31,35 @@ export default function NeighbouringCountiesCard() {
                 {money(c.medianPrice)}
               </span>
             </div>
-            <p className="mt-1 text-xs text-slate-400">{c.priceNote}</p>
+            <p className="mt-1 text-xs text-slate-400">
+              {t(
+                `marketPanel.neighbouringCounties.${slug(c.name)}.priceNote`,
+                c.priceNote,
+              )}
+            </p>
             <p className="mt-2 text-sm text-slate-600">
-              Typical effective tax {pct(c.effectiveTaxRate, 2)} — about{" "}
+              {t(
+                "marketPanel.neighbouringCounties.effectiveTax",
+                "Typical effective tax {{rate}} — about",
+                { rate: pct(c.effectiveTaxRate, 2) },
+              )}{" "}
               <strong>
-                {money((c.medianPrice * c.effectiveTaxRate) / 12)}/mo
+                {t(
+                  "marketPanel.neighbouringCounties.perMonthOnMedian",
+                  "{{amount}}/mo",
+                  { amount: money((c.medianPrice * c.effectiveTaxRate) / 12) },
+                )}
               </strong>{" "}
-              on the median house.
+              {t(
+                "marketPanel.neighbouringCounties.onMedianHouse",
+                "on the median house.",
+              )}
             </p>
             <p className="mt-2 text-sm leading-relaxed text-slate-500">
-              {c.note}
+              {t(
+                `marketPanel.neighbouringCounties.${slug(c.name)}.note`,
+                c.note,
+              )}
             </p>
           </div>
         ))}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { formatMaxAge } from "../../data/freshness";
 import {
   RELIABILITY_LABEL,
@@ -26,7 +27,20 @@ const BADGE: Record<Reliability, string> = {
   secondary: "bg-slate-200 text-slate-700",
 };
 
+const RELIABILITY_LABEL_KEY: Record<Reliability, string> = {
+  official: "sourcesPanel.reliability.official.label",
+  commercial: "sourcesPanel.reliability.commercial.label",
+  secondary: "sourcesPanel.reliability.secondary.label",
+};
+
+const RELIABILITY_NOTE_KEY: Record<Reliability, string> = {
+  official: "sourcesPanel.reliability.official.note",
+  commercial: "sourcesPanel.reliability.commercial.note",
+  secondary: "sourcesPanel.reliability.secondary.note",
+};
+
 function SourceCard({ id }: { id: string }) {
+  const { t } = useTranslation();
   const source = SOURCES.find((s) => s.id === id);
   if (!source) return null;
   const stale = isSourceStale(source);
@@ -48,20 +62,30 @@ function SourceCard({ id }: { id: string }) {
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
           {stale && (
             <span className="whitespace-nowrap rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-800">
-              STALE
+              {t("sourcesPanel.staleBadge", "STALE")}
               <InfoTip
                 placement="bottom"
-                text={`Retrieved more than ${formatMaxAge(source.staleAfterDays!)} ago, this source's own threshold per docs/adr/0001-stale-data-threshold.md. Re-fetch before relying on it.`}
+                text={t(
+                  "sourcesPanel.staleTooltip",
+                  "Retrieved more than {{maxAge}} ago, this source's own threshold per docs/adr/0001-stale-data-threshold.md. Re-fetch before relying on it.",
+                  { maxAge: formatMaxAge(source.staleAfterDays!) },
+                )}
               />
             </span>
           )}
           <span
             className={`whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${BADGE[source.reliability]}`}
           >
-            {RELIABILITY_LABEL[source.reliability]}
+            {t(
+              RELIABILITY_LABEL_KEY[source.reliability],
+              RELIABILITY_LABEL[source.reliability],
+            )}
             <InfoTip
               placement="bottom"
-              text={RELIABILITY_NOTE[source.reliability]}
+              text={t(
+                RELIABILITY_NOTE_KEY[source.reliability],
+                RELIABILITY_NOTE[source.reliability],
+              )}
             />
           </span>
         </div>
@@ -79,18 +103,18 @@ function SourceCard({ id }: { id: string }) {
 
       <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 border-t border-slate-100 pt-3 text-xs text-slate-500">
         <div className="flex gap-1.5">
-          <dt>Retrieved</dt>
+          <dt>{t("sourcesPanel.retrieved", "Retrieved")}</dt>
           <dd className="font-medium tabular-nums text-slate-700">
             {source.fetchedAt}
           </dd>
         </div>
         <div className="flex gap-1.5">
-          <dt>Goes stale</dt>
+          <dt>{t("sourcesPanel.goesStale", "Goes stale")}</dt>
           <dd className="text-slate-700">{source.refresh}</dd>
         </div>
         {source.staleAfterDays !== undefined && (
           <div className="flex gap-1.5">
-            <dt>Staleness threshold</dt>
+            <dt>{t("sourcesPanel.stalenessThreshold", "Staleness threshold")}</dt>
             <dd className="text-slate-700">
               {formatMaxAge(source.staleAfterDays)}
             </dd>
@@ -102,6 +126,7 @@ function SourceCard({ id }: { id: string }) {
 }
 
 export default function SourcesPanel() {
+  const { t } = useTranslation();
   const officialCount = SOURCES.filter(
     (s) => s.reliability === "official",
   ).length;
@@ -112,31 +137,49 @@ export default function SourcesPanel() {
       {stale.length > 0 && (
         <Callout tone="warn">
           <strong>
-            {stale.length} source{stale.length === 1 ? "" : "s"} past its
-            staleness threshold.
+            {t(
+              "sourcesPanel.staleSummary",
+              `{{count}} source${stale.length === 1 ? "" : "s"} past its staleness threshold.`,
+              { count: stale.length },
+            )}
           </strong>{" "}
           {stale
-            .map((s) => `${s.source.title} (older than ${s.thresholdLabel})`)
+            .map((s) =>
+              t(
+                "sourcesPanel.staleListItem",
+                "{{title}} (older than {{threshold}})",
+                { title: s.source.title, threshold: s.thresholdLabel },
+              ),
+            )
             .join(", ")}
-          . See docs/adr/0001-stale-data-threshold.md and re-fetch before
-          relying on these.
+          .{" "}
+          {t(
+            "sourcesPanel.staleFooter",
+            "See docs/adr/0001-stale-data-threshold.md and re-fetch before relying on these.",
+          )}
         </Callout>
       )}
 
       <Callout tone="neutral">
         <strong>
-          {SOURCES.length} sources, {officialCount} of them official.
+          {t(
+            "sourcesPanel.countSummary",
+            "{{total}} sources, {{official}} of them official.",
+            { total: SOURCES.length, official: officialCount },
+          )}
         </strong>{" "}
-        Everything the model did not get from your own numbers is listed here
-        with a link, what it covers, when I fetched it and how often it goes
-        stale. Where only a commercial estimate exists, it says so — an official
-        millage table and a Zillow figure are not the same kind of fact.
+        {t(
+          "sourcesPanel.countSummaryBody",
+          "Everything the model did not get from your own numbers is listed here with a link, what it covers, when I fetched it and how often it goes stale. Where only a commercial estimate exists, it says so — an official millage table and a Zillow figure are not the same kind of fact.",
+        )}
       </Callout>
 
       {SOURCE_TOPICS.map((topic) => (
         <Card key={topic.key} title={topic.label} subtitle={topic.description}>
           <p className="mb-4 text-xs text-slate-500">
-            <span className="font-medium text-slate-600">Used by:</span>{" "}
+            <span className="font-medium text-slate-600">
+              {t("sourcesPanel.usedBy", "Used by:")}
+            </span>{" "}
             {topic.usedBy}
           </p>
           <div className="grid gap-3 lg:grid-cols-2">
@@ -148,12 +191,13 @@ export default function SourcesPanel() {
       ))}
 
       <Callout tone="warn">
-        <strong>What is not sourced.</strong> Your own figures — pay, spending,
-        balances, fixed obligations — come from you, and the ones still marked
-        ESTIMATE in the data file are guesses I made. House prices exist for
-        only 18 of 112 municipalities, and school performance for roughly half
-        the districts. Those gaps are shown as blanks throughout rather than
-        filled in with plausible-looking numbers.
+        <strong>
+          {t("sourcesPanel.notSourced.headline", "What is not sourced.")}
+        </strong>{" "}
+        {t(
+          "sourcesPanel.notSourced.body",
+          "Your own figures — pay, spending, balances, fixed obligations — come from you, and the ones still marked ESTIMATE in the data file are guesses I made. House prices exist for only 18 of 112 municipalities, and school performance for roughly half the districts. Those gaps are shown as blanks throughout rather than filled in with plausible-looking numbers.",
+        )}
       </Callout>
     </div>
   );

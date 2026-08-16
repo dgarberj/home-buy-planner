@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import {
   COUNTY_INFO,
   countyInfoFor,
@@ -56,6 +57,25 @@ export default function CountyMap({
   highlighted?: string[];
   onPick?: (name: string) => void;
 }) {
+  const { t } = useTranslation();
+  const METRIC_LABEL_KEY: Record<MetricKey, string> = {
+    price: "countyMap.metrics.price.label",
+    taxMonthly: "countyMap.metrics.taxMonthly.label",
+    taxRate: "countyMap.metrics.taxRate.label",
+    valueScore: "countyMap.metrics.valueScore.label",
+  };
+  const METRIC_HINT_KEY: Record<MetricKey, string> = {
+    price: "countyMap.metrics.price.hint",
+    taxMonthly: "countyMap.metrics.taxMonthly.hint",
+    taxRate: "countyMap.metrics.taxRate.hint",
+    valueScore: "countyMap.metrics.valueScore.hint",
+  };
+  const METRIC_UNIT_KEY: Record<MetricKey, string> = {
+    price: "countyMap.metrics.price.unit",
+    taxMonthly: "countyMap.metrics.taxMonthly.unit",
+    taxRate: "countyMap.metrics.taxRate.unit",
+    valueScore: "countyMap.metrics.valueScore.unit",
+  };
   const [hover, setHover] = useState<Municipality | null>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number }>({
     x: 0,
@@ -152,13 +172,19 @@ export default function CountyMap({
           ))}
         </div>
         <span className="text-xs text-slate-400">
-          assessments ÷ {county.clrFactor} to reach market value
+          {t(
+            "countyMap.assessmentsDivided",
+            "assessments ÷ {{clrFactor}} to reach market value",
+            { clrFactor: county.clrFactor },
+          )}
         </span>
       </div>
 
       {/* --- What the tiles are showing -------------------------------- */}
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-slate-500">Tiles show</span>
+        <span className="text-xs font-medium text-slate-500">
+          {t("countyMap.tilesShow", "Tiles show")}
+        </span>
         <div className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
           {METRICS.map((x) => (
             <button
@@ -171,19 +197,32 @@ export default function CountyMap({
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              {x.label}
+              {t(METRIC_LABEL_KEY[x.key], x.label)}
             </button>
           ))}
         </div>
-        <InfoTip text={metric.hint} />
+        <InfoTip text={t(METRIC_HINT_KEY[metric.key], metric.hint)} />
         {metricKey !== "taxRate" && (
           <span className="text-xs text-amber-700">
-            {knownCount} of {municipalities.length} towns in this county have{" "}
-            {metricKey === "valueScore"
-              ? "a sourced school district"
-              : "a sourced price"}{" "}
-            — the rest show &ldquo;
-            {metricKey === "valueScore" ? "—" : "no price"}&rdquo;
+            {t(
+              "countyMap.coverage",
+              "{{known}} of {{total}} towns in this county have {{whatIsSourced}} — the rest show “{{blankLabel}}”",
+              {
+                known: knownCount,
+                total: municipalities.length,
+                whatIsSourced:
+                  metricKey === "valueScore"
+                    ? t(
+                        "countyMap.sourcedSchoolDistrict",
+                        "a sourced school district",
+                      )
+                    : t("countyMap.sourcedPrice", "a sourced price"),
+                blankLabel:
+                  metricKey === "valueScore"
+                    ? "—"
+                    : t("countyMap.noPrice", "no price"),
+              },
+            )}
           </span>
         )}
       </div>
@@ -193,13 +232,30 @@ export default function CountyMap({
       {risk && (
         <p className="mb-3 max-w-3xl text-xs leading-relaxed text-slate-500">
           <span className="font-medium text-slate-600">
-            FEMA hazard risk ({risk.riskRating.toLowerCase()},{" "}
-            {ordinal(risk.riskScore)} percentile nationally):
+            {t(
+              "countyMap.femaHazard",
+              "FEMA hazard risk ({{rating}}, {{percentile}} percentile nationally):",
+              {
+                rating: risk.riskRating.toLowerCase(),
+                percentile: ordinal(risk.riskScore),
+              },
+            )}
           </span>{" "}
-          flooding {ordinal(risk.floodRiskScore)} pctl, heat{" "}
-          {ordinal(risk.heatWaveRiskScore)} pctl, wildfire{" "}
-          {ordinal(risk.wildfireRiskScore)} pctl. {risk.note} County-level only
-          — every town in {county.name} shares this figure.
+          {t(
+            "countyMap.hazardBreakdown",
+            "flooding {{flood}} pctl, heat {{heat}} pctl, wildfire {{wildfire}} pctl.",
+            {
+              flood: ordinal(risk.floodRiskScore),
+              heat: ordinal(risk.heatWaveRiskScore),
+              wildfire: ordinal(risk.wildfireRiskScore),
+            },
+          )}{" "}
+          {risk.note}{" "}
+          {t(
+            "countyMap.hazardCountyLevel",
+            "County-level only — every town in {{county}} shares this figure.",
+            { county: county.name },
+          )}
         </p>
       )}
 
@@ -208,7 +264,10 @@ export default function CountyMap({
           viewBox={`0 0 ${cols * (TILE + GAP)} ${rows * (TILE + GAP)}`}
           className="w-full min-w-[680px]"
           role="img"
-          aria-label="Tile map of Delaware County municipalities coloured by property tax rate"
+          aria-label={t(
+            "countyMap.svgAriaLabel",
+            "Tile map of Delaware County municipalities coloured by property tax rate",
+          )}
         >
           {ordered.map((m, index) => {
             const pos = positionOf(m, index);
@@ -234,7 +293,11 @@ export default function CountyMap({
                 }}
                 className="cursor-pointer"
                 role="button"
-                aria-label={`${m.name}, ${m.schoolDistrict} schools`}
+                aria-label={t(
+                  "countyMap.tileAriaLabel",
+                  "{{name}}, {{district}} schools",
+                  { name: m.name, district: m.schoolDistrict },
+                )}
               >
                 <rect
                   width={TILE}
@@ -277,7 +340,9 @@ export default function CountyMap({
                   className="pointer-events-none"
                   style={{ fontSize: 9, fill: "rgba(15,23,42,0.55)" }}
                 >
-                  {value.known ? metric.unit : "no price"}
+                  {value.known
+                    ? t(METRIC_UNIT_KEY[metric.key], metric.unit)
+                    : t("countyMap.noPrice", "no price")}
                 </text>
                 {/* School standing, where it is sourced. */}
                 <circle
@@ -300,57 +365,78 @@ export default function CountyMap({
             className="h-3 w-3 rounded-sm"
             style={{ background: "hsl(140,62%,78%)" }}
           />
-          low tax ({pct(min, 2)} of value)
+          {t("countyMap.legend.lowTax", "low tax ({{pct}} of value)", {
+            pct: pct(min, 2),
+          })}
         </span>
         <span className="flex items-center gap-2">
           <span
             className="h-3 w-3 rounded-sm"
             style={{ background: "hsl(0,62%,64%)" }}
           />
-          high tax ({pct(max, 2)})
+          {t("countyMap.legend.highTax", "high tax ({{pct}})", {
+            pct: pct(max, 2),
+          })}
         </span>
         <span className="flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
             style={{ background: BAND_COLOUR.strong }}
           />
-          well above state average
+          {t("countyMap.legend.wellAbove", "well above state average")}
         </span>
         <span className="flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
             style={{ background: BAND_COLOUR.above }}
           />
-          above state average
+          {t("countyMap.legend.above", "above state average")}
         </span>
         <span className="flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
             style={{ background: BAND_COLOUR.below }}
           />
-          below
+          {t("countyMap.legend.below", "below")}
         </span>
         <span className="flex items-center gap-2">
           <span
             className="h-2.5 w-2.5 rounded-full"
             style={{ background: BAND_COLOUR.unknown }}
           />
-          not sourced
+          {t("countyMap.legend.notSourced", "not sourced")}
         </span>
         <span className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-sm border-2 border-blue-700" />
-          shortlisted
+          {t("countyMap.legend.shortlisted", "shortlisted")}
         </span>
       </div>
       <p className="mt-2 text-xs text-slate-400">
-        Every tile shows <strong>{metric.label.toLowerCase()}</strong>, labelled
-        &ldquo;
-        {metric.unit}&rdquo;. Colour is always the tax rate. Tax figures use
-        each town&rsquo;s own median home, so nothing here is a hypothetical
-        house. Click any township for the full breakdown.{" "}
+        <Trans
+          i18nKey="countyMap.footerCaption"
+          components={{ b: <strong /> }}
+          values={{
+            metricLabel: t(
+              METRIC_LABEL_KEY[metric.key],
+              metric.label,
+            ).toLowerCase(),
+            unit: t(METRIC_UNIT_KEY[metric.key], metric.unit),
+          }}
+        >
+          Every tile shows <b>{"{{metricLabel}}"}</b>, labelled “
+          {"{{unit}}"}”. Colour is always the tax rate. Tax figures use each
+          town's own median home, so nothing here is a hypothetical house.
+          Click any township for the full breakdown.
+        </Trans>{" "}
         {county.geographicLayout
-          ? "Tiles are arranged roughly geographically, but they are schematic, not real boundaries."
-          : "Tiles are ordered by tax rate, cheapest first — no geography implied."}
+          ? t(
+              "countyMap.footerGeographic",
+              "Tiles are arranged roughly geographically, but they are schematic, not real boundaries.",
+            )
+          : t(
+              "countyMap.footerRanked",
+              "Tiles are ordered by tax rate, cheapest first — no geography implied.",
+            )}
       </p>
 
       {/* --- Hover tooltip, following the cursor -------------------------- */}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   effectiveRate,
   estimatedMonthlyTax,
@@ -19,6 +20,7 @@ export default function CountyMapTooltip({
   cursor: { x: number; y: number };
   price: number;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="pointer-events-none fixed z-40 w-64 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-white shadow-xl"
@@ -30,38 +32,63 @@ export default function CountyMapTooltip({
     >
       <div className="text-sm font-semibold">{hover.name}</div>
       <div className="mt-0.5 text-xs text-slate-300">
-        {hover.schoolDistrict} schools
+        {t("countyMap.tooltip.schools", "{{district}} schools", {
+          district: hover.schoolDistrict,
+        })}
       </div>
 
       <dl className="mt-2 space-y-1 text-xs">
         <div className="flex justify-between gap-3">
-          <dt className="text-slate-400">Median home price</dt>
+          <dt className="text-slate-400">
+            {t("countyMap.tooltip.medianHomePrice", "Median home price")}
+          </dt>
           <dd className="font-semibold tabular-nums">
             {hover.medianPrice ? (
               money(hover.medianPrice)
             ) : (
-              <span className="text-slate-500">not sourced</span>
+              <span className="text-slate-500">
+                {t("countyMap.tooltip.notSourced", "not sourced")}
+              </span>
             )}
           </dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-slate-400">
-            Property tax {hover.medianPrice ? "on that" : `on ${money(price)}`}
+            {hover.medianPrice
+              ? t("countyMap.tooltip.propertyTaxOnThat", "Property tax on that")
+              : t(
+                  "countyMap.tooltip.propertyTaxOnPrice",
+                  "Property tax on {{price}}",
+                  { price: money(price) },
+                )}
           </dt>
           <dd className="font-semibold tabular-nums">
-            {money(estimatedMonthlyTax(hover.medianPrice ?? price, hover))} /
-            month
+            {t("countyMap.tooltip.perMonth", "{{amount}} / month", {
+              amount: money(
+                estimatedMonthlyTax(hover.medianPrice ?? price, hover),
+              ),
+            })}
           </dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="text-slate-400">Tax rate</dt>
+          <dt className="text-slate-400">
+            {t("countyMap.tooltip.taxRate", "Tax rate")}
+          </dt>
           <dd className="tabular-nums">
-            {pct(effectiveRate(hover), 2)} of value
+            {t("countyMap.tooltip.ofValue", "{{rate}} of value", {
+              rate: pct(effectiveRate(hover), 2),
+            })}
           </dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="text-slate-400">Total millage</dt>
-          <dd className="tabular-nums">{hover.total.toFixed(2)} mills</dd>
+          <dt className="text-slate-400">
+            {t("countyMap.tooltip.totalMillage", "Total millage")}
+          </dt>
+          <dd className="tabular-nums">
+            {t("countyMap.tooltip.mills", "{{value}} mills", {
+              value: hover.total.toFixed(2),
+            })}
+          </dd>
         </div>
       </dl>
 
@@ -79,17 +106,24 @@ export default function CountyMapTooltip({
             </span>
           </span>
         ) : (
-          <span className="text-slate-400">School performance not sourced</span>
+          <span className="text-slate-400">
+            {t(
+              "countyMap.tooltip.schoolPerformanceNotSourced",
+              "School performance not sourced",
+            )}
+          </span>
         )}
       </div>
 
       {hover.wageTax > 0 && (
         <div className="mt-1.5 text-xs text-amber-300">
-          {pct(hover.wageTax, 2)} local wage tax
+          {t("countyMap.tooltip.wageTax", "{{rate}} local wage tax", {
+            rate: pct(hover.wageTax, 2),
+          })}
         </div>
       )}
       <div className="mt-2 text-[11px] text-slate-500">
-        Click for the full breakdown
+        {t("countyMap.tooltip.clickForBreakdown", "Click for the full breakdown")}
       </div>
     </div>
   );
