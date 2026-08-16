@@ -229,5 +229,503 @@
     "savingUpTitle": "Esto proyecta el ahorro, no vivir de él.",
     "savingUpTip": "Modelar el retiro de fondos en la jubilación necesitaría tasas de retiro, tratamiento fiscal por tipo de cuenta, Seguro Social y distribuciones mínimas requeridas — un modelo mucho más grande que este.",
     "savingUpBody": "\"Patrimonio neto a los {{finalAge}}\" significa lo que habrás acumulado para entonces. No dice nada sobre impuestos al retirar, Seguro Social, costos de salud, ni cuánto durará el dinero."
+  },
+  "assumptions": {
+    "tabs": {
+      "basics": "Básicos",
+      "advanced": "Avanzado"
+    },
+    "sourceNote": {
+      "title": "De dónde vienen estos números",
+      "body": "Los ingresos, gastos, alquiler y saldos iniciales de abajo se suman desde tus pestañas de <b>Presupuesto</b> y <b>Saldos</b>, y no se pueden editar aquí — edítalos allí."
+    },
+    "horizon": {
+      "title": "Tú, y hasta dónde mirar hacia adelante",
+      "subtitle": "Los hitos de jubilación se miden desde tu edad, así que esto es lo que hace que la vista a largo plazo signifique algo.",
+      "yourAge": {
+        "label": "Tu edad",
+        "hint": "Un valor provisional hasta que lo configures. Cada hito de jubilación de abajo se mide desde aquí."
+      },
+      "partnerAge": {
+        "label": "Edad de tu pareja",
+        "hint": "Se muestra junto a los hitos como contexto. No cambia ninguno de los cálculos."
+      },
+      "startingMonth": {
+        "label": "Mes de inicio",
+        "hint": "Mes 1 de la proyección. Se usa para etiquetar los meses con fechas reales."
+      },
+      "projectAhead": {
+        "label": "Proyectar (meses)",
+        "hint": "Hasta dónde llega el modelo. Que dure más que la hipoteca es lo que hace honesta la comparación de comprar antes."
+      },
+      "howFarAhead": {
+        "title": "Hasta dónde",
+        "hint": "Ajustes rápidos. Las ventanas cortas son para la decisión de compra; las largas son para la pregunta de jubilación."
+      },
+      "presets": {
+        "y5": "5 años",
+        "y10": "10 años",
+        "to60": "Hasta los 60",
+        "to65": "Hasta los 65",
+        "to67": "Hasta los 67",
+        "to70": "Hasta los 70"
+      },
+      "milestoneAges": {
+        "title": "Edades de los hitos",
+        "hint": "Las edades para las que el panel muestra patrimonio neto, jubilación y valor de la vivienda. Solo se pueden mostrar edades dentro de la ventana de proyección."
+      },
+      "outsideWindow": "Fuera de la ventana de proyección actual",
+      "fadedNote": "Las edades atenuadas caen fuera de la ventana de proyección — amplía la ventana para incluirlas."
+    },
+    "income": {
+      "title": "Ingresos",
+      "takeHomePay": "Salario neto",
+      "monthlyTakeHome": {
+        "label": "Salario neto mensual (combinado)",
+        "hint": "Lo que realmente llega al banco cada mes después de impuestos y deducciones, entre los dos."
+      },
+      "annualRaise": {
+        "label": "Aumento anual",
+        "hint": "Aumento salarial promedio por año. 3% es un supuesto común a largo plazo; usa 0% para ser deliberadamente pesimista."
+      },
+      "addedUpFrom": "Sumado de {{count}} partidas de ingresos en la pestaña de Presupuesto."
+    },
+    "expenses": {
+      "title": "Gastos",
+      "subtitle": "Gasto mensual, excluyendo vivienda",
+      "fixed": {
+        "label": "Costos fijos",
+        "hint": "Facturas iguales cada mes: seguro, pago del coche, pagos de préstamos, suscripciones."
+      },
+      "variable": {
+        "label": "Costos variables",
+        "hint": "Gasto que varía: comestibles, restaurantes, compras, viajes."
+      },
+      "rent": {
+        "label": "Alquiler actual",
+        "hint": "Se rastrea por separado porque desaparece el mes que compras, reemplazado por el pago de la hipoteca."
+      },
+      "inflation": {
+        "label": "Inflación anual",
+        "hint": "Qué tan rápido crecen los gastos y el alquiler cada año. Se aplica a todo excepto al pago de la hipoteca, que es fijo."
+      }
+    },
+    "home": {
+      "title": "Compra de vivienda",
+      "targetPrice": {
+        "label": "Precio objetivo (hoy)",
+        "hint": "Lo que cuesta hoy el tipo de casa que quieres. El modelo lo aumenta según la tasa de apreciación mientras ahorras, así que esperar significa un pago inicial mayor."
+      },
+      "downPayment": {
+        "label": "Pago inicial",
+        "hint": "Porcentaje del precio de compra que pones como inicial. 20% evita el seguro hipotecario."
+      },
+      "closingCosts": {
+        "label": "Costos de cierre",
+        "hint": "Cargos que se pagan al cierre, además del pago inicial. Normalmente 2-5% del precio."
+      },
+      "mortgageRate": {
+        "label": "Tasa hipotecaria",
+        "hint": "La tasa anual cotizada del préstamo. Fija durante toda la vida del préstamo en este modelo."
+      },
+      "mortgageTerm": {
+        "label": "Plazo de la hipoteca (años)",
+        "hint": "30 es lo estándar. Un préstamo a 15 años cuesta más al mes pero genera capital mucho más rápido."
+      },
+      "taxInsuranceHoa": {
+        "label": "Impuestos + seguro + HOA / mes",
+        "hint": "Todo en el pago mensual de vivienda que no es principal e interés del préstamo. Se mantiene constante en el tiempo, ya que de todas formas es una estimación."
+      },
+      "appreciation": {
+        "label": "Apreciación de la vivienda / año",
+        "hint": "Qué tan rápido suben los precios de las casas. Esto funciona en ambos sentidos: aumenta tu capital después de comprar, pero sube el precio mientras aún estás ahorrando."
+      },
+      "upkeep": {
+        "label": "Mantenimiento / año",
+        "hint": "Mantenimiento y reparaciones, como porcentaje del valor de la casa. 1% al año es la regla general habitual. Nunca recibes una factura por esto, que es exactamente por qué omitirlo hace que comprar parezca mejor de lo que es."
+      },
+      "pmiAnnual": {
+        "label": "Seguro hipotecario / año",
+        "hint": "PMI, como porcentaje del préstamo original. Se cobra solo mientras debas más que el umbral de abajo, así que un pago inicial del 20% nunca lo paga."
+      },
+      "pmiRemovedAtLtv": {
+        "label": "El seguro hipotecario cae en",
+        "hint": "Relación préstamo-valor en la que el PMI desaparece. Convencionalmente 80% — se alcanza pagando el préstamo, por la apreciación de la casa, o ambos."
+      },
+      "pmiNotice": {
+        "trigger": "{{downPct}} de inicial activa el seguro hipotecario.",
+        "detail1": "Al precio objetivo actual, eso es {{monthly}} al mes",
+        "upfrontClause": " más {{upfront}} por adelantado al cierre",
+        "detail2": ", sobre un préstamo de {{loan}}. En total, necesitarías ",
+        "detail3": "el día de la compra. La prima mensual desaparece en cuanto debas menos del {{ltv}} del valor de la casa — antes si se aprecia."
+      }
+    },
+    "retirement": {
+      "title": "Jubilación",
+      "currentBalance": {
+        "label": "Saldo actual",
+        "hint": "Total en todas las cuentas de jubilación hoy: 401(k), IRA, y demás."
+      },
+      "annualReturn": {
+        "label": "Rendimiento anual",
+        "hint": "Crecimiento promedio a largo plazo. 7% es un supuesto común con alto peso en acciones; bájalo a 5% para una vista más cautelosa."
+      },
+      "k401": {
+        "label": "Aportación al 401(k)",
+        "hint": "Porción del salario bruto que destinas al 401(k) — la mayoría de los planes usan un porcentaje del sueldo, no una cantidad fija. Sale del efectivo neto. El límite de aportación electiva para 2026 es {{limit}}/año."
+      },
+      "hsa": {
+        "label": "Aportación a la HSA (cuenta de ahorros para gastos médicos) / mes",
+        "hintSelfOnly": "Lo que aportas a la HSA cada mes, además de cualquier aporte del empleador. El límite individual para 2026 es {{limit}}/año; tu propio margen después del aporte del empleador es {{room}}/año.",
+        "hintFamily": "Lo que aportas a la HSA cada mes, además de cualquier aporte del empleador. El límite familiar para 2026 es {{limit}}/año; tu propio margen después del aporte del empleador es {{room}}/año."
+      },
+      "employerMatch": {
+        "label": "Aportación del empleador / mes",
+        "hint": "Dinero gratis de tu empleador. Aumenta el saldo de jubilación pero no reduce tu salario neto."
+      },
+      "iraMonthly": {
+        "label": "Aportación a la IRA Roth / mes",
+        "hint": "Lo que aportas a una IRA Roth cada mes. El límite de 2026 es {{limit}}/año, reducido gradualmente a cero por encima de un umbral de ingresos — consulta los medidores de aportación para tu margen actual."
+      },
+      "growWithIncome": {
+        "label": "Las aportaciones crecen con los aumentos salariales",
+        "hint": "En cinco años esto apenas importa. En treinta años importa enormemente — una aportación fija se vuelve insignificante tras décadas de aumentos."
+      }
+    },
+    "savings": {
+      "title": "Ahorros e inversiones",
+      "subtitle": {
+        "title": "Dinero fuera de la jubilación",
+        "hint": "Este es el fondo del que sale el pago inicial. Está dividido en dos porque, a lo largo de décadas, dónde se guarda el excedente importa más que casi cualquier otra cosa."
+      },
+      "cashToday": {
+        "label": "Efectivo hoy",
+        "hint": "Cuenta corriente más ahorros de alto rendimiento. El dinero que podrías gastar esta semana."
+      },
+      "investedToday": {
+        "label": "Invertido hoy",
+        "hint": "Cuenta de inversión sujeta a impuestos. No son cuentas de jubilación — esas se rastrean por separado."
+      },
+      "cashReturn": {
+        "label": "Rendimiento del efectivo",
+        "hint": "Lo que paga una cuenta de ahorros de alto rendimiento. Bajo, pero el dinero está disponible cuando lo necesitas."
+      },
+      "investmentReturn": {
+        "label": "Rendimiento de las inversiones",
+        "hint": "Promedio a largo plazo del fondo invertido. Mantenlo por debajo del rendimiento de jubilación si este dinero está invertido de forma menos agresiva."
+      },
+      "emergencyFund": {
+        "label": "Fondo de emergencia (meses)",
+        "hint": "Cuántos meses de gastos totales mantener en efectivo antes de invertir el resto. Todo por encima de esto se destina a inversiones cada mes; los faltantes venden inversiones para cubrirlos."
+      },
+      "bufferTarget": {
+        "pre": "Hoy ese objetivo de colchón es de aproximadamente",
+        "post": ". Sube con la inflación, y da un salto cuando la hipoteca reemplaza el alquiler."
+      },
+      "snapshotNote": "Según tu instantánea del {{date}}: {{amount}} disponible en total."
+    },
+    "secondIncome": {
+      "title": "Un segundo ingreso",
+      "subtitle": "Una pareja que regresa a trabajar — y el cuidado infantil que eso conlleva.",
+      "enable": {
+        "label": "Incluir un segundo ingreso en cada cálculo",
+        "hint": "Se refleja en el panel, la tabla de asequibilidad y el análisis de espera. Desactivado por defecto para que la línea base se mantenga honesta."
+      },
+      "presets": {
+        "title": "Empieza con una opción realista",
+        "hint": "Datos salariales reales de 2026 para el área metropolitana de Filadelfia. El salario neto es a la tasa marginal — un segundo ingreso se suma al primero, así que cada dólar se grava en la parte superior de tu tramo.",
+        "summary": "{{gross}} bruto · {{net}}/mes neto",
+        "childcare": "{{amount}} cuidado infantil"
+      },
+      "who": {
+        "label": "Quién",
+        "hint": "Solo una etiqueta para la tabla mes a mes."
+      },
+      "takeHome": {
+        "label": "Salario neto / mes",
+        "hint": "Después de impuestos. Esto es lo que realmente llega a la cuenta, no el salario."
+      },
+      "costs": {
+        "label": "Cuidado infantil y costos de trabajar",
+        "hint": "Cuidado infantil, transporte, un segundo coche. Se cobra solo mientras el segundo ingreso está activo. Este número decide si los primeros años valen la pena, así que consigue cotizaciones reales."
+      },
+      "costsEndMonth": {
+        "label": "Los costos terminan después del mes",
+        "hint": "Normalmente cuando el menor llega a la edad escolar. Pon 0 para que duren toda la proyección."
+      },
+      "startsIn": {
+        "label": "Comienza en",
+        "hint": "Arrástralo. Como el cuidado infantil normalmente termina en una fecha fija, retroceder puede comprar más meses de pérdida neta en vez de menos.",
+        "display": "{{date}} · mes {{month}}"
+      },
+      "growsWithIncome": {
+        "label": "Sube con los aumentos salariales"
+      },
+      "affectedByJobLoss": {
+        "label": "También se recorta si el sostén principal pierde su empleo",
+        "hint": "Normalmente desactivado — un empleador distinto significa un riesgo distinto. Actívalo solo si ambos trabajan donde el mismo shock afectaría a los dos."
+      },
+      "ssCredits": {
+        "title": "Créditos del Seguro Social.",
+        "body1": "En 2026 cuatro créditos — un año completo — cuestan solo {{amount}} de ingresos, y cuarenta créditos (diez años) generan un beneficio por derecho propio. El trabajo a tiempo parcial supera ese umbral igual de completamente que el tiempo completo, así que",
+        "emphasis": "acumular Seguro Social no es una razón para elegir tiempo completo sobre tiempo parcial",
+        "body2": ". Las razones para preferir tiempo completo son el salario y la progresión profesional, no los créditos."
+      },
+      "netEffect": {
+        "costs": "Mientras dure el cuidado infantil esto te cuesta {{amount}} al mes.",
+        "adds": "Mientras dure el cuidado infantil esto añade {{amount}} al mes.",
+        "detail": "{{takeHome}} entran, {{costs}} salen. Una vez que los costos terminan, el {{takeHome}} completo llega al resultado final — un cambio de {{costs}} en un solo mes.",
+        "jobLossCaveatPre": "Y ten en cuenta que",
+        "jobLossCaveatEmphasis": "no",
+        "jobLossCaveatPost": "te protege contra una pérdida de empleo mientras eso sea cierto: seguirías pagando más en cuidado infantil de lo que aporta el segundo salario."
+      }
+    },
+    "coResident": {
+      "title": "Alguien que se muda con ustedes",
+      "subtitle": "Un familiar que contribuye a los gastos del hogar, si compran un lugar con espacio para ellos.",
+      "enable": {
+        "label": "Incluir la aportación de un conviviente",
+        "hint": "Su ingreso se trata de forma distinta a un aumento salarial: no se detiene si pierdes tu empleo, pero solo comienza una vez que tengan una casa con espacio para ellos."
+      },
+      "who": {
+        "label": "Quién",
+        "hint": "Solo una etiqueta, para distinguirlo en la tabla mes a mes."
+      },
+      "contribution": {
+        "label": "Aportación / mes",
+        "hint": "Lo que aportarían a los gastos del hogar cada mes."
+      },
+      "premium": {
+        "label": "Precio adicional de la vivienda por el espacio",
+        "hint": "Lo que cuesta, sobre tu precio objetivo, una casa con un espacio habitable separado — suite anexa, sótano terminado, dormitorio en planta baja. Este es el costo real del arreglo, y el modelo lo cobra en su totalidad."
+      },
+      "endMonth": {
+        "label": "Termina después del mes (vacío = nunca)",
+        "hint": "Deja en 0 para que dure toda la proyección."
+      },
+      "requiresHomePurchase": {
+        "label": "Solo una vez que tengamos una casa adecuada",
+        "hint": "Activado significa que nada llega mientras alquilan — que es exactamente por qué esto cambia el cálculo de comprar antes."
+      },
+      "growsWithInflation": {
+        "label": "Sube con la inflación",
+        "hint": "El ingreso fijo, no salarial, suele llevar un ajuste por costo de vida."
+      },
+      "tradeoff": {
+        "title": "El compromiso en una frase.",
+        "body": "La aportación vale {{contribution}} al mes, pero solo después de comprar — y el {{premium}} adicional de la casa te cuesta {{closingImpact}} más al cierre, lo que retrasa la compra. A largo plazo suele valer la pena; a corto plazo hace más difícil el pago inicial."
+      }
+    },
+    "jobLoss": {
+      "title": "Si alguien pierde su empleo",
+      "subtitle": "Esto aplica solo a escenarios donde el interruptor de pérdida de empleo está activado.",
+      "startMonth": {
+        "label": "Comienza en el mes",
+        "hint": "Cuántos meses a partir de ahora se detiene el ingreso. Cada escenario puede anular esto."
+      },
+      "duration": {
+        "label": "Dura (meses)",
+        "hint": "Cuánto tiempo hasta que el ingreso vuelva a la normalidad."
+      },
+      "incomeReplacement": {
+        "label": "Ingreso que sigue llegando",
+        "hint": "Porción del salario neto normal que aún tendrías: indemnización, desempleo y el otro salario. 0% significa que todo el ingreso se detiene."
+      },
+      "expenseCut": {
+        "label": "Reducción del gasto",
+        "hint": "Cuánto recortarías del gasto normal mientras el ingreso está bajo. La vivienda nunca se recorta — el alquiler y la hipoteca siguen debiendo pagarse."
+      },
+      "pauseContributions": {
+        "label": "Pausar las aportaciones de jubilación durante el período",
+        "hint": "Tanto tu aportación como el aporte del empleador se detienen, ya que dependen del empleo. Esto libera efectivo pero ralentiza el crecimiento de la jubilación."
+      }
+    }
+  },
+  "leversBar": {
+    "title": "Palancas",
+    "levers": {
+      "second-income": {
+        "short": "Segundo ingreso",
+        "hint": "Añade su salario neto desde el mes de inicio, menos el cuidado infantil hasta la edad escolar. La palanca más grande a largo plazo aquí — y descarta el K-FIT, que depende de los ingresos."
+      },
+      "co-resident": {
+        "short": "Ingreso del conviviente",
+        "hint": "Su aportación comienza solo una vez que tengan un lugar con espacio para ella, y añade un sobreprecio al precio de la casa. Su ingreso no se detiene si pierdes tu empleo."
+      },
+      "hsa-medical": {
+        "short": "HSA paga lo médico",
+        "hint": "Cubre la factura médica mensual desde la HSA en vez de con efectivo. Libre de impuestos de cualquier forma — estás cambiando treinta años de interés compuesto por liquidez ahora."
+      },
+      "hsa-reimbursement": {
+        "short": "Reembolso HSA al cierre",
+        "hint": "Un reclamo único por gastos calificados pasados, que llega el mes que compras. Reclama solo lo que tus recibos realmente respaldan."
+      },
+      "pause-hsa": {
+        "short": "Desviar HSA",
+        "hint": "Deja de maximizar la HSA y destina la diferencia al pago inicial hasta cerrar. La forma más rápida de construir el colchón, y renuncias al mejor trato fiscal que tienes."
+      },
+      "assistance": {
+        "short": "K-FIT",
+        "hint": "5% del precio de compra, condonado en diez años. Sujeto a un límite de ingresos del hogar, así que es incompatible con que ella gane."
+      }
+    },
+    "tooltip": "{{hint}}\n\nCon esto ACTIVADO frente a desactivado:\n  efectivo mínimo {{bufferSign}}{{buffer}}\n  patrimonio neto al horizonte {{netWorthSign}}{{netWorth}}",
+    "bufferDeltaTitle": "Efecto en tu efectivo mínimo de tener esto ACTIVADO",
+    "netWorthDeltaTitle": "Efecto en el patrimonio neto al horizonte de tener esto ACTIVADO",
+    "cash": "efectivo",
+    "longRun": "largo plazo",
+    "footer": {
+      "pre": "Cada cifra es el efecto de que esa palanca esté",
+      "on": "ACTIVADA",
+      "post": ", así que el signo no cambia cuando la apagas. Verde ayuda, rojo cuesta. Varias ayudan a una y cuestan a la otra — eso es el compromiso, no un error."
+    }
+  },
+  "contributionGauges": {
+    "hsaExplainer": "<b>Por qué la HSA está dentro del saldo de jubilación aquí.</b> Después de los 65 se comporta como una cuenta de jubilación tradicional — los retiros para cualquier cosa se gravan como ingreso, y los retiros médicos siguen libres de impuestos a cualquier edad. Las aportaciones evitan el impuesto sobre la renta y el impuesto de nómina al entrar, el crecimiento no está gravado, y los retiros calificados no están gravados al salir. Esa triple ventaja es por lo que maximizarla es un objetivo razonable, y por lo que se cuenta como dinero a largo plazo en vez de como ahorro.",
+    "gauge": {
+      "perYear": "{{amount}} al año",
+      "onTarget": "En el objetivo.",
+      "short": "Faltan {{annual}} al año — {{monthly}} al mes."
+    },
+    "hsaFlex": {
+      "title": "La HSA no tiene que quedarse intacta hasta los 65",
+      "subtitle": "Es una cuenta de jubilación por defecto, pero también es el fondo más flexible que tienes.",
+      "payMedical": {
+        "label": "Pagar lo médico desde la HSA / mes",
+        "hint": "Ajusta esto a tu gasto médico mensual para cubrirlo desde la HSA en vez de con efectivo. Libre de impuestos de cualquier forma — estás eligiendo liquidez sobre treinta años de interés compuesto."
+      },
+      "reimbursement": {
+        "label": "Reembolso único desde la HSA",
+        "hint": "El IRS no establece un plazo límite para reembolsarte. Cualquier gasto calificado desde que se abrió la cuenta puede reclamarse años después, siempre que hayas guardado los recibos — así que un montón de facturas médicas antiguas es efectivamente una línea de crédito libre de impuestos contra tu propia HSA."
+      },
+      "transfer": {
+        "title": "Esto es una transferencia, no un ingreso.",
+        "body": "El patrimonio neto no cambia el mes que lo haces — el dinero se mueve de un fondo que crece al {{retirementReturn}} a uno que crece al {{cashReturn}}. Ese es un costo real a largo plazo, y vale la pena pagarlo cuando lo que realmente te limita es el efectivo y no la jubilación."
+      }
+    },
+    "targets": {
+      "filingStatus": {
+        "single": "Soltero/a",
+        "marriedJoint": "Casado/a declarando en conjunto"
+      },
+      "hsaCoverage": {
+        "selfOnly": "Individual",
+        "family": "Familiar"
+      },
+      "stageHsa": "la HSA",
+      "stage401kMatch": "el aporte del 401(k)",
+      "stageRothIra": "la IRA Roth",
+      "fundingNothing": "No se está financiando nada",
+      "fundingOne": "Financiando {{stage}}",
+      "fundingMany": "Financiando {{stages}} y {{last}}",
+      "title": "Objetivos anuales de aportación",
+      "subtitle": "El orden de prioridad: maximiza primero la HSA, luego captura todo el aporte del 401(k), luego llena una IRA Roth si tus ingresos lo permiten.",
+      "hsaPlan": {
+        "label": "Plan HSA",
+        "hint": "Desactívalo si tu empleador no ofrece un plan de salud elegible para HSA. Pone en cero el objetivo, el medidor y la aportación de la HSA en todo este modelo."
+      },
+      "k401Plan": {
+        "label": "Plan 401(k)",
+        "hint": "Desactívalo si tu empleador no ofrece un 401(k). Pone en cero el objetivo, el medidor, el aporte y la aportación del 401(k) en todo este modelo."
+      },
+      "iraPlan": {
+        "label": "IRA Roth",
+        "hint": "Desactívalo si no estás financiando una IRA. Pone en cero el objetivo, el medidor y la aportación de la IRA en todo este modelo."
+      },
+      "hsaGauge": {
+        "label": "Etapa 1 · HSA",
+        "hint": "Lo que sale de tu propio salario para la HSA. Límite legal para 2026: {{limit}}/año {{tier}}, contando el dinero del empleador — se fija según el nivel de cobertura HDHP, no el estado civil. El aporte único de tu empleador de {{bonus}} reduce tu propio margen a {{room}}, en vez de sumarse encima. También es antes de impuestos, ahorrando cerca de {{savings}}/año en impuesto federal a tu tasa marginal del {{rate}}. Maximiza esto primero — es el dólar más eficiente fiscalmente disponible, antes del aporte del 401(k) o una IRA Roth."
+      },
+      "hsaPaused": "En pausa — redirigido al fondo del pago inicial en vez de a la HSA.",
+      "k401Gauge": {
+        "label": "Etapa 2 · Aporte del 401(k)",
+        "hint": "Tu propia aportación al 401(k) más el aporte mensual recurrente de tu empleador, combinados, como porcentaje del salario bruto — verde significa que los dos juntos alcanzan el {{targetPct}} de {{gross}}. El pago único de enero por reparto de utilidades no cuenta para este objetivo; es dinero discrecional del empleador, no algo para planear una elección alrededor. Tu propia parte es antes de impuestos, así que a tu tasa marginal federal del {{rate}} ({{status}}) ahorra cerca de {{savings}}/año en impuesto federal."
+      },
+      "iraGauge": {
+        "label": "Etapa 3 · IRA Roth",
+        "hintPhaseOut": "Con un MAGI estimado de {{magi}} ({{status}}), estás por encima del límite de eliminación gradual de 2026, así que una aportación directa a la Roth no está disponible este año. Una Roth 'backdoor' es la solución habitual, pero eso está fuera de lo que este modelo rastrea.",
+        "hint": "Lo que aportas a una IRA Roth cada mes, después de impuestos. El límite de 2026 es {{limit}}/año, pero con un MAGI estimado de {{magi}} ({{status}}) tu margen se reduce gradualmente a {{room}}/año. Financia esto al final — la HSA y el aporte del 401(k) van primero.",
+        "unavailable": "No elegible este año — el ingreso está por encima del límite de eliminación gradual de la Roth."
+      },
+      "whereFrom": {
+        "title": "De dónde viene el objetivo"
+      },
+      "outOfYourPay": "De tu salario",
+      "hsaRoomLeft": {
+        "label": "Margen de HSA disponible para ti",
+        "hint": "El límite de {{limit}} {{tier}} cuenta el dinero del empleador y del empleado juntos, así que el aporte de tu empleador de {{bonus}} reduce tu propio margen en vez de sumarse a él. Poner el límite completo tú mismo además del aporte sería un exceso de aportación, y se penaliza."
+      },
+      "k401Share": {
+        "label": "401(k), tu parte de un objetivo combinado del {{targetPct}}",
+        "hint": "Neteado contra el aporte recurrente del empleador que realmente estás recibiendo, de la misma forma que la línea de la HSA neta el aporte del empleador arriba."
+      },
+      "iraRoom": {
+        "label": "Margen de la IRA Roth",
+        "hint": "Se reduce gradualmente desde el límite del IRS una vez que el MAGI entra en el rango de eliminación gradual; cero por encima de él."
+      },
+      "yourTotal": "Tu total al año",
+      "perMonth": "Por mes",
+      "fromEmployer": "De tu empleador — una cifra calculada, no un objetivo propio",
+      "k401MatchLine": "Aporte del 401(k), {{pct}} mensual",
+      "k401LumpLine": "Pago único de enero del 401(k), {{pct}}",
+      "hsaBonus": "Aporte único de la HSA",
+      "employerTotal": "Total del empleador al año",
+      "everythingGoingIn": "Todo lo que entra",
+      "percentOfSalary": "{{pct}} del salario",
+      "wellInsideCeilings": "Bien dentro de los límites legales: {{items}} en 2026.",
+      "ceilingHsa": "{{limit}} para una HSA {{tier}}",
+      "ceiling401k": "{{limit}} para un 401(k)",
+      "ceilingIra": "{{limit}} para una IRA Roth",
+      "grossSalary": {
+        "label": "Salario bruto",
+        "hint": "Salario base antes de bono. El objetivo del 401(k) es un porcentaje de esto."
+      },
+      "filingStatusField": {
+        "label": "Estado civil tributario",
+        "hint": "Soltero/a o casado/a declarando en conjunto. Se usa solo para buscar tu tasa marginal de impuesto federal abajo — no cambia tu salario neto en ningún otro lugar de la app."
+      },
+      "k401Field": {
+        "label": "Aportación al 401(k)",
+        "hint": "Porcentaje del salario bruto. Sale antes de impuestos y llega al saldo de jubilación en este modelo."
+      },
+      "employerMatchField": {
+        "label": "Aporte del empleador / mes",
+        "hint": "Solo el aporte mensual regular. El pago único de enero es aparte."
+      },
+      "employerLumpField": {
+        "label": "Pago único de enero del empleador",
+        "hint": "Dinero del empleador al 401(k) una vez al año: una aportación por reparto de utilidades. Dinero gratis que es fácil olvidar precisamente porque llega una sola vez."
+      },
+      "hsaCoverageField": {
+        "label": "Cobertura de la HSA",
+        "hint": "La cobertura HDHP individual o familiar fija el límite de aportación del IRS de arriba -- no el estado civil. Una pareja casada puede tener cobertura individual, y viceversa."
+      },
+      "hsaMonthlyField": {
+        "label": "Aportación a la HSA / mes",
+        "hint": "También sale antes de impuestos, además de cualquier aporte del empleador, y llega al saldo de jubilación en este modelo."
+      },
+      "hsaBonusField": {
+        "label": "Aporte único de la HSA del empleador",
+        "hint": "Un aporte del empleador a la HSA una vez al año, si lo hay. Cuenta para el límite del IRS junto con tu propio dinero, así que reduce -- no suma a -- tu propio margen."
+      },
+      "iraMonthlyField": {
+        "label": "Aportación a la IRA Roth / mes",
+        "hint": "Después de impuestos. El límite de 2026 es {{limit}}/año, reducido gradualmente a cero por encima del umbral de ingresos -- consulta el medidor de arriba para tu margen actual."
+      },
+      "tradeoff": {
+        "title": "El compromiso, dicho claramente.",
+        "body1": "Antes de cualquier aportación hay {{surplus}} de sobra al mes.",
+        "body2": "toma {{amount}} de eso, dejando",
+        "leftPerMonth": "{{amount}} al mes",
+        "body3": "para el pago inicial.",
+        "longWayOff": "A ese ritmo la casa está lejos. El orden que suele tener sentido:",
+        "orderHsa": "maximiza primero la HSA, porque nada más es tan eficiente fiscalmente; ",
+        "order401k": "luego captura todo el aporte del empleador al 401(k), porque nada más da tanto retorno; ",
+        "orderIraAvailable": "luego llena una IRA Roth si el ingreso lo permite; ",
+        "orderIraPhasedOut": "una IRA Roth vendría después, pero el ingreso está por encima del límite de eliminación gradual de este año; ",
+        "restToDeposit": "luego destina el resto al pago inicial.",
+        "hsaNote": "La HSA es dinero excelente, pero no se puede gastar en un pago inicial."
+      }
+    }
   }
 }

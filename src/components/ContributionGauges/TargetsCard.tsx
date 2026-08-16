@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import {
   HSA_LIMITS,
   IRA_LIMITS,
@@ -38,6 +40,20 @@ const HSA_COVERAGE_LABEL: Record<"selfOnly" | "family", string> = {
   family: "Family",
 };
 
+function filingStatusLabel(t: TFunction, status: FilingStatus): string {
+  return t(
+    `contributionGauges.targets.filingStatus.${status}`,
+    FILING_STATUS_LABEL[status],
+  );
+}
+
+function hsaCoverageLabel(t: TFunction, tier: "selfOnly" | "family"): string {
+  return t(
+    `contributionGauges.targets.hsaCoverage.${tier}`,
+    HSA_COVERAGE_LABEL[tier],
+  );
+}
+
 function toneForLeftAfterTargets(
   leftAfterTargets: number,
 ): "bad" | "warn" | "good" {
@@ -47,18 +63,30 @@ function toneForLeftAfterTargets(
 }
 
 function fundedTargetsLabel(
+  t: TFunction,
   hasHsaPlan: boolean,
   hasK401Plan: boolean,
   hasIraPlan: boolean,
 ): string {
   const stages = [
-    hasHsaPlan && "the HSA",
-    hasK401Plan && "the 401(k) match",
-    hasIraPlan && "the Roth IRA",
+    hasHsaPlan && t("contributionGauges.targets.stageHsa", "the HSA"),
+    hasK401Plan &&
+      t("contributionGauges.targets.stage401kMatch", "the 401(k) match"),
+    hasIraPlan && t("contributionGauges.targets.stageRothIra", "the Roth IRA"),
   ].filter((s): s is string => Boolean(s));
-  if (stages.length === 0) return "Funding nothing";
-  if (stages.length === 1) return `Funding ${stages[0]}`;
-  return `Funding ${stages.slice(0, -1).join(", ")} and ${stages.at(-1)}`;
+  if (stages.length === 0) {
+    return t("contributionGauges.targets.fundingNothing", "Funding nothing");
+  }
+  if (stages.length === 1) {
+    return t("contributionGauges.targets.fundingOne", "Funding {{stage}}", {
+      stage: stages[0],
+    });
+  }
+  return t(
+    "contributionGauges.targets.fundingMany",
+    "Funding {{stages}} and {{last}}",
+    { stages: stages.slice(0, -1).join(", "), last: stages.at(-1) },
+  );
 }
 
 /**
@@ -205,6 +233,7 @@ function computeContributionFigures(
 }
 
 export default function TargetsCard() {
+  const { t } = useTranslation();
   const { assumptions } = useProjections();
   const setAssumptions = useStore((s) => s.setAssumptions);
   const setSettings = useStore((s) => s.setSettings);
@@ -244,27 +273,45 @@ export default function TargetsCard() {
   return (
     <>
       <Card
-        title="Yearly contribution targets"
-        subtitle="The priority order: max the HSA first, then capture the full 401(k) match, then fill a Roth IRA if your income allows it."
+        title={t(
+          "contributionGauges.targets.title",
+          "Yearly contribution targets",
+        )}
+        subtitle={t(
+          "contributionGauges.targets.subtitle",
+          "The priority order: max the HSA first, then capture the full 401(k) match, then fill a Roth IRA if your income allows it.",
+        )}
       >
         <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:flex-wrap sm:gap-8">
           <Toggle
             checked={hasHsaPlan}
             onChange={(v) => setAssumptions({ retirement: { hasHsaPlan: v } })}
-            label="HSA plan"
-            hint="Off if your employer doesn't offer an HSA-eligible health plan. Zeroes the HSA target, gauge, and contribution everywhere in this model."
+            label={t("contributionGauges.targets.hsaPlan.label", "HSA plan")}
+            hint={t(
+              "contributionGauges.targets.hsaPlan.hint",
+              "Off if your employer doesn't offer an HSA-eligible health plan. Zeroes the HSA target, gauge, and contribution everywhere in this model.",
+            )}
           />
           <Toggle
             checked={hasK401Plan}
             onChange={(v) => setAssumptions({ retirement: { hasK401Plan: v } })}
-            label="401(k) plan"
-            hint="Off if your employer doesn't offer a 401(k). Zeroes the 401(k) target, gauge, match, and contribution everywhere in this model."
+            label={t(
+              "contributionGauges.targets.k401Plan.label",
+              "401(k) plan",
+            )}
+            hint={t(
+              "contributionGauges.targets.k401Plan.hint",
+              "Off if your employer doesn't offer a 401(k). Zeroes the 401(k) target, gauge, match, and contribution everywhere in this model.",
+            )}
           />
           <Toggle
             checked={hasIraPlan}
             onChange={(v) => setAssumptions({ retirement: { hasIraPlan: v } })}
-            label="Roth IRA"
-            hint="Off if you aren't funding an IRA. Zeroes the IRA target, gauge, and contribution everywhere in this model."
+            label={t("contributionGauges.targets.iraPlan.label", "Roth IRA")}
+            hint={t(
+              "contributionGauges.targets.iraPlan.hint",
+              "Off if you aren't funding an IRA. Zeroes the IRA target, gauge, and contribution everywhere in this model.",
+            )}
           />
         </div>
 
@@ -273,8 +320,22 @@ export default function TargetsCard() {
             {hasHsaPlan && (
               <div>
                 <Gauge
-                  label="Stage 1 · HSA"
-                  hint={`What comes out of your own pay for the HSA. Legal ceiling for 2026: ${money(hsaLimit)}/yr ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()}, counting employer money — set by HDHP coverage tier, not filing status. Your employer's ${money(employerHsaAnnualBonus)} one-time bonus reduces your own room to ${money(targetHsa)}, rather than adding on top of it. Also pre-tax, saving about ${money(savingsHsa)}/yr in federal tax at your ${pct(yourMarginalRate, 0)} marginal rate. Max this first — it's the most tax-efficient dollar available, before the 401(k) match or a Roth IRA.`}
+                  label={t(
+                    "contributionGauges.targets.hsaGauge.label",
+                    "Stage 1 · HSA",
+                  )}
+                  hint={t(
+                    "contributionGauges.targets.hsaGauge.hint",
+                    "What comes out of your own pay for the HSA. Legal ceiling for 2026: {{limit}}/yr {{tier}}, counting employer money — set by HDHP coverage tier, not filing status. Your employer's {{bonus}} one-time bonus reduces your own room to {{room}}, rather than adding on top of it. Also pre-tax, saving about {{savings}}/yr in federal tax at your {{rate}} marginal rate. Max this first — it's the most tax-efficient dollar available, before the 401(k) match or a Roth IRA.",
+                    {
+                      limit: money(hsaLimit),
+                      tier: hsaCoverageLabel(t, hsaCoverageTier).toLowerCase(),
+                      bonus: money(employerHsaAnnualBonus),
+                      room: money(targetHsa),
+                      savings: money(savingsHsa),
+                      rate: pct(yourMarginalRate, 0),
+                    },
+                  )}
                   actual={actualHsa}
                   target={targetHsa}
                   redBelow={0.5}
@@ -282,16 +343,31 @@ export default function TargetsCard() {
                 />
                 {isHsaPaused && (
                   <p className="mt-1 text-xs font-medium text-amber-600">
-                    Paused — redirected to the deposit fund instead of the
-                    HSA.
+                    {t(
+                      "contributionGauges.targets.hsaPaused",
+                      "Paused — redirected to the deposit fund instead of the HSA.",
+                    )}
                   </p>
                 )}
               </div>
             )}
             {hasK401Plan && (
               <Gauge
-                label="Stage 2 · 401(k) match"
-                hint={`Your own 401(k) election plus your employer's recurring monthly match, combined, as a share of gross salary — green means the two together reach ${pct(RETIREMENT_TARGETS.combinedK401TargetPct, 0)} of ${money(gross)}. The January profit-share lump doesn't count toward this target; it's discretionary employer money, not something to plan an election around. Your own share is pre-tax, so at your ${pct(yourMarginalRate, 0)} federal marginal rate (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}) it saves about ${money(savings401k)}/yr in federal tax.`}
+                label={t(
+                  "contributionGauges.targets.k401Gauge.label",
+                  "Stage 2 · 401(k) match",
+                )}
+                hint={t(
+                  "contributionGauges.targets.k401Gauge.hint",
+                  "Your own 401(k) election plus your employer's recurring monthly match, combined, as a share of gross salary — green means the two together reach {{targetPct}} of {{gross}}. The January profit-share lump doesn't count toward this target; it's discretionary employer money, not something to plan an election around. Your own share is pre-tax, so at your {{rate}} federal marginal rate ({{status}}) it saves about {{savings}}/yr in federal tax.",
+                  {
+                    targetPct: pct(RETIREMENT_TARGETS.combinedK401TargetPct, 0),
+                    gross: money(gross),
+                    rate: pct(yourMarginalRate, 0),
+                    status: filingStatusLabel(t, filingStatus).toLowerCase(),
+                    savings: money(savings401k),
+                  },
+                )}
                 actual={actual401kCombined}
                 target={target401kCombined}
                 redBelow={0.5}
@@ -300,11 +376,36 @@ export default function TargetsCard() {
             )}
             {hasIraPlan && (
               <Gauge
-                label="Stage 3 · Roth IRA"
+                label={t(
+                  "contributionGauges.targets.iraGauge.label",
+                  "Stage 3 · Roth IRA",
+                )}
                 hint={
                   iraRoom <= 0
-                    ? `At an estimated MAGI of ${money(magi)} (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}), you're above the 2026 phase-out ceiling, so a direct Roth contribution isn't available this year. A backdoor Roth is the usual workaround, but that's outside what this model tracks.`
-                    : `What you put into a Roth IRA each month, post-tax. 2026 limit is ${money(IRA_LIMITS.contribution2026)}/yr, but at an estimated MAGI of ${money(magi)} (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}) your room is phased down to ${money(iraRoom)}/yr. Fund this last — the HSA and the 401(k) match come first.`
+                    ? t(
+                        "contributionGauges.targets.iraGauge.hintPhaseOut",
+                        "At an estimated MAGI of {{magi}} ({{status}}), you're above the 2026 phase-out ceiling, so a direct Roth contribution isn't available this year. A backdoor Roth is the usual workaround, but that's outside what this model tracks.",
+                        {
+                          magi: money(magi),
+                          status: filingStatusLabel(
+                            t,
+                            filingStatus,
+                          ).toLowerCase(),
+                        },
+                      )
+                    : t(
+                        "contributionGauges.targets.iraGauge.hint",
+                        "What you put into a Roth IRA each month, post-tax. 2026 limit is {{limit}}/yr, but at an estimated MAGI of {{magi}} ({{status}}) your room is phased down to {{room}}/yr. Fund this last — the HSA and the 401(k) match come first.",
+                        {
+                          limit: money(IRA_LIMITS.contribution2026),
+                          magi: money(magi),
+                          status: filingStatusLabel(
+                            t,
+                            filingStatus,
+                          ).toLowerCase(),
+                          room: money(iraRoom),
+                        },
+                      )
                 }
                 actual={actualIra}
                 target={iraRoom}
@@ -312,7 +413,10 @@ export default function TargetsCard() {
                 greenAbove={1}
                 unavailable={
                   iraRoom <= 0
-                    ? "Not eligible this year — income is above the Roth phase-out ceiling."
+                    ? t(
+                        "contributionGauges.targets.iraGauge.unavailable",
+                        "Not eligible this year — income is above the Roth phase-out ceiling.",
+                      )
                     : undefined
                 }
               />
@@ -320,19 +424,41 @@ export default function TargetsCard() {
           </div>
 
           <div className="rounded-xl bg-slate-50 p-4">
-            <SectionTitle>Where the target comes from</SectionTitle>
+            <SectionTitle>
+              {t(
+                "contributionGauges.targets.whereFrom.title",
+                "Where the target comes from",
+              )}
+            </SectionTitle>
             <dl className="space-y-2 text-sm">
               {(hasK401Plan || hasHsaPlan || hasIraPlan) && (
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Out of your pay
+                  {t(
+                    "contributionGauges.targets.outOfYourPay",
+                    "Out of your pay",
+                  )}
                 </div>
               )}
               {hasHsaPlan && (
                 <div className="flex justify-between gap-4">
                   <dt className="text-slate-600">
-                    HSA room left to you
+                    {t(
+                      "contributionGauges.targets.hsaRoomLeft.label",
+                      "HSA room left to you",
+                    )}
                     <InfoTip
-                      text={`The ${money(hsaLimit)} ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()} limit counts employer and employee money together, so your employer's ${money(employerHsaAnnualBonus)} bonus reduces your own room rather than adding to it. Putting in the full limit yourself on top of the bonus would be an excess contribution, and penalised.`}
+                      text={t(
+                        "contributionGauges.targets.hsaRoomLeft.hint",
+                        "The {{limit}} {{tier}} limit counts employer and employee money together, so your employer's {{bonus}} bonus reduces your own room rather than adding to it. Putting in the full limit yourself on top of the bonus would be an excess contribution, and penalised.",
+                        {
+                          limit: money(hsaLimit),
+                          tier: hsaCoverageLabel(
+                            t,
+                            hsaCoverageTier,
+                          ).toLowerCase(),
+                          bonus: money(employerHsaAnnualBonus),
+                        },
+                      )}
                     />
                   </dt>
                   <dd className="whitespace-nowrap font-medium tabular-nums">
@@ -343,10 +469,22 @@ export default function TargetsCard() {
               {hasK401Plan && (
                 <div className="flex justify-between gap-4">
                   <dt className="text-slate-600">
-                    401(k), your share of a{" "}
-                    {pct(RETIREMENT_TARGETS.combinedK401TargetPct, 0)} combined
-                    target
-                    <InfoTip text="Netted against the recurring employer match you're actually getting, the same way the HSA line nets off the employer seed above." />
+                    {t(
+                      "contributionGauges.targets.k401Share.label",
+                      "401(k), your share of a {{targetPct}} combined target",
+                      {
+                        targetPct: pct(
+                          RETIREMENT_TARGETS.combinedK401TargetPct,
+                          0,
+                        ),
+                      },
+                    )}
+                    <InfoTip
+                      text={t(
+                        "contributionGauges.targets.k401Share.hint",
+                        "Netted against the recurring employer match you're actually getting, the same way the HSA line nets off the employer seed above.",
+                      )}
+                    />
                   </dt>
                   <dd className="whitespace-nowrap font-medium tabular-nums">
                     {money(target401k)}
@@ -356,8 +494,16 @@ export default function TargetsCard() {
               {hasIraPlan && (
                 <div className="flex justify-between gap-4">
                   <dt className="text-slate-600">
-                    Roth IRA room
-                    <InfoTip text="Phased down from the IRS limit once MAGI enters the phase-out range; zero above it." />
+                    {t(
+                      "contributionGauges.targets.iraRoom.label",
+                      "Roth IRA room",
+                    )}
+                    <InfoTip
+                      text={t(
+                        "contributionGauges.targets.iraRoom.hint",
+                        "Phased down from the IRS limit once MAGI enters the phase-out range; zero above it.",
+                      )}
+                    />
                   </dt>
                   <dd className="whitespace-nowrap font-medium tabular-nums">
                     {money(iraRoom)}
@@ -366,14 +512,19 @@ export default function TargetsCard() {
               )}
               <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
                 <dt className="font-medium text-slate-900">
-                  Your total a year
+                  {t(
+                    "contributionGauges.targets.yourTotal",
+                    "Your total a year",
+                  )}
                 </dt>
                 <dd className="whitespace-nowrap font-semibold tabular-nums">
                   {money(targetTotal)}
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-slate-600">Per month</dt>
+                <dt className="text-slate-600">
+                  {t("contributionGauges.targets.perMonth", "Per month")}
+                </dt>
                 <dd className="whitespace-nowrap font-medium tabular-nums">
                   {money(monthlyTarget)}
                 </dd>
@@ -381,16 +532,21 @@ export default function TargetsCard() {
 
               {(hasK401Plan || hasHsaPlan) && (
                 <div className="pt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  From your employer — a calculated number, not a target of its
-                  own
+                  {t(
+                    "contributionGauges.targets.fromEmployer",
+                    "From your employer — a calculated number, not a target of its own",
+                  )}
                 </div>
               )}
               {hasK401Plan && (
                 <>
                   <div className="flex justify-between gap-4">
                     <dt className="text-slate-600">
-                      401(k) match,{" "}
-                      {pct(RETIREMENT_TARGETS.employerMatchPct, 1)} monthly
+                      {t(
+                        "contributionGauges.targets.k401MatchLine",
+                        "401(k) match, {{pct}} monthly",
+                        { pct: pct(RETIREMENT_TARGETS.employerMatchPct, 1) },
+                      )}
                     </dt>
                     <dd className="whitespace-nowrap font-medium tabular-nums">
                       {money(targetMatch)}
@@ -398,8 +554,16 @@ export default function TargetsCard() {
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-slate-600">
-                      401(k) January lump,{" "}
-                      {pct(RETIREMENT_TARGETS.employerAnnual401kPct, 1)}
+                      {t(
+                        "contributionGauges.targets.k401LumpLine",
+                        "401(k) January lump, {{pct}}",
+                        {
+                          pct: pct(
+                            RETIREMENT_TARGETS.employerAnnual401kPct,
+                            1,
+                          ),
+                        },
+                      )}
                     </dt>
                     <dd className="whitespace-nowrap font-medium tabular-nums">
                       {money(gross * RETIREMENT_TARGETS.employerAnnual401kPct)}
@@ -409,7 +573,12 @@ export default function TargetsCard() {
               )}
               {hasHsaPlan && employerHsaAnnualBonus > 0 && (
                 <div className="flex justify-between gap-4">
-                  <dt className="text-slate-600">HSA one-time bonus</dt>
+                  <dt className="text-slate-600">
+                    {t(
+                      "contributionGauges.targets.hsaBonus",
+                      "HSA one-time bonus",
+                    )}
+                  </dt>
                   <dd className="whitespace-nowrap font-medium tabular-nums">
                     {money(employerHsaAnnualBonus)}
                   </dd>
@@ -418,7 +587,10 @@ export default function TargetsCard() {
               {(hasK401Plan || hasHsaPlan) && (
                 <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
                   <dt className="font-medium text-slate-900">
-                    Employer total a year
+                    {t(
+                      "contributionGauges.targets.employerTotal",
+                      "Employer total a year",
+                    )}
                   </dt>
                   <dd className="whitespace-nowrap font-semibold tabular-nums">
                     {money(actualEmployerTotal)}
@@ -428,36 +600,74 @@ export default function TargetsCard() {
 
               <div className="flex justify-between gap-4 border-t-2 border-slate-300 pt-2">
                 <dt className="font-semibold text-slate-900">
-                  Everything going in
+                  {t(
+                    "contributionGauges.targets.everythingGoingIn",
+                    "Everything going in",
+                  )}
                 </dt>
                 <dd className="whitespace-nowrap font-semibold tabular-nums">
                   {money(targetTotal + actualEmployerTotal)}
                   <span className="ml-1 text-xs font-normal text-slate-400">
-                    {pct((targetTotal + actualEmployerTotal) / gross, 1)} of
-                    salary
+                    {t(
+                      "contributionGauges.targets.percentOfSalary",
+                      "{{pct}} of salary",
+                      {
+                        pct: pct(
+                          (targetTotal + actualEmployerTotal) / gross,
+                          1,
+                        ),
+                      },
+                    )}
                   </span>
                 </dd>
               </div>
             </dl>
             <p className="mt-3 border-t border-slate-200 pt-3 text-xs leading-relaxed text-slate-500">
-              Well inside the legal ceilings:{" "}
-              {[
-                hasHsaPlan &&
-                  `${money(hsaLimit)} for a ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()} HSA`,
-                hasK401Plan && `${money(k401Ceiling)} for a 401(k)`,
-                hasIraPlan && `${money(IRA_LIMITS.contribution2026)} for a Roth IRA`,
-              ]
-                .filter(Boolean)
-                .join(", ")}{" "}
-              in 2026.
+              {t(
+                "contributionGauges.targets.wellInsideCeilings",
+                "Well inside the legal ceilings: {{items}} in 2026.",
+                {
+                  items: [
+                    hasHsaPlan &&
+                      t(
+                        "contributionGauges.targets.ceilingHsa",
+                        "{{limit}} for a {{tier}} HSA",
+                        {
+                          limit: money(hsaLimit),
+                          tier: hsaCoverageLabel(
+                            t,
+                            hsaCoverageTier,
+                          ).toLowerCase(),
+                        },
+                      ),
+                    hasK401Plan &&
+                      t(
+                        "contributionGauges.targets.ceiling401k",
+                        "{{limit}} for a 401(k)",
+                        { limit: money(k401Ceiling) },
+                      ),
+                    hasIraPlan &&
+                      t(
+                        "contributionGauges.targets.ceilingIra",
+                        "{{limit}} for a Roth IRA",
+                        { limit: money(IRA_LIMITS.contribution2026) },
+                      ),
+                  ]
+                    .filter(Boolean)
+                    .join(", "),
+                },
+              )}
             </p>
           </div>
         </div>
 
         <div className="mt-6 grid gap-4 border-t border-slate-100 pt-5 sm:grid-cols-3">
           <Field
-            label="Gross salary"
-            hint="Base salary before bonus. The 401(k) target is a share of this."
+            label={t("contributionGauges.targets.grossSalary.label", "Gross salary")}
+            hint={t(
+              "contributionGauges.targets.grossSalary.hint",
+              "Base salary before bonus. The 401(k) target is a share of this.",
+            )}
           >
             <MoneyInput
               value={gross}
@@ -466,8 +676,14 @@ export default function TargetsCard() {
             />
           </Field>
           <Field
-            label="Filing status"
-            hint="Single or married filing jointly. Used only to look up your federal marginal tax rate below — it does not change your take-home pay elsewhere in the app."
+            label={t(
+              "contributionGauges.targets.filingStatusField.label",
+              "Filing status",
+            )}
+            hint={t(
+              "contributionGauges.targets.filingStatusField.hint",
+              "Single or married filing jointly. Used only to look up your federal marginal tax rate below — it does not change your take-home pay elsewhere in the app.",
+            )}
           >
             <Select
               value={filingStatus}
@@ -476,7 +692,7 @@ export default function TargetsCard() {
               {(Object.keys(FILING_STATUS_LABEL) as FilingStatus[]).map(
                 (status) => (
                   <option key={status} value={status}>
-                    {FILING_STATUS_LABEL[status]}
+                    {filingStatusLabel(t, status)}
                   </option>
                 ),
               )}
@@ -485,8 +701,14 @@ export default function TargetsCard() {
           {hasK401Plan && (
             <>
               <Field
-                label="401(k) contribution"
-                hint="Share of gross salary. Comes out pre-tax and lands in the retirement balance in this model."
+                label={t(
+                  "contributionGauges.targets.k401Field.label",
+                  "401(k) contribution",
+                )}
+                hint={t(
+                  "contributionGauges.targets.k401Field.hint",
+                  "Share of gross salary. Comes out pre-tax and lands in the retirement balance in this model.",
+                )}
               >
                 <PercentInputWithMonthly
                   value={assumptions.retirement.k401Pct}
@@ -497,8 +719,14 @@ export default function TargetsCard() {
                 />
               </Field>
               <Field
-                label="Employer match / month"
-                hint="The regular monthly match only. The January lump is separate."
+                label={t(
+                  "contributionGauges.targets.employerMatchField.label",
+                  "Employer match / month",
+                )}
+                hint={t(
+                  "contributionGauges.targets.employerMatchField.hint",
+                  "The regular monthly match only. The January lump is separate.",
+                )}
               >
                 <MoneyInput
                   value={assumptions.retirement.employerMatchMonthly}
@@ -510,8 +738,14 @@ export default function TargetsCard() {
                 />
               </Field>
               <Field
-                label="Employer January lump"
-                hint="Once-a-year employer 401(k) money: a profit-share contribution. Free money that is easy to forget precisely because it arrives once."
+                label={t(
+                  "contributionGauges.targets.employerLumpField.label",
+                  "Employer January lump",
+                )}
+                hint={t(
+                  "contributionGauges.targets.employerLumpField.hint",
+                  "Once-a-year employer 401(k) money: a profit-share contribution. Free money that is easy to forget precisely because it arrives once.",
+                )}
               >
                 <MoneyInput
                   step={100}
@@ -526,8 +760,14 @@ export default function TargetsCard() {
           {hasHsaPlan && (
             <>
               <Field
-                label="HSA coverage"
-                hint="Self-only vs. family HDHP coverage sets the IRS contribution ceiling above -- not filing status. A married couple can carry self-only coverage, and vice versa."
+                label={t(
+                  "contributionGauges.targets.hsaCoverageField.label",
+                  "HSA coverage",
+                )}
+                hint={t(
+                  "contributionGauges.targets.hsaCoverageField.hint",
+                  "Self-only vs. family HDHP coverage sets the IRS contribution ceiling above -- not filing status. A married couple can carry self-only coverage, and vice versa.",
+                )}
               >
                 <Select
                   value={hsaCoverageTier}
@@ -543,14 +783,20 @@ export default function TargetsCard() {
                     Object.keys(HSA_COVERAGE_LABEL) as ("selfOnly" | "family")[]
                   ).map((tier) => (
                     <option key={tier} value={tier}>
-                      {HSA_COVERAGE_LABEL[tier]}
+                      {hsaCoverageLabel(t, tier)}
                     </option>
                   ))}
                 </Select>
               </Field>
               <Field
-                label="HSA contribution / month"
-                hint="Comes out pre-tax too, on top of any employer bonus, and lands in the retirement balance in this model."
+                label={t(
+                  "contributionGauges.targets.hsaMonthlyField.label",
+                  "HSA contribution / month",
+                )}
+                hint={t(
+                  "contributionGauges.targets.hsaMonthlyField.hint",
+                  "Comes out pre-tax too, on top of any employer bonus, and lands in the retirement balance in this model.",
+                )}
               >
                 <MoneyInput
                   value={assumptions.retirement.hsaMonthly}
@@ -560,8 +806,14 @@ export default function TargetsCard() {
                 />
               </Field>
               <Field
-                label="Employer HSA one-time bonus"
-                hint="A once-a-year employer seed into the HSA, if any. Counts toward the IRS limit alongside your own money, so it reduces -- not adds to -- your own room."
+                label={t(
+                  "contributionGauges.targets.hsaBonusField.label",
+                  "Employer HSA one-time bonus",
+                )}
+                hint={t(
+                  "contributionGauges.targets.hsaBonusField.hint",
+                  "A once-a-year employer seed into the HSA, if any. Counts toward the IRS limit alongside your own money, so it reduces -- not adds to -- your own room.",
+                )}
               >
                 <MoneyInput
                   step={100}
@@ -577,8 +829,15 @@ export default function TargetsCard() {
           )}
           {hasIraPlan && (
             <Field
-              label="Roth IRA contribution / month"
-              hint={`Post-tax. 2026 limit is ${money(IRA_LIMITS.contribution2026)}/yr, phased down to zero above the income threshold -- see the gauge above for your live room.`}
+              label={t(
+                "contributionGauges.targets.iraMonthlyField.label",
+                "Roth IRA contribution / month",
+              )}
+              hint={t(
+                "contributionGauges.targets.iraMonthlyField.hint",
+                "Post-tax. 2026 limit is {{limit}}/yr, phased down to zero above the income threshold -- see the gauge above for your live room.",
+                { limit: money(IRA_LIMITS.contribution2026) },
+              )}
             >
               <MoneyInput
                 value={assumptions.retirement.iraMonthly}
@@ -592,27 +851,68 @@ export default function TargetsCard() {
       </Card>
 
       <Callout tone={toneForLeftAfterTargets(leftAfterTargets)}>
-        <strong>The trade-off, stated plainly.</strong> Before any contributions
-        there is {money(surplusBefore)} a month spare.{" "}
-        {fundedTargetsLabel(hasHsaPlan, hasK401Plan, hasIraPlan)} takes{" "}
-        {money(monthlyTarget)} of it, leaving{" "}
-        <strong>{money(leftAfterTargets)} a month</strong> towards a deposit.
+        <strong>
+          {t(
+            "contributionGauges.targets.tradeoff.title",
+            "The trade-off, stated plainly.",
+          )}
+        </strong>{" "}
+        {t(
+          "contributionGauges.targets.tradeoff.body1",
+          "Before any contributions there is {{surplus}} a month spare.",
+          { surplus: money(surplusBefore) },
+        )}{" "}
+        {fundedTargetsLabel(t, hasHsaPlan, hasK401Plan, hasIraPlan)}{" "}
+        {t("contributionGauges.targets.tradeoff.body2", "takes {{amount}} of it, leaving", {
+          amount: money(monthlyTarget),
+        })}{" "}
+        <strong>
+          {t(
+            "contributionGauges.targets.tradeoff.leftPerMonth",
+            "{{amount}} a month",
+            { amount: money(leftAfterTargets) },
+          )}
+        </strong>{" "}
+        {t(
+          "contributionGauges.targets.tradeoff.body3",
+          "towards a deposit.",
+        )}
         {leftAfterTargets < 500 && (
           <>
             {" "}
-            At that rate the house is a long way off. The order that usually
-            makes sense:{" "}
+            {t(
+              "contributionGauges.targets.tradeoff.longWayOff",
+              "At that rate the house is a long way off. The order that usually makes sense:",
+            )}{" "}
             {hasHsaPlan &&
-              "max the HSA first, because nothing else is as tax-efficient; "}
+              t(
+                "contributionGauges.targets.tradeoff.orderHsa",
+                "max the HSA first, because nothing else is as tax-efficient; ",
+              )}
             {hasK401Plan &&
-              "then capture the full employer 401(k) match, because nothing else returns as much; "}
+              t(
+                "contributionGauges.targets.tradeoff.order401k",
+                "then capture the full employer 401(k) match, because nothing else returns as much; ",
+              )}
             {hasIraPlan &&
               (iraRoom > 0
-                ? "then fill a Roth IRA if income allows it; "
-                : "a Roth IRA would come next, but income is above this year's phase-out; ")}
-            then put the rest towards the deposit.
+                ? t(
+                    "contributionGauges.targets.tradeoff.orderIraAvailable",
+                    "then fill a Roth IRA if income allows it; ",
+                  )
+                : t(
+                    "contributionGauges.targets.tradeoff.orderIraPhasedOut",
+                    "a Roth IRA would come next, but income is above this year's phase-out; ",
+                  ))}
+            {t(
+              "contributionGauges.targets.tradeoff.restToDeposit",
+              "then put the rest towards the deposit.",
+            )}
             {hasHsaPlan &&
-              " The HSA is excellent money, but it cannot be spent on a down payment."}
+              ` ${t(
+                "contributionGauges.targets.tradeoff.hsaNote",
+                "The HSA is excellent money, but it cannot be spent on a down payment.",
+              )}`}
           </>
         )}
       </Callout>

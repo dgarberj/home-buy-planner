@@ -1,33 +1,48 @@
+import { useTranslation } from "react-i18next";
 import { useStore } from "../../store/useStore";
 import { Card, DateInput, Field, NumberInput, SectionTitle } from "../ui";
 
 /**
 Quick horizon presets. The long ones are what make the retirement view work.
 */
-const HORIZON_PRESETS: { label: string; months: (age: number) => number }[] = [
-  { label: "5 years", months: () => 60 },
-  { label: "10 years", months: () => 120 },
-  { label: "To 60", months: (age) => (60 - age) * 12 + 1 },
-  { label: "To 65", months: (age) => (65 - age) * 12 + 1 },
-  { label: "To 67", months: (age) => (67 - age) * 12 + 1 },
-  { label: "To 70", months: (age) => (70 - age) * 12 + 1 },
+const HORIZON_PRESETS: {
+  id: string;
+  label: string;
+  months: (age: number) => number;
+}[] = [
+  { id: "y5", label: "5 years", months: () => 60 },
+  { id: "y10", label: "10 years", months: () => 120 },
+  { id: "to60", label: "To 60", months: (age) => (60 - age) * 12 + 1 },
+  { id: "to65", label: "To 65", months: (age) => (65 - age) * 12 + 1 },
+  { id: "to67", label: "To 67", months: (age) => (67 - age) * 12 + 1 },
+  { id: "to70", label: "To 70", months: (age) => (70 - age) * 12 + 1 },
 ];
 
 const CANDIDATE_AGES = [50, 55, 60, 62, 65, 67, 70, 75, 80];
 
 export default function HorizonSection() {
+  const { t } = useTranslation();
   const { assumptions: a, setAssumptions, settings, setSettings } = useStore();
 
   return (
     <Card
-      title="You, and how far ahead to look"
-      subtitle="Retirement milestones are measured from your age, so this is what makes the long view mean anything."
+      title={t(
+        "assumptions.horizon.title",
+        "You, and how far ahead to look",
+      )}
+      subtitle={t(
+        "assumptions.horizon.subtitle",
+        "Retirement milestones are measured from your age, so this is what makes the long view mean anything.",
+      )}
       className="lg:col-span-2"
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Field
-          label="Your age"
-          hint="Placeholder until you set it. Every retirement milestone below is measured from this."
+          label={t("assumptions.horizon.yourAge.label", "Your age")}
+          hint={t(
+            "assumptions.horizon.yourAge.hint",
+            "Placeholder until you set it. Every retirement milestone below is measured from this.",
+          )}
         >
           <NumberInput
             value={a.household.primaryAge}
@@ -37,8 +52,11 @@ export default function HorizonSection() {
           />
         </Field>
         <Field
-          label="Partner's age"
-          hint="Shown alongside the milestones for context. It does not change any of the maths."
+          label={t("assumptions.horizon.partnerAge.label", "Partner's age")}
+          hint={t(
+            "assumptions.horizon.partnerAge.hint",
+            "Shown alongside the milestones for context. It does not change any of the maths.",
+          )}
         >
           <NumberInput
             value={a.household.partnerAge}
@@ -48,8 +66,11 @@ export default function HorizonSection() {
           />
         </Field>
         <Field
-          label="Starting month"
-          hint="Month 1 of the projection. Used to label months with real dates."
+          label={t("assumptions.horizon.startingMonth.label", "Starting month")}
+          hint={t(
+            "assumptions.horizon.startingMonth.hint",
+            "Month 1 of the projection. Used to label months with real dates.",
+          )}
         >
           <DateInput
             type="month"
@@ -58,8 +79,14 @@ export default function HorizonSection() {
           />
         </Field>
         <Field
-          label="Project ahead (months)"
-          hint="How far the model runs. Long enough to outlive the mortgage is what makes the buy-early comparison honest."
+          label={t(
+            "assumptions.horizon.projectAhead.label",
+            "Project ahead (months)",
+          )}
+          hint={t(
+            "assumptions.horizon.projectAhead.hint",
+            "How far the model runs. Long enough to outlive the mortgage is what makes the buy-early comparison honest.",
+          )}
         >
           <NumberInput
             value={settings.horizonMonths}
@@ -72,8 +99,13 @@ export default function HorizonSection() {
       </div>
 
       <div className="mt-5 border-t border-slate-100 pt-4">
-        <SectionTitle hint="Quick presets. The short windows are for the house decision; the long ones are for the retirement question.">
-          How far ahead
+        <SectionTitle
+          hint={t(
+            "assumptions.horizon.howFarAhead.hint",
+            "Quick presets. The short windows are for the house decision; the long ones are for the retirement question.",
+          )}
+        >
+          {t("assumptions.horizon.howFarAhead.title", "How far ahead")}
         </SectionTitle>
         <div className="flex flex-wrap gap-2">
           {HORIZON_PRESETS.map((preset) => {
@@ -81,7 +113,7 @@ export default function HorizonSection() {
             const isActivePreset = settings.horizonMonths === months;
             return (
               <button
-                key={preset.label}
+                key={preset.id}
                 type="button"
                 disabled={months <= 12}
                 onClick={() => setSettings({ horizonMonths: months })}
@@ -91,7 +123,7 @@ export default function HorizonSection() {
                     : "border-slate-300 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
-                {preset.label}
+                {t(`assumptions.horizon.presets.${preset.id}`, preset.label)}
                 <span className="ml-1.5 text-slate-400">
                   {months > 12 ? `${Math.round(months / 12)}y` : "—"}
                 </span>
@@ -102,8 +134,13 @@ export default function HorizonSection() {
       </div>
 
       <div className="mt-5 border-t border-slate-100 pt-4">
-        <SectionTitle hint="The ages the dashboard reports net worth, retirement and home equity at. Only ages inside the projection window can be shown.">
-          Milestone ages
+        <SectionTitle
+          hint={t(
+            "assumptions.horizon.milestoneAges.hint",
+            "The ages the dashboard reports net worth, retirement and home equity at. Only ages inside the projection window can be shown.",
+          )}
+        >
+          {t("assumptions.horizon.milestoneAges.title", "Milestone ages")}
         </SectionTitle>
         <div className="flex flex-wrap gap-2">
           {CANDIDATE_AGES.map((age) => {
@@ -127,7 +164,10 @@ export default function HorizonSection() {
                 title={
                   isReachable
                     ? undefined
-                    : "Outside the current projection window"
+                    : t(
+                        "assumptions.horizon.outsideWindow",
+                        "Outside the current projection window",
+                      )
                 }
                 className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                   selected
@@ -141,8 +181,10 @@ export default function HorizonSection() {
           })}
         </div>
         <p className="mt-2 text-xs text-slate-500">
-          Faded ages fall outside the projection window — stretch the window to
-          include them.
+          {t(
+            "assumptions.horizon.fadedNote",
+            "Faded ages fall outside the projection window — stretch the window to include them.",
+          )}
         </p>
       </div>
     </Card>

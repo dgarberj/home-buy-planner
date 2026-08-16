@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { deriveBudgetTotals, deriveStartingBalances } from "../../lib/derive";
 import { money } from "../../lib/format";
 import { useStore } from "../../store/useStore";
@@ -11,6 +12,7 @@ import {
 } from "../ui";
 
 export default function SavingsSection() {
+  const { t } = useTranslation();
   const { assumptions: a, setAssumptions, budget, balances } = useStore();
   const totals = deriveBudgetTotals(budget);
   const starting = deriveStartingBalances(balances);
@@ -21,14 +23,22 @@ export default function SavingsSection() {
   const hasSnapshot = !!starting.asOf;
 
   return (
-    <Card title="Savings & investments">
-      <SectionTitle hint="This is the pot the down payment comes out of. It is split in two because, over decades, where the surplus sits matters more than almost anything else.">
-        Money outside retirement
+    <Card title={t("assumptions.savings.title", "Savings & investments")}>
+      <SectionTitle
+        hint={t(
+          "assumptions.savings.subtitle.hint",
+          "This is the pot the down payment comes out of. It is split in two because, over decades, where the surplus sits matters more than almost anything else.",
+        )}
+      >
+        {t("assumptions.savings.subtitle.title", "Money outside retirement")}
       </SectionTitle>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label="Cash today"
-          hint="Checking plus high-yield savings. The money you could spend this week."
+          label={t("assumptions.savings.cashToday.label", "Cash today")}
+          hint={t(
+            "assumptions.savings.cashToday.hint",
+            "Checking plus high-yield savings. The money you could spend this week.",
+          )}
         >
           <MoneyInput
             value={hasSnapshot ? starting.cash : a.savings.cashBalance}
@@ -38,8 +48,11 @@ export default function SavingsSection() {
           />
         </Field>
         <Field
-          label="Invested today"
-          hint="Taxable brokerage. Not retirement accounts — those are tracked separately."
+          label={t("assumptions.savings.investedToday.label", "Invested today")}
+          hint={t(
+            "assumptions.savings.investedToday.hint",
+            "Taxable brokerage. Not retirement accounts — those are tracked separately.",
+          )}
         >
           <MoneyInput
             value={
@@ -53,8 +66,11 @@ export default function SavingsSection() {
           />
         </Field>
         <Field
-          label="Return on cash"
-          hint="What a high-yield savings account pays. Low, but the money is there when you need it."
+          label={t("assumptions.savings.cashReturn.label", "Return on cash")}
+          hint={t(
+            "assumptions.savings.cashReturn.hint",
+            "What a high-yield savings account pays. Low, but the money is there when you need it.",
+          )}
         >
           <PercentInput
             value={a.savings.cashReturnAnnual}
@@ -64,8 +80,14 @@ export default function SavingsSection() {
           />
         </Field>
         <Field
-          label="Return on investments"
-          hint="Long-run average on the invested pool. Keep it below the retirement return if this money is less aggressively invested."
+          label={t(
+            "assumptions.savings.investmentReturn.label",
+            "Return on investments",
+          )}
+          hint={t(
+            "assumptions.savings.investmentReturn.hint",
+            "Long-run average on the invested pool. Keep it below the retirement return if this money is less aggressively invested.",
+          )}
         >
           <PercentInput
             value={a.savings.investmentReturnAnnual}
@@ -75,8 +97,14 @@ export default function SavingsSection() {
           />
         </Field>
         <Field
-          label="Emergency fund (months)"
-          hint="How many months of total outgoings to keep in cash before investing the rest. Everything above this gets swept into investments each month; shortfalls sell investments to cover them."
+          label={t(
+            "assumptions.savings.emergencyFund.label",
+            "Emergency fund (months)",
+          )}
+          hint={t(
+            "assumptions.savings.emergencyFund.hint",
+            "How many months of total outgoings to keep in cash before investing the rest. Everything above this gets swept into investments each month; shortfalls sell investments to cover them.",
+          )}
         >
           <NumberInput
             value={a.savings.cashBufferMonths}
@@ -89,22 +117,27 @@ export default function SavingsSection() {
         </Field>
         <div className="flex items-end">
           <p className="text-xs text-slate-500">
-            Today that buffer target is about{" "}
+            {t("assumptions.savings.bufferTarget.pre", "Today that buffer target is about")}{" "}
             <strong className="text-slate-700">
               {money(
                 a.savings.cashBufferMonths *
                   (totals.fixed + totals.variable + totals.rent),
               )}
             </strong>
-            . It rises with inflation, and jumps when the mortgage replaces
-            rent.
+            {t(
+              "assumptions.savings.bufferTarget.post",
+              ". It rises with inflation, and jumps when the mortgage replaces rent.",
+            )}
           </p>
         </div>
       </div>
       {hasSnapshot && (
         <p className="mt-3 text-xs text-slate-500">
-          From your snapshot dated {starting.asOf}: {money(starting.liquid)}{" "}
-          available in total.
+          {t(
+            "assumptions.savings.snapshotNote",
+            "From your snapshot dated {{date}}: {{amount}} available in total.",
+            { date: starting.asOf, amount: money(starting.liquid) },
+          )}
         </p>
       )}
     </Card>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import CoResidentSection from "./CoResidentSection";
 import ExpensesSection from "./ExpensesSection";
 import HomePurchaseSection from "./HomePurchaseSection";
@@ -13,11 +14,6 @@ import SegmentedTabs from "../ui/SegmentedTabs";
 
 type AssumptionsTab = "basics" | "advanced";
 
-const TABS: { id: AssumptionsTab; label: string }[] = [
-  { id: "basics", label: "Basics" },
-  { id: "advanced", label: "Advanced" },
-];
-
 /**
 These two groups aren't independently deep-linkable the way the top-level
 clusters (`ClusterTabs` in `App.tsx`) are, so the selection lives in local
@@ -30,7 +26,12 @@ function AssumptionsTabs({
   tab: AssumptionsTab;
   onSelect: (t: AssumptionsTab) => void;
 }) {
-  return <SegmentedTabs items={TABS} active={tab} onSelect={onSelect} />;
+  const { t } = useTranslation();
+  const tabs: { id: AssumptionsTab; label: string }[] = [
+    { id: "basics", label: t("assumptions.tabs.basics", "Basics") },
+    { id: "advanced", label: t("assumptions.tabs.advanced", "Advanced") },
+  ];
+  return <SegmentedTabs items={tabs} active={tab} onSelect={onSelect} />;
 }
 
 /**

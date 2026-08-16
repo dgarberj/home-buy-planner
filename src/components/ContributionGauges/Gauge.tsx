@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { money } from "../../lib/format";
 import { InfoTip } from "../ui";
 
@@ -41,6 +42,7 @@ export default function Gauge({
    */
   unavailable?: string;
 }) {
+  const { t } = useTranslation();
   const share = target > 0 ? actual / target : 0;
   const isMet = actual >= target - 1;
   const barColour = colourForShare(share, redBelow, greenAbove);
@@ -57,7 +59,10 @@ export default function Gauge({
             {money(actual)}
             <span className="font-normal text-slate-400">
               {" "}
-              / {money(target)} a year
+              /{" "}
+              {t("contributionGauges.gauge.perYear", "{{amount}} a year", {
+                amount: money(target),
+              })}
             </span>
           </span>
         )}
@@ -74,10 +79,15 @@ export default function Gauge({
           </div>
           <p className="mt-1 text-xs text-slate-500">
             {isMet
-              ? "On target."
-              : `${money(Math.max(target - actual, 0))} a year short — ${money(
-                  Math.max(target - actual, 0) / 12,
-                )} a month.`}
+              ? t("contributionGauges.gauge.onTarget", "On target.")
+              : t(
+                  "contributionGauges.gauge.short",
+                  "{{annual}} a year short — {{monthly}} a month.",
+                  {
+                    annual: money(Math.max(target - actual, 0)),
+                    monthly: money(Math.max(target - actual, 0) / 12),
+                  },
+                )}
           </p>
         </>
       )}

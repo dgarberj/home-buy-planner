@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import type { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 import type { Assumptions, ScenarioConfig } from "../../model/types";
 import { runAllScenarios } from "../../engine/projection";
 import { money } from "../../lib/format";
@@ -90,6 +92,14 @@ const LEVERS: Lever[] = [
   },
 ];
 
+function leverShort(t: TFunction, lever: Lever): string {
+  return t(`leversBar.levers.${lever.key}.short`, lever.short);
+}
+
+function leverHint(t: TFunction, lever: Lever): string {
+  return t(`leversBar.levers.${lever.key}.hint`, lever.hint);
+}
+
 /**
 Headline effects of one set of assumptions, for comparing against another.
 */
@@ -119,6 +129,7 @@ function measure(
 }
 
 export default function LeversBar() {
+  const { t } = useTranslation();
   const { assumptions } = useProjections();
   const setAssumptions = useStore((s) => s.setAssumptions);
   const scenarios = useStore((s) => s.scenarios);
@@ -169,17 +180,23 @@ export default function LeversBar() {
   return (
     <div className="border-t border-slate-200 pt-4">
       <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-        Levers
+        {t("leversBar.title", "Levers")}
       </span>
       <div className="mt-3 flex flex-col gap-3">
         {impacts.map(({ lever, isOn, bufferDelta, netWorthDelta }) => (
           <div
             key={lever.key}
-            title={`${lever.hint}\n\nHaving this ON versus off:\n  thinnest cash ${
-              bufferDelta >= 0 ? "+" : ""
-            }${Math.round(bufferDelta).toLocaleString()}\n  net worth at the horizon ${
-              netWorthDelta >= 0 ? "+" : ""
-            }${Math.round(netWorthDelta).toLocaleString()}`}
+            title={t(
+              "leversBar.tooltip",
+              "{{hint}}\n\nHaving this ON versus off:\n  thinnest cash {{bufferSign}}{{buffer}}\n  net worth at the horizon {{netWorthSign}}{{netWorth}}",
+              {
+                hint: leverHint(t, lever),
+                bufferSign: bufferDelta >= 0 ? "+" : "",
+                buffer: Math.round(bufferDelta).toLocaleString(),
+                netWorthSign: netWorthDelta >= 0 ? "+" : "",
+                netWorth: Math.round(netWorthDelta).toLocaleString(),
+              },
+            )}
             className={`rounded-xl border px-3 py-2 text-xs transition ${
               isOn ? "border-blue-300 bg-blue-50" : "border-slate-200 bg-white"
             }`}
@@ -189,7 +206,7 @@ export default function LeversBar() {
               onChange={(isChecked) =>
                 setAssumptions(lever.flip(assumptions, isChecked))
               }
-              label={lever.short}
+              label={leverShort(t, lever)}
             />
             {/* Both numbers describe the lever being ON, so the sign never
                 depends on where the switch currently sits. */}
@@ -201,10 +218,14 @@ export default function LeversBar() {
                     className={`tabular-nums ${
                       bufferDelta > 0 ? "text-emerald-600" : "text-red-500"
                     }`}
-                    title="Effect on your thinnest cash of having this ON"
+                    title={t(
+                      "leversBar.bufferDeltaTitle",
+                      "Effect on your thinnest cash of having this ON",
+                    )}
                   >
                     {bufferDelta > 0 ? "+" : ""}
-                    {money(bufferDelta)} cash
+                    {money(bufferDelta)}{" "}
+                    {t("leversBar.cash", "cash")}
                   </span>
                 )}
                 {Math.abs(netWorthDelta) >= 5_000 && (
@@ -212,10 +233,14 @@ export default function LeversBar() {
                     className={`tabular-nums ${
                       netWorthDelta > 0 ? "text-emerald-600" : "text-red-500"
                     }`}
-                    title="Effect on net worth at the horizon of having this ON"
+                    title={t(
+                      "leversBar.netWorthDeltaTitle",
+                      "Effect on net worth at the horizon of having this ON",
+                    )}
                   >
                     {netWorthDelta > 0 ? "+" : ""}
-                    {money(netWorthDelta)} long run
+                    {money(netWorthDelta)}{" "}
+                    {t("leversBar.longRun", "long run")}
                   </span>
                 )}
               </div>
@@ -224,10 +249,15 @@ export default function LeversBar() {
         ))}
       </div>
       <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
-        Every figure is the effect of that lever being <strong>ON</strong>, so
-        the sign does not change when you flip the switch. Green helps, red
-        costs. Several help one and cost the other — that is the trade, not a
-        mistake.
+        {t(
+          "leversBar.footer.pre",
+          "Every figure is the effect of that lever being",
+        )}{" "}
+        <strong>{t("leversBar.footer.on", "ON")}</strong>
+        {t(
+          "leversBar.footer.post",
+          ", so the sign does not change when you flip the switch. Green helps, red costs. Several help one and cost the other — that is the trade, not a mistake.",
+        )}
       </p>
     </div>
   );

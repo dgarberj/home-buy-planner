@@ -1,16 +1,24 @@
+import { useTranslation } from "react-i18next";
 import { money, pct } from "../../lib/format";
 import { useStore } from "../../store/useStore";
 import { Card, Field, MoneyInput, NumberInput, PercentInput } from "../ui";
 
 export default function HomePurchaseSection() {
+  const { t } = useTranslation();
   const { assumptions: a, setAssumptions } = useStore();
 
   return (
-    <Card title="Home purchase" className="lg:col-span-2">
+    <Card
+      title={t("assumptions.home.title", "Home purchase")}
+      className="lg:col-span-2"
+    >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Field
-          label="Target price (today)"
-          hint="What the kind of house you want costs right now. The model grows this by the appreciation rate while you save, so waiting means a bigger down payment."
+          label={t("assumptions.home.targetPrice.label", "Target price (today)")}
+          hint={t(
+            "assumptions.home.targetPrice.hint",
+            "What the kind of house you want costs right now. The model grows this by the appreciation rate while you save, so waiting means a bigger down payment.",
+          )}
         >
           <MoneyInput
             value={a.home.targetPrice}
@@ -19,8 +27,11 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Down payment"
-          hint="Percent of the purchase price you put down. 20% avoids mortgage insurance."
+          label={t("assumptions.home.downPayment.label", "Down payment")}
+          hint={t(
+            "assumptions.home.downPayment.hint",
+            "Percent of the purchase price you put down. 20% avoids mortgage insurance.",
+          )}
         >
           <PercentInput
             value={a.home.downPaymentPct}
@@ -29,8 +40,11 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Closing costs"
-          hint="Fees due at closing, on top of the down payment. Usually 2-5% of the price."
+          label={t("assumptions.home.closingCosts.label", "Closing costs")}
+          hint={t(
+            "assumptions.home.closingCosts.hint",
+            "Fees due at closing, on top of the down payment. Usually 2-5% of the price.",
+          )}
         >
           <PercentInput
             value={a.home.closingCostPct}
@@ -39,8 +53,11 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Mortgage rate"
-          hint="The quoted annual rate on the loan. Fixed for the life of the loan in this model."
+          label={t("assumptions.home.mortgageRate.label", "Mortgage rate")}
+          hint={t(
+            "assumptions.home.mortgageRate.hint",
+            "The quoted annual rate on the loan. Fixed for the life of the loan in this model.",
+          )}
         >
           <PercentInput
             value={a.home.mortgageRateAnnual}
@@ -51,8 +68,14 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Mortgage term (years)"
-          hint="30 is standard. A 15-year loan costs more each month but builds equity much faster."
+          label={t(
+            "assumptions.home.mortgageTerm.label",
+            "Mortgage term (years)",
+          )}
+          hint={t(
+            "assumptions.home.mortgageTerm.hint",
+            "30 is standard. A 15-year loan costs more each month but builds equity much faster.",
+          )}
         >
           <NumberInput
             value={a.home.mortgageTermYears}
@@ -62,8 +85,14 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Tax + insurance + HOA / month"
-          hint="Everything in the monthly housing payment that isn't loan principal and interest. Held flat over time, since it's an estimate anyway."
+          label={t(
+            "assumptions.home.taxInsuranceHoa.label",
+            "Tax + insurance + HOA / month",
+          )}
+          hint={t(
+            "assumptions.home.taxInsuranceHoa.hint",
+            "Everything in the monthly housing payment that isn't loan principal and interest. Held flat over time, since it's an estimate anyway.",
+          )}
         >
           <MoneyInput
             value={a.home.taxInsuranceHoaMonthly}
@@ -73,8 +102,14 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Home appreciation / year"
-          hint="How fast house prices rise. This cuts both ways: it grows your equity after you buy, but raises the price while you're still saving."
+          label={t(
+            "assumptions.home.appreciation.label",
+            "Home appreciation / year",
+          )}
+          hint={t(
+            "assumptions.home.appreciation.hint",
+            "How fast house prices rise. This cuts both ways: it grows your equity after you buy, but raises the price while you're still saving.",
+          )}
         >
           <PercentInput
             value={a.home.appreciationAnnual}
@@ -84,8 +119,11 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Upkeep / year"
-          hint="Maintenance and repairs, as a percent of what the house is worth. 1% a year is the usual rule of thumb. You never get a bill for this, which is exactly why leaving it out makes buying look better than it is."
+          label={t("assumptions.home.upkeep.label", "Upkeep / year")}
+          hint={t(
+            "assumptions.home.upkeep.hint",
+            "Maintenance and repairs, as a percent of what the house is worth. 1% a year is the usual rule of thumb. You never get a bill for this, which is exactly why leaving it out makes buying look better than it is.",
+          )}
         >
           <PercentInput
             value={a.home.maintenanceAnnualPct}
@@ -96,8 +134,14 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Mortgage insurance / year"
-          hint="PMI, as a percent of the original loan. Charged only while you owe more than the threshold below, so a 20% down payment never pays any."
+          label={t(
+            "assumptions.home.pmiAnnual.label",
+            "Mortgage insurance / year",
+          )}
+          hint={t(
+            "assumptions.home.pmiAnnual.hint",
+            "PMI, as a percent of the original loan. Charged only while you owe more than the threshold below, so a 20% down payment never pays any.",
+          )}
         >
           <PercentInput
             value={a.home.pmiAnnualPct}
@@ -106,8 +150,14 @@ export default function HomePurchaseSection() {
           />
         </Field>
         <Field
-          label="Mortgage insurance drops at"
-          hint="Loan-to-value ratio at which PMI falls away. Conventionally 80% — reached by paying down the loan, by the house appreciating, or both."
+          label={t(
+            "assumptions.home.pmiRemovedAtLtv.label",
+            "Mortgage insurance drops at",
+          )}
+          hint={t(
+            "assumptions.home.pmiRemovedAtLtv.hint",
+            "Loan-to-value ratio at which PMI falls away. Conventionally 80% — reached by paying down the loan, by the house appreciating, or both.",
+          )}
         >
           <PercentInput
             value={a.home.pmiRemovedAtLtv}
@@ -129,16 +179,34 @@ export default function HomePurchaseSection() {
           return (
             <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
               <strong>
-                {pct(a.home.downPaymentPct, 0)} down triggers mortgage
-                insurance.
+                {t(
+                  "assumptions.home.pmiNotice.trigger",
+                  "{{downPct}} down triggers mortgage insurance.",
+                  { downPct: pct(a.home.downPaymentPct, 0) },
+                )}
               </strong>{" "}
-              On today&rsquo;s target price that is {money(monthly)} a month
-              {upfront > 0 && <> plus {money(upfront)} upfront at closing</>},
-              on top of a {money(loan)} loan. All in, you would need{" "}
-              <strong>{money(cashNeeded)}</strong> on the day. The monthly
-              premium falls away once you owe less than{" "}
-              {pct(a.home.pmiRemovedAtLtv, 0)} of what the house is worth —
-              sooner if it appreciates.
+              {t(
+                "assumptions.home.pmiNotice.detail1",
+                "On today's target price that is {{monthly}} a month",
+                { monthly: money(monthly) },
+              )}
+              {upfront > 0 &&
+                t(
+                  "assumptions.home.pmiNotice.upfrontClause",
+                  " plus {{upfront}} upfront at closing",
+                  { upfront: money(upfront) },
+                )}
+              {t(
+                "assumptions.home.pmiNotice.detail2",
+                ", on top of a {{loan}} loan. All in, you would need ",
+                { loan: money(loan) },
+              )}
+              <strong>{money(cashNeeded)}</strong>{" "}
+              {t(
+                "assumptions.home.pmiNotice.detail3",
+                "on the day. The monthly premium falls away once you owe less than {{ltv}} of what the house is worth — sooner if it appreciates.",
+                { ltv: pct(a.home.pmiRemovedAtLtv, 0) },
+              )}
             </div>
           );
         })()}

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   HSA_LIMITS,
   IRA_LIMITS,
@@ -17,6 +18,7 @@ import {
 } from "../ui";
 
 export default function RetirementSection() {
+  const { t } = useTranslation();
   const { assumptions: a, setAssumptions, balances, settings } = useStore();
   const starting = deriveStartingBalances(balances);
   const gross = settings.grossAnnualSalary;
@@ -25,11 +27,14 @@ export default function RetirementSection() {
   const hasSnapshot = !!starting.asOf;
 
   return (
-    <Card title="Retirement">
+    <Card title={t("assumptions.retirement.title", "Retirement")}>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label="Current balance"
-          hint="Total across all retirement accounts today: 401(k)s, IRAs, and so on."
+          label={t("assumptions.retirement.currentBalance.label", "Current balance")}
+          hint={t(
+            "assumptions.retirement.currentBalance.hint",
+            "Total across all retirement accounts today: 401(k)s, IRAs, and so on.",
+          )}
         >
           <MoneyInput
             value={
@@ -43,8 +48,11 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label="Annual return"
-          hint="Long-run average growth. 7% is a common stock-heavy assumption; drop it to 5% for a more cautious view."
+          label={t("assumptions.retirement.annualReturn.label", "Annual return")}
+          hint={t(
+            "assumptions.retirement.annualReturn.hint",
+            "Long-run average growth. 7% is a common stock-heavy assumption; drop it to 5% for a more cautious view.",
+          )}
         >
           <PercentInput
             value={a.retirement.returnAnnual}
@@ -54,8 +62,15 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label="401(k) contribution"
-          hint={`Share of gross salary you elect into the 401(k) -- most plans run the election as a percentage of pay, not a flat dollar amount. Comes out of take-home cash. Elective-deferral limit for 2026 is ${money(K401_LIMITS.employeeDeferral2026)}/yr.`}
+          label={t(
+            "assumptions.retirement.k401.label",
+            "401(k) contribution",
+          )}
+          hint={t(
+            "assumptions.retirement.k401.hint",
+            "Share of gross salary you elect into the 401(k) -- most plans run the election as a percentage of pay, not a flat dollar amount. Comes out of take-home cash. Elective-deferral limit for 2026 is {{limit}}/yr.",
+            { limit: money(K401_LIMITS.employeeDeferral2026) },
+          )}
         >
           <PercentInputWithMonthly
             value={a.retirement.k401Pct}
@@ -64,8 +79,39 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label="HSA contribution / month"
-          hint={`What you put into the HSA each month, on top of any employer seed. ${a.retirement.hsaCoverageTier === "selfOnly" ? "Self-only" : "Family"} limit for 2026 is ${money(a.retirement.hsaCoverageTier === "selfOnly" ? HSA_LIMITS.selfOnly2026 : HSA_LIMITS.family2026)}/yr; your own room after the employer seed is ${money(employeeHsaRoom(a.retirement.hsaCoverageTier, a.retirement.employerHsaAnnualBonus))}/yr.`}
+          label={t(
+            "assumptions.retirement.hsa.label",
+            "HSA contribution / month",
+          )}
+          hint={
+            a.retirement.hsaCoverageTier === "selfOnly"
+              ? t(
+                  "assumptions.retirement.hsa.hintSelfOnly",
+                  "What you put into the HSA each month, on top of any employer seed. Self-only limit for 2026 is {{limit}}/yr; your own room after the employer seed is {{room}}/yr.",
+                  {
+                    limit: money(HSA_LIMITS.selfOnly2026),
+                    room: money(
+                      employeeHsaRoom(
+                        a.retirement.hsaCoverageTier,
+                        a.retirement.employerHsaAnnualBonus,
+                      ),
+                    ),
+                  },
+                )
+              : t(
+                  "assumptions.retirement.hsa.hintFamily",
+                  "What you put into the HSA each month, on top of any employer seed. Family limit for 2026 is {{limit}}/yr; your own room after the employer seed is {{room}}/yr.",
+                  {
+                    limit: money(HSA_LIMITS.family2026),
+                    room: money(
+                      employeeHsaRoom(
+                        a.retirement.hsaCoverageTier,
+                        a.retirement.employerHsaAnnualBonus,
+                      ),
+                    ),
+                  },
+                )
+          }
         >
           <MoneyInput
             value={a.retirement.hsaMonthly}
@@ -73,8 +119,14 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label="Employer match / month"
-          hint="Free money from your employer. It grows the retirement balance but does not reduce your take-home pay."
+          label={t(
+            "assumptions.retirement.employerMatch.label",
+            "Employer match / month",
+          )}
+          hint={t(
+            "assumptions.retirement.employerMatch.hint",
+            "Free money from your employer. It grows the retirement balance but does not reduce your take-home pay.",
+          )}
         >
           <MoneyInput
             value={a.retirement.employerMatchMonthly}
@@ -84,8 +136,15 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label="Roth IRA contribution / month"
-          hint={`What you put into a Roth IRA each month. 2026 limit is ${money(IRA_LIMITS.contribution2026)}/yr, phased down to zero above an income threshold -- see the contribution gauges for your live room.`}
+          label={t(
+            "assumptions.retirement.iraMonthly.label",
+            "Roth IRA contribution / month",
+          )}
+          hint={t(
+            "assumptions.retirement.iraMonthly.hint",
+            "What you put into a Roth IRA each month. 2026 limit is {{limit}}/yr, phased down to zero above an income threshold -- see the contribution gauges for your live room.",
+            { limit: money(IRA_LIMITS.contribution2026) },
+          )}
         >
           <MoneyInput
             value={a.retirement.iraMonthly}
@@ -101,8 +160,14 @@ export default function RetirementSection() {
               retirement: { contributionsGrowWithIncome: v },
             })
           }
-          label="Contributions grow with pay rises"
-          hint="Over five years this barely matters. Over thirty it matters enormously — a flat contribution becomes trivially small after decades of raises."
+          label={t(
+            "assumptions.retirement.growWithIncome.label",
+            "Contributions grow with pay rises",
+          )}
+          hint={t(
+            "assumptions.retirement.growWithIncome.hint",
+            "Over five years this barely matters. Over thirty it matters enormously — a flat contribution becomes trivially small after decades of raises.",
+          )}
         />
       </div>
     </Card>
