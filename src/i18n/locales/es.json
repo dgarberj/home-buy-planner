@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "balances": "Saldos",
+    "budget": "Presupuesto",
+    "contributions": "Aportaciones",
+    "assumptions": "Supuestos",
+    "market": "Dónde comprar",
+    "lender": "Vista del prestamista",
+    "waiting": "¿Vale la pena esperar?",
+    "scenarios": "Escenarios",
+    "dashboard": "Panel",
+    "retirement": "Jubilación",
+    "drawdown": "¿Alcanzará?",
+    "detail": "Mes a mes",
+    "sources": "Fuentes"
+  }
+}

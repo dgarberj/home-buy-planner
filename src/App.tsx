@@ -14,6 +14,7 @@ import Dashboard from "./components/Dashboard";
 import DataToolbar from "./components/DataToolbar";
 import ContributionGauges from "./components/ContributionGauges";
 import DrawdownPanel from "./components/DrawdownPanel";
+import LanguageSwitcher from "./components/LanguageSwitcher";
 import LenderPanel from "./components/LenderPanel";
 import LeversBar from "./components/LeversBar";
 import MarketPanel from "./components/MarketPanel";
@@ -42,11 +43,14 @@ function MobileNav({ onNavigate }: { onNavigate: (id: string) => void }) {
   const [leversOpen, setLeversOpen] = useState(false);
   return (
     <div className="border-b border-slate-200 bg-slate-50 md:hidden">
-      <nav className="flex flex-wrap gap-1 px-6 py-2">
-        <NavLinks
-          onNavigate={onNavigate}
-          linkClassName="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-        />
+      <nav className="flex flex-wrap items-center justify-between gap-1 px-6 py-2">
+        <div className="flex flex-wrap gap-1">
+          <NavLinks
+            onNavigate={onNavigate}
+            linkClassName="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+          />
+        </div>
+        <LanguageSwitcher />
       </nav>
       <button
         type="button"

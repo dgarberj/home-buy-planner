@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { NAV } from "../../nav";
 
 /**
@@ -14,6 +15,7 @@ export default function NavLinks({
   onNavigate: (id: string) => void;
   linkClassName: string;
 }) {
+  const { t } = useTranslation();
   return (
     <>
       {NAV.map((n) => (
@@ -26,7 +28,7 @@ export default function NavLinks({
           }}
           className={linkClassName}
         >
-          {n.label}
+          {t(`nav.${n.id}`, n.label)}
         </a>
       ))}
     </>

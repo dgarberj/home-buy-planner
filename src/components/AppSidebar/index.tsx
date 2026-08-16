@@ -1,3 +1,4 @@
+import LanguageSwitcher from "../LanguageSwitcher";
 import LeversBar from "../LeversBar";
 import NavLinks from "../NavLinks";
 import { Sidebar } from "../ui";
@@ -24,6 +25,7 @@ export default function AppSidebar({
           linkClassName="rounded-lg px-2 py-1 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
         />
       </div>
+      <LanguageSwitcher />
       <LeversBar />
     </Sidebar>
   );
