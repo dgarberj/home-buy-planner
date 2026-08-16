@@ -1,9 +1,8 @@
 import { useMemo } from "react";
 import { climateRiskFor } from "../../../data/climateRisk";
 import { closingCosts } from "../../../data/closingCosts";
-import { isSaleStale, medianOf, salesIn } from "../../../data/recentSales";
+import { SALE_STALE_LABEL, isSaleStale, medianOf, salesIn } from "../../../data/recentSales";
 import { districtFor, ratingSummary } from "../../../data/schools";
-import { STALE_THRESHOLD_LABEL } from "../../../data/freshness";
 import { cashToClose } from "../../../engine/affordability";
 import {
   costOfTownAtPrice,
@@ -145,7 +144,7 @@ export default function TownDetail({
           <p className="mt-1 text-xs text-slate-500">
             {freshSales.length} fresh sale{freshSales.length === 1 ? "" : "s"}
             {staleCount > 0 &&
-              ` (${staleCount} more excluded as stale, past the ${STALE_THRESHOLD_LABEL.homeSales} threshold)`}
+              ` (${staleCount} more excluded as stale, past the ${SALE_STALE_LABEL} threshold)`}
             .
           </p>
           <Table minWidthClassName="min-w-[560px]" className="mt-2">

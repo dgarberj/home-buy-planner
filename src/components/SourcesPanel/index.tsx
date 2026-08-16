@@ -1,4 +1,4 @@
-import { STALE_THRESHOLD_LABEL } from "../../data/freshness";
+import { formatMaxAge } from "../../data/freshness";
 import {
   RELIABILITY_LABEL,
   RELIABILITY_NOTE,
@@ -51,7 +51,7 @@ function SourceCard({ id }: { id: string }) {
               STALE
               <InfoTip
                 placement="bottom"
-                text={`Retrieved more than ${STALE_THRESHOLD_LABEL[source.category!]} ago, this category's threshold per docs/adr/0001-stale-data-threshold.md. Re-fetch before relying on it.`}
+                text={`Retrieved more than ${formatMaxAge(source.staleAfterDays!)} ago, this source's own threshold per docs/adr/0001-stale-data-threshold.md. Re-fetch before relying on it.`}
               />
             </span>
           )}
@@ -81,18 +81,18 @@ function SourceCard({ id }: { id: string }) {
         <div className="flex gap-1.5">
           <dt>Retrieved</dt>
           <dd className="font-medium tabular-nums text-slate-700">
-            {source.retrieved}
+            {source.fetchedAt}
           </dd>
         </div>
         <div className="flex gap-1.5">
           <dt>Goes stale</dt>
           <dd className="text-slate-700">{source.refresh}</dd>
         </div>
-        {source.category && (
+        {source.staleAfterDays !== undefined && (
           <div className="flex gap-1.5">
             <dt>Staleness threshold</dt>
             <dd className="text-slate-700">
-              {STALE_THRESHOLD_LABEL[source.category]}
+              {formatMaxAge(source.staleAfterDays)}
             </dd>
           </div>
         )}

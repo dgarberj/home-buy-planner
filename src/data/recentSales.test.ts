@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MONTCO_MUNICIPALITIES } from './localMarket';
-import { STALE_THRESHOLD_DAYS } from './freshness';
+import { sourceById } from './sources';
 import {
   RECENT_SALES,
   freshSalesIn,
@@ -75,7 +75,7 @@ describe('staleness — docs/adr/0001-stale-data-threshold.md', () => {
   });
 
   it('draws the line at exactly the 1-year threshold', () => {
-    expect(STALE_THRESHOLD_DAYS.homeSales).toBe(365);
+    expect(sourceById('montco-parcels')?.staleAfterDays).toBe(365);
     const oneYearAgo = { municipality: 'Ambler', address: '3 Test St', saleDate: '2025-08-10', salePrice: 100_000 };
     const oneYearAndADay = { municipality: 'Ambler', address: '4 Test St', saleDate: '2025-08-09', salePrice: 100_000 };
     expect(isSaleStale(oneYearAgo, asOf)).toBe(false);

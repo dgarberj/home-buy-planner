@@ -86,3 +86,33 @@ downstream anyway.
   future need arises for per-source overrides (e.g. one house's sale being
   usable as a comp for longer because nothing else changed on the block),
   that would need a follow-up ADR rather than a quiet exception.
+
+## Update — 2026-08-15
+
+The per-source override anticipated above turned out to be the better
+default, not just a future exception. The four shared categories
+(`homeSales`/`crime`/`schools`/`climate`) are gone; every source in
+`src/config.ts`'s `CONFIG.dataSources` now carries its own optional
+`staleAfterDays` instead of borrowing one of four buckets. This grew
+coverage well beyond the original three enforced sources (home sales,
+schools, climate) to roughly a dozen — millage, PMI tables, IRS
+contribution limits, Fannie Mae DTI limits, and more, wherever a genuine
+active refresh cadence exists. Sources with no real cadence (a deliberately
+frozen secondary cross-check, "confirm before relying on it") simply omit
+`staleAfterDays` and are never flagged — same opt-in shape as the old
+`category` field, just per-source. The *principle* from the Decision above
+is unchanged: `isStale()` is still the one function every module calls,
+`sources.test.ts` still fails the build on any stale source, and
+`SourcesPanel` still shows a STALE badge. Home sales' per-record enforcement
+(`recentSales.ts`'s `freshSalesIn`) now reads its threshold directly off the
+`montco-parcels` source entry rather than a separate category constant, so
+there is exactly one number instead of two that had to be kept in sync.
+
+Each source's registry entry also gained an optional `fetchUrl` (a
+machine-fetchable endpoint, distinct from the human citation `url`) and a
+`fetchedAt` date, laying the groundwork for an eventual build-time
+fetch-if-stale step. That step is not built yet — most sources (PDFs,
+Redfin/Zillow pages, Salary.com) have no API to hit, and building it raises
+its own open questions (what happens when a source is down mid-build,
+whether to keep a human-review gate). It's tracked separately, not part of
+this change.

@@ -2,28 +2,37 @@ import { describe, expect, it } from "vitest";
 import { CONFIG, ConfigSchema } from "./config";
 
 describe("centralized application config", () => {
-  it("validates and exposes the staleness thresholds from the ADR", () => {
-    expect(CONFIG.staleness.homeSalesDays).toBe(365);
-    expect(CONFIG.staleness.crimeDays).toBe(365 * 3);
-    expect(CONFIG.staleness.schoolsDays).toBe(365 * 3);
-    expect(CONFIG.staleness.climateDays).toBe(365 * 10);
+  it("exposes the data source registry", () => {
+    expect(CONFIG.dataSources.length).toBeGreaterThan(20);
   });
 
   it("parses the real, current config without throwing", () => {
     expect(() => ConfigSchema.parse(CONFIG)).not.toThrow();
   });
 
-  it("rejects a zero or fractional staleness threshold", () => {
+  it("rejects a zero or fractional staleAfterDays", () => {
     const zero = {
-      ...CONFIG,
-      staleness: { ...CONFIG.staleness, homeSalesDays: 0 },
+      dataSources: [{ ...CONFIG.dataSources[0], staleAfterDays: 0 }],
     };
     const fractional = {
-      ...CONFIG,
-      staleness: { ...CONFIG.staleness, homeSalesDays: 1.5 },
+      dataSources: [{ ...CONFIG.dataSources[0], staleAfterDays: 1.5 }],
     };
     expect(() => ConfigSchema.parse(zero)).toThrow();
     expect(() => ConfigSchema.parse(fractional)).toThrow();
+  });
+
+  it("rejects a malformed fetchedAt", () => {
+    const bad = {
+      dataSources: [{ ...CONFIG.dataSources[0], fetchedAt: "not-a-date" }],
+    };
+    expect(() => ConfigSchema.parse(bad)).toThrow();
+  });
+
+  it("rejects a source with no URL", () => {
+    const bad = {
+      dataSources: [{ ...CONFIG.dataSources[0], url: "not-a-url" }],
+    };
+    expect(() => ConfigSchema.parse(bad)).toThrow();
   });
 
   it("has no cost defaults -- those live in costDefaults.ts, not here", () => {

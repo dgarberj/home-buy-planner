@@ -43,8 +43,9 @@
  *  STALENESS
  * ---------------------------------------------------------------------------
  *
- * Per docs/adr/0001-stale-data-threshold.md, a home sale older than 1 year is
- * stale and not trustworthy as a market signal. Because this sample was
+ * Per docs/adr/0001-stale-data-threshold.md, a home sale older than the
+ * `montco-parcels` source's staleAfterDays (src/config.ts, currently 1 year)
+ * is stale and not trustworthy as a market signal. Because this sample was
  * pulled with a 12-month window in the first place, essentially everything
  * below is fresh as of the retrieval date above -- that will stop being true
  * the longer this file goes without a re-fetch. `salesIn()` returns every
@@ -53,7 +54,17 @@
  * the threshold.
  */
 
-import { isStale } from './freshness';
+import { isStale, formatMaxAge } from './freshness';
+import { sourceById } from './sources';
+
+/**
+This file's per-record staleness threshold IS the `montco-parcels` source's
+own `staleAfterDays` -- not a second, independently-set number that could
+drift out of sync with it. See docs/adr/0001-stale-data-threshold.md.
+*/
+const SALE_STALE_AFTER_DAYS = sourceById('montco-parcels')!.staleAfterDays!;
+
+export const SALE_STALE_LABEL = formatMaxAge(SALE_STALE_AFTER_DAYS);
 
 export interface RecentSale {
   /**
@@ -475,10 +486,10 @@ export function municipalitiesWithFreshSales(asOf: Date = new Date()): string[] 
 
 /**
 Whether a sale is too old to trust as market signal. See
-docs/adr/0001-stale-data-threshold.md -- home sales go stale after 1 year.
+docs/adr/0001-stale-data-threshold.md.
 */
 export function isSaleStale(sale: RecentSale, asOf: Date = new Date()): boolean {
-  return isStale(sale.saleDate, 'homeSales', asOf);
+  return isStale(sale.saleDate, SALE_STALE_AFTER_DAYS, asOf);
 }
 
 /**
