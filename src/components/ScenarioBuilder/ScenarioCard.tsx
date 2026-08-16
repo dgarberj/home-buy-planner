@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { ScenarioConfig } from "../../model/types";
 import { duration, monthLabel, pct } from "../../lib/format";
 import { useStore } from "../../store/useStore";
@@ -8,6 +9,7 @@ export default function ScenarioCard({
 }: {
   scenario: ScenarioConfig;
 }) {
+  const { t } = useTranslation();
   const { assumptions, settings, updateScenario, removeScenario } = useStore();
   const horizon = settings.horizonMonths;
   const jl = { ...assumptions.jobLoss, ...scenario.jobLossOverride };
@@ -34,7 +36,7 @@ export default function ScenarioCard({
           onChange={(event_) =>
             updateScenario(scenario.id, { color: event_.target.value })
           }
-          title="Line colour on the chart"
+          title={t("scenarioCard.lineColour", "Line colour on the chart")}
           className="h-7 w-7 shrink-0 cursor-pointer rounded-lg border border-slate-200 bg-transparent p-0.5"
         />
         <input
@@ -49,15 +51,21 @@ export default function ScenarioCard({
           onClick={() =>
             updateScenario(scenario.id, { enabled: !scenario.enabled })
           }
-          title={scenario.enabled ? "Hide from the chart" : "Show on the chart"}
+          title={
+            scenario.enabled
+              ? t("scenarioCard.hideFromChart", "Hide from the chart")
+              : t("scenarioCard.showOnChart", "Show on the chart")
+          }
           className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100"
         >
-          {scenario.enabled ? "Shown" : "Hidden"}
+          {scenario.enabled
+            ? t("scenarioCard.shown", "Shown")
+            : t("scenarioCard.hidden", "Hidden")}
         </button>
         <button
           type="button"
           onClick={() => removeScenario(scenario.id)}
-          title="Delete scenario"
+          title={t("scenarioCard.deleteScenario", "Delete scenario")}
           className="shrink-0 rounded-md px-2 py-1 text-slate-300 transition hover:bg-red-50 hover:text-red-600"
         >
           ✕
@@ -70,20 +78,30 @@ export default function ScenarioCard({
           onChange={(v) =>
             updateScenario(scenario.id, { buyMonth: v ? 24 : null })
           }
-          label="Buy a house"
-          hint="Turn this off to model carrying on renting for the whole projection."
+          label={t("scenarioCard.buyAHouse", "Buy a house")}
+          hint={t(
+            "scenarioCard.buyAHouseHint",
+            "Turn this off to model carrying on renting for the whole projection.",
+          )}
         />
 
         {buyMonth !== null && (
           <Slider
-            label="Buy in"
-            hint="How many months from now you close on the house. Drag it and watch the chart."
+            label={t("scenarioCard.buyIn", "Buy in")}
+            hint={t(
+              "scenarioCard.buyInHint",
+              "How many months from now you close on the house. Drag it and watch the chart.",
+            )}
             value={buyMonth}
             min={1}
             max={horizon}
             accent={scenario.color}
             onChange={(v) => updateScenario(scenario.id, { buyMonth: v })}
-            display={`${monthLabel(settings.startDate, buyMonth)} · month ${buyMonth}`}
+            display={t(
+              "scenarioCard.monthDisplay",
+              "{{date}} · month {{month}}",
+              { date: monthLabel(settings.startDate, buyMonth), month: buyMonth },
+            )}
           />
         )}
 
@@ -91,26 +109,39 @@ export default function ScenarioCard({
           <Toggle
             checked={scenario.hasJobLoss}
             onChange={(v) => updateScenario(scenario.id, { hasJobLoss: v })}
-            label="Someone loses their job"
-            hint="Applies the job-loss settings below to this scenario only."
+            label={t("scenarioCard.someoneLosesJob", "Someone loses their job")}
+            hint={t(
+              "scenarioCard.someoneLosesJobHint",
+              "Applies the job-loss settings below to this scenario only.",
+            )}
           />
         </div>
 
         {scenario.hasJobLoss && (
           <div className="space-y-4 rounded-xl bg-amber-50/60 p-3">
             <Slider
-              label="Starts"
-              hint="When the income stops."
+              label={t("scenarioCard.starts", "Starts")}
+              hint={t("scenarioCard.startsHint", "When the income stops.")}
               value={jl.startMonth}
               min={1}
               max={horizon}
               accent={scenario.color}
               onChange={(v) => setOverride({ startMonth: v })}
-              display={`${monthLabel(settings.startDate, jl.startMonth)} · month ${jl.startMonth}`}
+              display={t(
+                "scenarioCard.monthDisplay",
+                "{{date}} · month {{month}}",
+                {
+                  date: monthLabel(settings.startDate, jl.startMonth),
+                  month: jl.startMonth,
+                },
+              )}
             />
             <Slider
-              label="Lasts"
-              hint="How long until income is back to normal."
+              label={t("scenarioCard.lasts", "Lasts")}
+              hint={t(
+                "scenarioCard.lastsHint",
+                "How long until income is back to normal.",
+              )}
               value={jl.durationMonths}
               min={0}
               max={24}
@@ -119,8 +150,14 @@ export default function ScenarioCard({
               display={duration(jl.durationMonths)}
             />
             <Slider
-              label="Income still coming in"
-              hint="Severance, unemployment, and the other salary, as a share of normal take-home."
+              label={t(
+                "scenarioCard.incomeStillComingIn",
+                "Income still coming in",
+              )}
+              hint={t(
+                "scenarioCard.incomeStillComingInHint",
+                "Severance, unemployment, and the other salary, as a share of normal take-home.",
+              )}
               value={Math.round(jl.incomeReplacementPct * 100)}
               min={0}
               max={100}
@@ -130,8 +167,11 @@ export default function ScenarioCard({
               display={pct(jl.incomeReplacementPct, 0)}
             />
             <Slider
-              label="Spending cut back by"
-              hint="Housing is never cut — rent and the mortgage still have to be paid."
+              label={t("scenarioCard.spendingCutBackBy", "Spending cut back by")}
+              hint={t(
+                "scenarioCard.spendingCutBackByHint",
+                "Housing is never cut — rent and the mortgage still have to be paid.",
+              )}
               value={Math.round(jl.expenseCutPct * 100)}
               min={0}
               max={60}
@@ -143,8 +183,14 @@ export default function ScenarioCard({
             <Toggle
               checked={jl.pauseRetirementContributions}
               onChange={(v) => setOverride({ pauseRetirementContributions: v })}
-              label="Pause retirement contributions"
-              hint="Both your contribution and the employer match stop, since they come with the job."
+              label={t(
+                "scenarioCard.pauseRetirementContributions",
+                "Pause retirement contributions",
+              )}
+              hint={t(
+                "scenarioCard.pauseRetirementContributionsHint",
+                "Both your contribution and the employer match stop, since they come with the job.",
+              )}
             />
             {scenario.jobLossOverride &&
               Object.keys(scenario.jobLossOverride).length > 0 && (
@@ -155,7 +201,10 @@ export default function ScenarioCard({
                   }
                   className="text-xs font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900"
                 >
-                  Reset to the shared job-loss settings
+                  {t(
+                    "scenarioCard.resetToShared",
+                    "Reset to the shared job-loss settings",
+                  )}
                 </button>
               )}
           </div>

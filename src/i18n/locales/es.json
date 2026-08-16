@@ -1258,5 +1258,173 @@
       "headline": "Lo que no está disponible.",
       "body": "Tus propias cifras — sueldo, gasto, saldos, obligaciones fijas — vienen de ti, y las que siguen marcadas como ESTIMADO en el archivo de datos son suposiciones que hice. Los precios de vivienda existen para solo 18 de 112 municipios, y el rendimiento escolar para aproximadamente la mitad de los distritos. Esos vacíos se muestran en blanco en toda la app en vez de rellenarse con números que parezcan plausibles."
     }
+  },
+  "waitingPanel": {
+    "title": "¿Vale la pena esperar por una mejor casa?",
+    "subtitle": "Dos cosas te limitan, y mejoran a velocidades completamente distintas.",
+    "reserve": {
+      "label": "Seguir ahorrando cada mes",
+      "hint": "Se retiene del presupuesto de vivienda para que sigas construyendo un colchón después de mudarte."
+    },
+    "bufferMonths": {
+      "label": "Colchón restante tras el cierre (meses)",
+      "hint": "Meses de gasto total que quieres tener aún en el banco el día después de cerrar."
+    },
+    "housingBudgetToday": "Presupuesto de vivienda hoy",
+    "depositRarelyProblem": "<b>El pago inicial rara vez es el problema.</b> Ahorrar más tiempo arregla la restricción de <i>efectivo</i> — pago inicial, costos de cierre, colchón — y eso mejora cada mes. No hace casi nada por la restricción <i>mensual</i>, que solo se mueve cuando sube tu sueldo o termina un compromiso, y retrocede a medida que suben los precios. Una casa fuera de alcance por el pago sigue fuera de alcance sin importar cuánto ahorres.",
+    "tableCard": {
+      "title": "Cuándo cada municipio queda a tu alcance",
+      "subtitle": "Ambas restricciones deben superarse. La más tardía de las dos es la que realmente te limita."
+    },
+    "columns": {
+      "town": "Municipio",
+      "medianToday": "Mediana hoy",
+      "paymentWorksFrom": "El pago funciona desde",
+      "paymentWorksFromHint": "Cuándo tu presupuesto podría cubrir el costo mensual. Impulsado por aumentos de sueldo y compromisos que terminan — no por ahorrar.",
+      "cashReady": "Efectivo listo",
+      "cashReadyHint": "Cuándo tendrías el pago inicial, los costos de cierre y tu colchón elegido. Esta es la parte que ahorrar realmente arregla.",
+      "buyable": "Comprable",
+      "schools": "Escuelas"
+    },
+    "never": "nunca",
+    "notSourced": "no disponible",
+    "soonest": {
+      "headline": "Lo más pronto a tu alcance: {{name}}, desde {{date}}.",
+      "body": "Cualquier cosa más arriba en la lista te cuesta meses extra de espera Y un pago más grande por el resto de la hipoteca. El panel muestra qué le hace eso al patrimonio neto a los 65 — en este modelo, cada mejora tiene un costo, así que la pregunta es si las escuelas y el espacio valen el precio, no si sales ganando."
+    },
+    "clockYourChildrenAreOn": "<b>El reloj de tus hijos está corriendo.</b> Si esperar por un mejor distrito escolar significa once años más de alquiler, habrán pasado la mayor parte de su educación en el distrito que intentabas dejar. Esperar por una casa no es gratis aunque la aritmética diga que puedes pagar más después."
+  },
+  "scenarioBuilder": {
+    "title": "Escenarios",
+    "subtitle": "Cada tarjeta es una versión del futuro. Mueve los controles — cada gráfico de abajo se actualiza al instante.",
+    "addScenario": "+ Agregar escenario",
+    "sharedDefaults": {
+      "title": "Valores predeterminados compartidos de pérdida de empleo",
+      "subtitle": "Los escenarios parten de estos. Cambia un control dentro de un escenario y lo anulará solo para ese."
+    },
+    "incomeStillComingIn": "Ingreso que sigue llegando",
+    "spendingCutBackBy": "Reducción del gasto",
+    "pauseRetirementContributions": "Pausar las aportaciones de jubilación durante el período",
+    "noScenarios": "Todavía no hay escenarios. Agrega uno para ver una proyección."
+  },
+  "scenarioCard": {
+    "lineColour": "Color de la línea en el gráfico",
+    "hideFromChart": "Ocultar del gráfico",
+    "showOnChart": "Mostrar en el gráfico",
+    "shown": "Visible",
+    "hidden": "Oculto",
+    "deleteScenario": "Eliminar escenario",
+    "buyAHouse": "Comprar una casa",
+    "buyAHouseHint": "Desactívalo para modelar seguir alquilando durante toda la proyección.",
+    "buyIn": "Comprar en",
+    "buyInHint": "Cuántos meses a partir de ahora cierras la compra de la casa. Muévelo y observa el gráfico.",
+    "monthDisplay": "{{date}} · mes {{month}}",
+    "someoneLosesJob": "Alguien pierde su empleo",
+    "someoneLosesJobHint": "Aplica los ajustes de pérdida de empleo de abajo solo a este escenario.",
+    "starts": "Comienza",
+    "startsHint": "Cuándo se detiene el ingreso.",
+    "lasts": "Dura",
+    "lastsHint": "Cuánto tiempo hasta que el ingreso vuelva a la normalidad.",
+    "incomeStillComingIn": "Ingreso que sigue llegando",
+    "incomeStillComingInHint": "Indemnización, desempleo y el otro salario, como porcentaje del salario neto normal.",
+    "spendingCutBackBy": "Reducción del gasto",
+    "spendingCutBackByHint": "La vivienda nunca se recorta — el alquiler y la hipoteca siguen debiendo pagarse.",
+    "pauseRetirementContributions": "Pausar las aportaciones de jubilación",
+    "pauseRetirementContributionsHint": "Tanto tu aportación como el aporte del empleador se detienen, ya que dependen del empleo.",
+    "resetToShared": "Restablecer a los ajustes compartidos de pérdida de empleo"
+  },
+  "splash": {
+    "title": "Home Buy Planner",
+    "headline": "¿Cuándo podremos realmente comprar una casa?",
+    "intro": "Esta herramienta responde eso, además de la pregunta que más importa: si estaríamos bien si uno de los dos perdiera el trabajo en el camino. Escribe tus números reales y hace la aritmética al instante — sin hojas de cálculo, sin adivinar.",
+    "li1": "<b>Empieza con tu presupuesto.</b> Cada dólar recurrente que entra y sale. Cambia cualquier número y todo lo que sigue — aportaciones, escenarios, la respuesta — se actualiza al instante.",
+    "li2": "<b>Los escenarios son versiones del futuro.</b> Elige un mes para comprar y si ocurre una pérdida de empleo en el camino. Agrega tantos como quieras y compáralos lado a lado.",
+    "li3": "<b>\"Lista para comprar\" y \"efectivo mínimo\" son los dos números que importan.</b> El primer mes en que podrías pagarlo, y lo más bajo que llegan tus ahorros en el camino. Por debajo de cero, en rojo, significa que el plan no se sostiene solo.",
+    "li4": "<b>Nada aquí es una predicción.</b> Es aritmética sobre los supuestos que escribes — por eso vale la pena probar los extremos.",
+    "openPlanner": "Abrir el planificador",
+    "privacyNote": "Tus números se guardan solo en este navegador."
+  },
+  "monthlyDataTable": {
+    "title": "Mes a mes",
+    "subtitle": "Cada número que produce el modelo, exactamente como lo calcula. Nada aquí está suavizado ni redondeado.",
+    "downloadCsv": "Descargar CSV",
+    "year": "Año",
+    "allYears": "Todos los años",
+    "yearOption": "Año {{year}}",
+    "monthsCount": "{{count}} meses",
+    "month": "Mes",
+    "monthAge": "#{{month}} · edad {{age}}",
+    "buysBadge": "Compra",
+    "noJobBadge": "Sin empleo",
+    "emptyState": "Activa un escenario arriba para ver sus números mes a mes.",
+    "columns": {
+      "netIncome": {
+        "label": "Ingreso",
+        "hint": "Salario neto, después de cualquier reducción por pérdida de empleo."
+      },
+      "totalExpenses": {
+        "label": "Costos de vida",
+        "hint": "Todo excepto vivienda, ajustado por inflación con el tiempo."
+      },
+      "secondIncome": {
+        "label": "Segundo ingreso",
+        "hint": "El salario neto de una pareja, antes de los costos de trabajar."
+      },
+      "secondIncomeCosts": {
+        "label": "Cuidado infantil",
+        "hint": "Cuidado infantil y otros costos incurridos únicamente por ese segundo empleo. Termina en edad escolar."
+      },
+      "coResidentIncome": {
+        "label": "Conviviente",
+        "hint": "La aportación de un familiar. Comienza solo una vez que eres propietario, y no se detiene durante una pérdida de empleo."
+      },
+      "obligations": {
+        "label": "Compromisos",
+        "hint": "Pagos de manutención y otros compromisos fijos. Nunca se ajustan por inflación, nunca se recortan durante una pérdida de empleo."
+      },
+      "housingPayment": {
+        "label": "Vivienda",
+        "hint": "Alquiler antes de comprar; principal, interés, impuesto, seguro y HOA después."
+      },
+      "pmiPayment": {
+        "label": "de lo cual PMI",
+        "hint": "Seguro hipotecario, ya incluido en el pago de vivienda a su izquierda."
+      },
+      "homeMaintenance": {
+        "label": "Mantenimiento",
+        "hint": "Mantenimiento y reparaciones acumulados este mes. No es una factura que recibes, pero es dinero real igualmente."
+      },
+      "netCashFlow": {
+        "label": "Flujo de caja",
+        "hint": "Ingreso menos costos de vida, vivienda y tu aportación de jubilación."
+      },
+      "purchaseOutflow": {
+        "label": "Compra de casa",
+        "hint": "Pago inicial más costos de cierre, en el mes que compras."
+      },
+      "cashBalance": {
+        "label": "Colchón de efectivo",
+        "hint": "El fondo de emergencia. El excedente sobre el objetivo del colchón se traslada a inversiones; los faltantes venden inversiones para reponerlo."
+      },
+      "investmentBalance": {
+        "label": "Inversiones",
+        "hint": "El fondo sujeto a impuestos fuera de la jubilación."
+      },
+      "liquidSavings": {
+        "label": "Total líquido",
+        "hint": "Efectivo más inversiones. Rojo significa que el plan no se sostiene solo."
+      },
+      "retirementBalance": "Jubilación",
+      "homeValue": "Valor de la casa",
+      "mortgageBalance": "Hipoteca pendiente",
+      "homeEquity": "Plusvalía de la vivienda",
+      "netWorth": "Patrimonio neto"
+    },
+    "legend": {
+      "buys": "el mes que compras",
+      "jobLoss": "meses de pérdida de empleo",
+      "redLabel": "rojo",
+      "redMeaning": "negativo — dinero que no tienes"
+    }
   }
 }
