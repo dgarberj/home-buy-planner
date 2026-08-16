@@ -1,16 +1,25 @@
 import {
   HSA_LIMITS,
+  IRA_LIMITS,
   K401_LIMITS,
   employeeHsaRoom,
 } from "../../data/contributionLimits";
 import { money } from "../../lib/format";
 import { deriveStartingBalances } from "../../lib/derive";
 import { useStore } from "../../store/useStore";
-import { Card, Field, MoneyInput, PercentInput, Toggle } from "../ui";
+import {
+  Card,
+  Field,
+  MoneyInput,
+  PercentInput,
+  PercentInputWithMonthly,
+  Toggle,
+} from "../ui";
 
 export default function RetirementSection() {
-  const { assumptions: a, setAssumptions, balances } = useStore();
+  const { assumptions: a, setAssumptions, balances, settings } = useStore();
   const starting = deriveStartingBalances(balances);
+  const gross = settings.grossAnnualSalary;
   // Not a user choice -- always derive from the newest Balances snapshot,
   // if one exists yet (starting.asOf is null before any snapshot is logged).
   const hasSnapshot = !!starting.asOf;
@@ -45,12 +54,13 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label="401(k) contribution / month"
-          hint={`What you put into your 401(k) each month. Comes out of take-home cash. Elective-deferral limit for 2026 is ${money(K401_LIMITS.employeeDeferral2026)}/yr.`}
+          label="401(k) contribution"
+          hint={`Share of gross salary you elect into the 401(k) -- most plans run the election as a percentage of pay, not a flat dollar amount. Comes out of take-home cash. Elective-deferral limit for 2026 is ${money(K401_LIMITS.employeeDeferral2026)}/yr.`}
         >
-          <MoneyInput
-            value={a.retirement.k401Monthly}
-            onChange={(v) => setAssumptions({ retirement: { k401Monthly: v } })}
+          <PercentInputWithMonthly
+            value={a.retirement.k401Pct}
+            annualBasis={gross}
+            onChange={(v) => setAssumptions({ retirement: { k401Pct: v } })}
           />
         </Field>
         <Field
@@ -71,6 +81,15 @@ export default function RetirementSection() {
             onChange={(v) =>
               setAssumptions({ retirement: { employerMatchMonthly: v } })
             }
+          />
+        </Field>
+        <Field
+          label="Roth IRA contribution / month"
+          hint={`What you put into a Roth IRA each month. 2026 limit is ${money(IRA_LIMITS.contribution2026)}/yr, phased down to zero above an income threshold -- see the contribution gauges for your live room.`}
+        >
+          <MoneyInput
+            value={a.retirement.iraMonthly}
+            onChange={(v) => setAssumptions({ retirement: { iraMonthly: v } })}
           />
         </Field>
       </div>

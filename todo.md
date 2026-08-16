@@ -26,23 +26,6 @@ building this:
   isn't worth building one — "every data source" isn't uniformly fetchable today,
   and won't be until the manual county data request comes through.
 
-## Rework the "what can I buy" view
-
-Make it more comprehensive, and surface insights with fewer clicks.
-
-Today the closest thing to a single view is `MarketPanel` — `CountyOverviewCard`,
-`HeadToHeadCard`, `LowDepositCard`, `AffordabilityTable`, `RecentSalesCard`,
-`NeighbouringCountiesCard` stacked as separate cards, each scoped to its own slice
-(tax, PMI, comps, neighbours). `RecentSalesCard` specifically requires a click per
-town before any individual sale is visible — aggregate-first is right, but the
-drill-down could probably be smarter than one-town-at-a-time (e.g. surface the
-town(s) most relevant to the current budget open by default).
-
-Needs a real design pass, not just a refactor — what "comprehensive" means here
-(more towns? more data types layered per town — tax + comps + schools + whatever
-crime/flood/commute lands as?) and what the actual click-reduction targets are
-should get scoped before touching code.
-
 ## Spike: scraping Delco recent home purchases — CLOSED, no-go (2026-08-15)
 
 Delaware County's property search

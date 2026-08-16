@@ -72,7 +72,10 @@ const FLAT: Assumptions = {
   },
   retirement: {
     currentBalance: 100_000,
-    k401Monthly: 400,
+    // 400/mo at the default 100,000 gross salary runProjection falls back to
+    // when a test doesn't pass one -- keeps this fixture's dollar amounts
+    // identical to the pre-percentage figures baked into the comments below.
+    k401Pct: 0.048,
     hasK401Plan: true,
     hsaMonthly: 600,
     employerMatchMonthly: 500,
@@ -89,6 +92,8 @@ const FLAT: Assumptions = {
     hsaReimbursement: 0,
     hsaReimbursementMonth: 1,
     hsaReimbursementAtPurchase: false,
+    iraMonthly: 0,
+    hasIraPlan: false,
     contributionsGrowWithIncome: false,
   },
   // Both pools earn nothing and the buffer is generous, so cash and
@@ -629,7 +634,7 @@ describe("ages and retirement milestones", () => {
 
   it("records net worth at each milestone age it reaches", () => {
     const rows = runProjection(FLAT, RENT_FOREVER, 60);
-    const s = summarizeScenario(FLAT, RENT_FOREVER, 60, [41, 42, 65]);
+    const s = summarizeScenario(FLAT, RENT_FOREVER, 60, 100_000, [41, 42, 65]);
     expect(s.netWorthAtAge[41]).toBeCloseTo(at(rows, 13).netWorth, 9);
     expect(s.netWorthAtAge[42]).toBeCloseTo(at(rows, 25).netWorth, 9);
     // 65 is decades past the end of this projection.
@@ -638,7 +643,7 @@ describe("ages and retirement milestones", () => {
 
   it("breaks each milestone down by where the money sits", () => {
     const rows = runProjection(FLAT, BUY_M12, 60);
-    const s = summarizeScenario(FLAT, BUY_M12, 60, [42]);
+    const s = summarizeScenario(FLAT, BUY_M12, 60, 100_000, [42]);
     expect(s.retirementAtAge[42]).toBeCloseTo(
       at(rows, 25).retirementBalance,
       9,
@@ -1895,7 +1900,7 @@ describe("diverting the HSA to the deposit", () => {
 
   it("lowers what goes into retirement each month", () => {
     const rows = runProjection(diverted, RENT_FOREVER, 24);
-    expect(at(rows, 1).employeeContribution).toBe(400);
+    expect(at(rows, 1).employeeContribution).toBeCloseTo(400, 9);
     expect(
       at(runProjection(FLAT, RENT_FOREVER, 24), 1).employeeContribution,
     ).toBe(1_000);

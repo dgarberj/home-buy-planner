@@ -210,38 +210,60 @@ export function diffFromBase<T>(defaults: T, state: T): Partial<T> {
 }
 
 /**
+ * generic-6 -> generic-7: the 401(k) contribution moved from a flat monthly
+ * dollar amount (`k401Monthly`) to a share of gross salary (`k401Pct`).
+ * Carries the old dollar figure forward as a percentage, in place, rather
+ * than silently dropping it along with the rest of a version-mismatched
+ * save.
+ *
+ * The salary used to derive that percentage has to be carried forward too
+ * (not just the resulting `k401Pct`) -- otherwise the new percentage gets
+ * multiplied back out against the SEED's salary on the very next render,
+ * not the salary it was actually computed from, and the dollar figure this
+ * migration exists to preserve silently drifts.
+ */
+function migrateGeneric6K401(saved: Plain, base: HouseholdData): void {
+  const oldRetirement = isPlainObject(saved.assumptions)
+    ? (saved.assumptions.retirement as Plain | undefined)
+    : undefined;
+  if (!oldRetirement || typeof oldRetirement.k401Monthly !== "number") return;
+
+  const oldSettings = isPlainObject(saved.settings) ? saved.settings : undefined;
+  const gross =
+    typeof oldSettings?.grossAnnualSalary === "number"
+      ? oldSettings.grossAnnualSalary
+      : base.settings.grossAnnualSalary;
+  base.assumptions.retirement.k401Pct =
+    gross > 0 ? (oldRetirement.k401Monthly * 12) / gross : 0;
+  base.settings.grossAnnualSalary = gross;
+}
+
+/**
  * Bring a saved payload up to the current shape.
  *
  * Version 1 held a single `savings.currentBalance` with one blended return.
  * Version 2 splits that into a cash buffer and an invested pot, so the old
  * balance is carried into cash and the old return into both pools.
  */
-export function migrateSaved(saved: unknown): HouseholdData {
-  const base = baseData();
-
-  // The seed file has changed since this state was saved, so the file wins.
-  // Without this, editing seed.ts would silently do nothing on any machine
-  // that had already used the app -- which is exactly the bug this fixes.
-  const savedVersion = isPlainObject(saved) ? saved.seedVersion : undefined;
-  if (savedVersion !== SEED_VERSION) return base;
-
-  const merged = deepMerge(base, saved);
-
+function migrateLegacySavingsPool(saved: unknown, merged: HouseholdData): void {
   const legacy =
     isPlainObject(saved) && isPlainObject(saved.assumptions)
       ? (saved.assumptions.savings as Plain | undefined)
       : undefined;
+  if (!legacy || typeof legacy.currentBalance !== "number") return;
 
-  if (legacy && typeof legacy.currentBalance === "number") {
-    merged.assumptions.savings.cashBalance = legacy.currentBalance;
-    merged.assumptions.savings.investmentBalance = 0;
-    if (typeof legacy.returnAnnual === "number") {
-      merged.assumptions.savings.cashReturnAnnual = legacy.returnAnnual;
-      merged.assumptions.savings.investmentReturnAnnual = legacy.returnAnnual;
-    }
+  merged.assumptions.savings.cashBalance = legacy.currentBalance;
+  merged.assumptions.savings.investmentBalance = 0;
+  if (typeof legacy.returnAnnual === "number") {
+    merged.assumptions.savings.cashReturnAnnual = legacy.returnAnnual;
+    merged.assumptions.savings.investmentReturnAnnual = legacy.returnAnnual;
   }
+}
 
-  // Anything that must be an array, whatever the save said.
+/**
+Anything that must be an array, whatever the save said.
+*/
+function coerceArrayFields(merged: HouseholdData): void {
   if (!Array.isArray(merged.assumptions.obligations))
     merged.assumptions.obligations = [];
   if (!Array.isArray(merged.budget)) merged.budget = [];
@@ -251,6 +273,25 @@ export function migrateSaved(saved: unknown): HouseholdData {
     merged.settings.milestoneAges = [...DEFAULT_MILESTONE_AGES];
   }
   if (!Array.isArray(merged.settings.shortlist)) merged.settings.shortlist = [];
+}
+
+export function migrateSaved(saved: unknown): HouseholdData {
+  const base = baseData();
+
+  // The seed file has changed since this state was saved, so the file wins.
+  // Without this, editing seed.ts would silently do nothing on any machine
+  // that had already used the app -- which is exactly the bug this fixes.
+  const savedVersion = isPlainObject(saved) ? saved.seedVersion : undefined;
+  if (savedVersion !== SEED_VERSION) {
+    if (savedVersion === "generic-6" && isPlainObject(saved)) {
+      migrateGeneric6K401(saved, base);
+    }
+    return base;
+  }
+
+  const merged = deepMerge(base, saved);
+  migrateLegacySavingsPool(saved, merged);
+  coerceArrayFields(merged);
 
   return merged;
 }

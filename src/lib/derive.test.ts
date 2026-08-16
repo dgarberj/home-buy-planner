@@ -6,6 +6,7 @@ import {
   SEED_ASSUMPTIONS,
   SEED_BALANCES,
   SEED_BUDGET,
+  SEED_SETTINGS,
 } from "../data/seed";
 import {
   budgetSurplus,
@@ -314,7 +315,7 @@ describe("resolveAssumptions", () => {
     expect(r.savings.cashBalance).toBe(35000);
     expect(r.savings.investmentBalance).toBe(9000);
     expect(r.retirement.currentBalance).toBe(90000);
-    expect(r.retirement.k401Monthly).toBe(base.retirement.k401Monthly);
+    expect(r.retirement.k401Pct).toBe(base.retirement.k401Pct);
     expect(r.retirement.hsaMonthly).toBe(base.retirement.hsaMonthly);
   });
 
@@ -369,11 +370,15 @@ describe("the placeholder seed data is internally consistent", () => {
   const dueNow = deriveObligations(SEED_BUDGET, "2026-08")
     .filter((o) => o.startMonth <= 1)
     .reduce((sum, o) => sum + o.monthlyAmount, 0);
+  const k401MonthlyEquiv =
+    (SEED_ASSUMPTIONS.retirement.k401Pct * SEED_SETTINGS.grossAnnualSalary) /
+    12;
   const monthlyAfterContributions =
     budgetSurplus(totals) -
     dueNow -
-    (SEED_ASSUMPTIONS.retirement.k401Monthly +
-      SEED_ASSUMPTIONS.retirement.hsaMonthly);
+    (k401MonthlyEquiv +
+      SEED_ASSUMPTIONS.retirement.hsaMonthly +
+      SEED_ASSUMPTIONS.retirement.iraMonthly);
 
   it("has commitments due right now", () => {
     expect(dueNow).toBeGreaterThan(0);

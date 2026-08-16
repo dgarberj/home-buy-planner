@@ -21,7 +21,14 @@ const SIMPLE: Assumptions = {
   ...base,
   income: { ...base.income, monthlyTakeHome: 10_000 },
   expenses: { ...base.expenses, fixedMonthly: 1_000, variableMonthly: 2_000 },
-  retirement: { ...base.retirement, k401Monthly: 400, hsaMonthly: 600 },
+  // 400/mo at the 100,000 default `housingBudget` falls back to when a test
+  // doesn't pass `grossAnnualSalary`.
+  retirement: {
+    ...base.retirement,
+    k401Pct: 0.048,
+    hsaMonthly: 600,
+    iraMonthly: 0,
+  },
   obligations: [
     {
       id: "a",

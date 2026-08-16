@@ -56,13 +56,15 @@ export default function WaitingPanel() {
           color: "#000",
         },
         horizon,
+        settings.grossAnnualSalary,
       ).map((r) => r.liquidSavings),
-    [assumptions, horizon],
+    [assumptions, horizon, settings.grossAnnualSalary],
   );
 
   const budgetToday = housingBudget(assumptions, {
     atMonth: 1,
     reserveForSavings: reserve,
+    grossAnnualSalary: settings.grossAnnualSalary,
   });
 
   const verdicts = useMemo(
@@ -75,6 +77,7 @@ export default function WaitingPanel() {
             insuranceMonthly: COST_DEFAULTS.flatMonthlyInsuranceUsd,
             months: horizon,
             reserveForSavings: reserve,
+            grossAnnualSalary: settings.grossAnnualSalary,
             cashTrack,
             bufferMonthsRequired: bufferMonths,
           });
@@ -85,7 +88,14 @@ export default function WaitingPanel() {
           const bv = b.verdict.affordableFrom ?? Infinity;
           return av - bv || (a.m.medianPrice ?? 0) - (b.m.medianPrice ?? 0);
         }),
-    [assumptions, cashTrack, horizon, reserve, bufferMonths],
+    [
+      assumptions,
+      cashTrack,
+      horizon,
+      reserve,
+      bufferMonths,
+      settings.grossAnnualSalary,
+    ],
   );
 
   const soonest = verdicts.find((v) => v.verdict.affordableFrom !== null);

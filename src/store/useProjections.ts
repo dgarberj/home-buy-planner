@@ -39,9 +39,16 @@ export function useProjections(): {
         assumptions,
         scenarios,
         settings.horizonMonths,
+        settings.grossAnnualSalary,
         settings.milestoneAges,
       ),
-    [assumptions, scenarios, settings.horizonMonths, settings.milestoneAges],
+    [
+      assumptions,
+      scenarios,
+      settings.horizonMonths,
+      settings.grossAnnualSalary,
+      settings.milestoneAges,
+    ],
   );
 
   return { assumptions, summaries };

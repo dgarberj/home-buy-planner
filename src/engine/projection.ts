@@ -5,6 +5,7 @@ import type {
   ScenarioConfig,
   ScenarioSummary,
 } from "../model/types";
+import { SEED_SETTINGS } from "../data/seed";
 import {
   compound,
   computeAssistanceAmount,
@@ -400,6 +401,7 @@ employer lump (modelling note 8b).
 */
 function computeRetirementContribution(
   retirement: Assumptions["retirement"],
+  grossMonthly: number,
   m: number,
   calendarMonth: number,
   incomeGrowth: number,
@@ -410,15 +412,18 @@ function computeRetirementContribution(
     : 1;
   // Diverting the HSA to the deposit zeroes it out; the 401(k) keeps going.
   const employeeK401 = retirement.hasK401Plan
-    ? retirement.k401Monthly * contributionScale
+    ? retirement.k401Pct * grossMonthly * contributionScale
     : 0;
   const employeeHsa =
     retirement.pauseHsaMax || !retirement.hasHsaPlan
       ? 0
       : retirement.hsaMonthly * contributionScale;
+  const employeeIra = retirement.hasIraPlan
+    ? retirement.iraMonthly * contributionScale
+    : 0;
   const employeeContribution = isContributionsPaused
     ? 0
-    : employeeK401 + employeeHsa;
+    : employeeK401 + employeeHsa + employeeIra;
   const employerMatch =
     isContributionsPaused || !retirement.hasK401Plan
       ? 0
@@ -509,17 +514,26 @@ function applyCashSweep(
 /**
  * Project a single scenario forward month by month.
  *
- * @param assumptions the shared household model
- * @param scenario    which house-buying / job-loss variant to run
- * @param months      horizon length (60 = five years)
+ * @param assumptions       the shared household model
+ * @param scenario          which house-buying / job-loss variant to run
+ * @param months            horizon length (60 = five years)
+ * @param grossAnnualSalary base salary before bonus -- lives in `Settings`,
+ *                          not `Assumptions`, so it comes in as its own
+ *                          argument. Drives the 401(k) contribution, which
+ *                          is stored as a share of it (`retirement.k401Pct`).
+ *                          Defaults to the seed household's salary so callers
+ *                          that don't care about it (most tests) don't need
+ *                          to pass one.
  */
 export function runProjection(
   assumptions: Assumptions,
   scenario: ScenarioConfig,
   months: number,
+  grossAnnualSalary: number = SEED_SETTINGS.grossAnnualSalary,
 ): MonthlyResult[] {
   const { income, expenses, retirement, savings, home } = assumptions;
   const jl = resolveJobLoss(assumptions.jobLoss, scenario);
+  const grossMonthly = grossAnnualSalary / 12;
 
   const incomeGrowth = monthlyGeometric(income.growthAnnual);
   const inflation = monthlyGeometric(expenses.inflationAnnual);
@@ -665,6 +679,7 @@ export function runProjection(
     const { employeeContribution, employerContribution } =
       computeRetirementContribution(
         retirement,
+        grossMonthly,
         m,
         calendarMonth,
         incomeGrowth,
@@ -956,14 +971,21 @@ export function summarizeScenario(
   assumptions: Assumptions,
   scenario: ScenarioConfig,
   months: number,
+  grossAnnualSalary: number = SEED_SETTINGS.grossAnnualSalary,
   milestoneAges: number[] = [],
 ): ScenarioSummary {
-  const monthsResult = runProjection(assumptions, scenario, months);
+  const monthsResult = runProjection(
+    assumptions,
+    scenario,
+    months,
+    grossAnnualSalary,
+  );
 
   const neverBuy = runProjection(
     assumptions,
     { ...scenario, buyMonth: null },
     months,
+    grossAnnualSalary,
   );
 
   const { readinessMonth, readinessCashRequired } = computeReadiness(
@@ -1009,9 +1031,18 @@ export function runAllScenarios(
   assumptions: Assumptions,
   scenarios: ScenarioConfig[],
   months: number,
+  grossAnnualSalary: number = SEED_SETTINGS.grossAnnualSalary,
   milestoneAges: number[] = [],
 ): ScenarioSummary[] {
   return scenarios
     .filter((s) => s.enabled)
-    .map((s) => summarizeScenario(assumptions, s, months, milestoneAges));
+    .map((s) =>
+      summarizeScenario(
+        assumptions,
+        s,
+        months,
+        grossAnnualSalary,
+        milestoneAges,
+      ),
+    );
 }

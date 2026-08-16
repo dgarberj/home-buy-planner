@@ -1,4 +1,5 @@
 import type { Assumptions } from "../model/types";
+import { SEED_SETTINGS } from "../data/seed";
 import {
   computeAssistanceAmount,
   monthlyNominal,
@@ -55,8 +56,20 @@ export interface HousingBudget {
  */
 export function housingBudget(
   assumptions: Assumptions,
-  options: { atMonth: number; reserveForSavings: number },
+  options: {
+    atMonth: number;
+    reserveForSavings: number;
+    /**
+     * Base salary before bonus -- lives in `Settings`, not `Assumptions`.
+     * Drives the 401(k) contribution, stored as a share of it
+     * (`retirement.k401Pct`). Defaults to the seed household's salary so
+     * callers that don't care about it (most tests) don't need to pass one.
+     */
+    grossAnnualSalary?: number;
+  },
 ): HousingBudget {
+  const grossAnnualSalary =
+    options.grossAnnualSalary ?? SEED_SETTINGS.grossAnnualSalary;
   const { income, expenses, retirement, coResident, obligations } = assumptions;
 
   const obligationsDue = obligations
@@ -82,8 +95,9 @@ export function housingBudget(
   const secondNet = secondRunning ? second.monthlyTakeHome - secondCosts : 0;
 
   const livingCosts = expenses.fixedMonthly + expenses.variableMonthly;
+  const k401Monthly = (retirement.k401Pct * grossAnnualSalary) / 12;
   const retirementContributions =
-    retirement.k401Monthly + retirement.hsaMonthly;
+    k401Monthly + retirement.hsaMonthly + retirement.iraMonthly;
 
   const monthlyBudget =
     income.monthlyTakeHome +
@@ -342,6 +356,11 @@ export function affordabilityTimeline(
     months: number;
     reserveForSavings: number;
     /**
+     * Base salary before bonus. Grows with income like `monthlyTakeHome`
+     * below. Optional, same default as `housingBudget`.
+     */
+    grossAnnualSalary?: number;
+    /**
     Liquid savings per month if you carry on renting.
     */
     cashTrack: number[];
@@ -359,6 +378,7 @@ export function affordabilityTimeline(
   const points: AffordabilityPoint[] = [];
 
   for (let m = 1; m <= options.months; m++) {
+    const incomeGrowthFactor = Math.pow(1 + incomeGrowth, m - 1);
     const price = options.medianPriceToday * Math.pow(1 + appreciation, m - 1);
 
     // The budget grows with pay and steps up as commitments end.
@@ -366,14 +386,16 @@ export function affordabilityTimeline(
       ...assumptions,
       income: {
         ...assumptions.income,
-        monthlyTakeHome:
-          assumptions.income.monthlyTakeHome *
-          Math.pow(1 + incomeGrowth, m - 1),
+        monthlyTakeHome: assumptions.income.monthlyTakeHome * incomeGrowthFactor,
       },
     };
+    const grownGrossAnnualSalary =
+      (options.grossAnnualSalary ?? SEED_SETTINGS.grossAnnualSalary) *
+      incomeGrowthFactor;
     const budget = housingBudget(grown, {
       atMonth: m,
       reserveForSavings: options.reserveForSavings,
+      grossAnnualSalary: grownGrossAnnualSalary,
     });
     const maxPrice = maxAffordablePrice(grown, {
       monthlyBudget: budget.monthlyBudget,

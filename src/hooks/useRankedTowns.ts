@@ -87,11 +87,16 @@ export function useRankedTowns(
   assumptions: Assumptions,
   reserve: number,
   creditScore: number,
+  grossAnnualSalary: number,
 ): RankedTowns {
   const budget = useMemo(
     () =>
-      housingBudget(assumptions, { atMonth: 12, reserveForSavings: reserve }),
-    [assumptions, reserve],
+      housingBudget(assumptions, {
+        atMonth: 12,
+        reserveForSavings: reserve,
+        grossAnnualSalary,
+      }),
+    [assumptions, reserve, grossAnnualSalary],
   );
 
   const pmiAdjusted = useMemo(

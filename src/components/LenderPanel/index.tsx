@@ -67,6 +67,7 @@ export default function LenderPanel() {
   const budget = housingBudget(assumptions, {
     atMonth: 12,
     reserveForSavings: COST_DEFAULTS.defaultReserveForSavingsUsd,
+    grossAnnualSalary: settings.grossAnnualSalary,
   });
   const byBudget = maxAffordablePrice(assumptions, {
     monthlyBudget: budget.monthlyBudget,

@@ -1,8 +1,10 @@
 import {
   HSA_LIMITS,
+  IRA_LIMITS,
   K401_LIMITS,
   RETIREMENT_TARGETS,
   employeeHsaRoom,
+  rothIraRoom,
 } from "../../data/contributionLimits";
 import {
   STANDARD_DEDUCTION_2026,
@@ -19,6 +21,7 @@ import {
   Field,
   InfoTip,
   MoneyInput,
+  PercentInputWithMonthly,
   SectionTitle,
   Select,
   Toggle,
@@ -43,10 +46,19 @@ function toneForLeftAfterTargets(
   return "good";
 }
 
-function fundedTargetsLabel(hasK401Plan: boolean, hasHsaPlan: boolean): string {
-  if (hasK401Plan && hasHsaPlan) return "Funding both targets";
-  if (hasHsaPlan) return "Funding the HSA target";
-  return "Funding the 401(k) target";
+function fundedTargetsLabel(
+  hasHsaPlan: boolean,
+  hasK401Plan: boolean,
+  hasIraPlan: boolean,
+): string {
+  const stages = [
+    hasHsaPlan && "the HSA",
+    hasK401Plan && "the 401(k) match",
+    hasIraPlan && "the Roth IRA",
+  ].filter((s): s is string => Boolean(s));
+  if (stages.length === 0) return "Funding nothing";
+  if (stages.length === 1) return `Funding ${stages[0]}`;
+  return `Funding ${stages.slice(0, -1).join(", ")} and ${stages.at(-1)}`;
 }
 
 /**
@@ -61,6 +73,7 @@ function computeContributionFigures(
   const filingStatus = settings.filingStatus;
   const hasK401Plan = assumptions.retirement.hasK401Plan;
   const hasHsaPlan = assumptions.retirement.hasHsaPlan;
+  const hasIraPlan = assumptions.retirement.hasIraPlan;
   const hsaCoverageTier = assumptions.retirement.hsaCoverageTier;
   const employerHsaAnnualBonus = hasHsaPlan
     ? assumptions.retirement.employerHsaAnnualBonus
@@ -68,22 +81,52 @@ function computeContributionFigures(
 
   const hsaLimit =
     HSA_LIMITS[hsaCoverageTier === "selfOnly" ? "selfOnly2026" : "family2026"];
-
-  // ---- Your money --------------------------------------------------------
-  // The 401(k) gauge is measured against the legal ceiling, not a savings
-  // goal -- the goal below (`employeeSharePct` of salary) is a separate,
-  // softer number used only for the trade-off narrative and side panel.
   const k401Ceiling = K401_LIMITS.employeeDeferral2026;
-  const target401k = hasK401Plan
-    ? gross * RETIREMENT_TARGETS.employeeSharePct
-    : 0;
+
+  // ---- Stage 1: HSA --------------------------------------------------------
   // The employer's HSA bonus eats into the employee's own room rather than
   // sitting on top of the limit, so the gauge target nets it out using the
   // actual bonus entered below, not a fixed assumption.
   const targetHsa = hasHsaPlan
     ? employeeHsaRoom(hsaCoverageTier, employerHsaAnnualBonus)
     : 0;
-  const targetTotal = target401k + targetHsa;
+  const actualHsa = hasHsaPlan ? assumptions.retirement.hsaMonthly * 12 : 0;
+
+  // ---- Stage 2: 401(k) match -----------------------------------------------
+  // The priority isn't maxing the legal ceiling, it's capturing the
+  // employer match: green means employee + employer RECURRING match
+  // together reach 10% of gross. The January profit-share lump is
+  // discretionary employer money, so it is excluded from this target on
+  // purpose (it still counts in "everything going in" below).
+  const actual401k = hasK401Plan
+    ? assumptions.retirement.k401Pct * gross
+    : 0;
+  const actualMatchRecurring = hasK401Plan
+    ? assumptions.retirement.employerMatchMonthly * 12
+    : 0;
+  const target401kCombined = hasK401Plan
+    ? gross * RETIREMENT_TARGETS.combinedK401TargetPct
+    : 0;
+  const actual401kCombined = actual401k + actualMatchRecurring;
+  // The employee's own share of that combined target, netting off the
+  // match they are actually getting -- mirrors how the HSA target nets off
+  // the employer seed above. Used for the "money out of your pay" total,
+  // not for the gauge itself (which compares the combined figures).
+  const target401k = hasK401Plan
+    ? Math.max(0, target401kCombined - actualMatchRecurring)
+    : 0;
+
+  // ---- Stage 3: Roth IRA ----------------------------------------------------
+  // MAGI is approximated as gross salary less pre-tax 401(k)/HSA
+  // contributions -- pre-tax deductions reduce AGI, which approximates MAGI
+  // for a household without foreign income or other add-backs. `gross` is
+  // base salary before bonus (see Settings), so this tends to UNDERSTATE
+  // true MAGI for a bonus-heavy household.
+  const magi = Math.max(0, gross - actual401k - actualHsa);
+  const iraRoom = hasIraPlan ? rothIraRoom(magi, filingStatus) : 0;
+  const actualIra = hasIraPlan ? assumptions.retirement.iraMonthly * 12 : 0;
+
+  const targetTotal = target401k + targetHsa + iraRoom;
 
   // ---- Employer money (informational only -- no gauge, it's a calculated
   // total from the match, the 401(k) lump, and the HSA bonus) -------------
@@ -91,11 +134,8 @@ function computeContributionFigures(
     ? gross * RETIREMENT_TARGETS.employerMatchPct
     : 0;
 
-  const actual401k = hasK401Plan ? assumptions.retirement.k401Monthly * 12 : 0;
-  const actualHsa = hasHsaPlan ? assumptions.retirement.hsaMonthly * 12 : 0;
   const actualMatch = hasK401Plan
-    ? assumptions.retirement.employerMatchMonthly * 12 +
-      assumptions.retirement.employerAnnualLump
+    ? actualMatchRecurring + assumptions.retirement.employerAnnualLump
     : 0;
   const actualEmployerTotal = actualMatch + employerHsaAnnualBonus;
   const monthlyTarget = targetTotal / 12;
@@ -138,12 +178,18 @@ function computeContributionFigures(
     filingStatus,
     hasK401Plan,
     hasHsaPlan,
+    hasIraPlan,
     hsaCoverageTier,
     employerHsaAnnualBonus,
     hsaLimit,
     k401Ceiling,
     target401k,
+    target401kCombined,
+    actual401kCombined,
     targetHsa,
+    magi,
+    iraRoom,
+    actualIra,
     targetTotal,
     targetMatch,
     actual401k,
@@ -169,15 +215,20 @@ export default function TargetsCard() {
     filingStatus,
     hasK401Plan,
     hasHsaPlan,
+    hasIraPlan,
     hsaCoverageTier,
     employerHsaAnnualBonus,
     hsaLimit,
     k401Ceiling,
     target401k,
+    target401kCombined,
+    actual401kCombined,
     targetHsa,
+    magi,
+    iraRoom,
+    actualIra,
     targetTotal,
     targetMatch,
-    actual401k,
     actualHsa,
     actualEmployerTotal,
     monthlyTarget,
@@ -188,17 +239,21 @@ export default function TargetsCard() {
     leftAfterTargets,
   } = computeContributionFigures(assumptions, settings);
 
+  const isHsaPaused = assumptions.retirement.pauseHsaMax;
+
   return (
     <>
       <Card
         title="Yearly contribution targets"
-        subtitle={
-          hasHsaPlan
-            ? `A ${pct(RETIREMENT_TARGETS.employeeSharePct, 0)} 401(k) contribution plus a fully funded ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()} HSA.`
-            : `A ${pct(RETIREMENT_TARGETS.employeeSharePct, 0)} 401(k) contribution. No HSA plan.`
-        }
+        subtitle="The priority order: max the HSA first, then capture the full 401(k) match, then fill a Roth IRA if your income allows it."
       >
-        <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:gap-8">
+        <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:flex-wrap sm:gap-8">
+          <Toggle
+            checked={hasHsaPlan}
+            onChange={(v) => setAssumptions({ retirement: { hasHsaPlan: v } })}
+            label="HSA plan"
+            hint="Off if your employer doesn't offer an HSA-eligible health plan. Zeroes the HSA target, gauge, and contribution everywhere in this model."
+          />
           <Toggle
             checked={hasK401Plan}
             onChange={(v) => setAssumptions({ retirement: { hasK401Plan: v } })}
@@ -206,33 +261,60 @@ export default function TargetsCard() {
             hint="Off if your employer doesn't offer a 401(k). Zeroes the 401(k) target, gauge, match, and contribution everywhere in this model."
           />
           <Toggle
-            checked={hasHsaPlan}
-            onChange={(v) => setAssumptions({ retirement: { hasHsaPlan: v } })}
-            label="HSA plan"
-            hint="Off if your employer doesn't offer an HSA-eligible health plan. Zeroes the HSA target, gauge, and contribution everywhere in this model."
+            checked={hasIraPlan}
+            onChange={(v) => setAssumptions({ retirement: { hasIraPlan: v } })}
+            label="Roth IRA"
+            hint="Off if you aren't funding an IRA. Zeroes the IRA target, gauge, and contribution everywhere in this model."
           />
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           <div className="space-y-6">
+            {hasHsaPlan && (
+              <div>
+                <Gauge
+                  label="Stage 1 · HSA"
+                  hint={`What comes out of your own pay for the HSA. Legal ceiling for 2026: ${money(hsaLimit)}/yr ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()}, counting employer money — set by HDHP coverage tier, not filing status. Your employer's ${money(employerHsaAnnualBonus)} one-time bonus reduces your own room to ${money(targetHsa)}, rather than adding on top of it. Also pre-tax, saving about ${money(savingsHsa)}/yr in federal tax at your ${pct(yourMarginalRate, 0)} marginal rate. Max this first — it's the most tax-efficient dollar available, before the 401(k) match or a Roth IRA.`}
+                  actual={actualHsa}
+                  target={targetHsa}
+                  redBelow={0.5}
+                  greenAbove={1}
+                />
+                {isHsaPaused && (
+                  <p className="mt-1 text-xs font-medium text-amber-600">
+                    Paused — redirected to the deposit fund instead of the
+                    HSA.
+                  </p>
+                )}
+              </div>
+            )}
             {hasK401Plan && (
               <Gauge
-                label="Your 401(k) contribution"
-                hint={`What comes out of your own pay for the 401(k). The model deducts this from take-home before anything reaches savings. Measured against the 2026 IRS elective-deferral limit — fixed by law regardless of filing status. Pre-tax, so at your ${pct(yourMarginalRate, 0)} federal marginal rate (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}) it saves about ${money(savings401k)}/yr in federal tax.`}
-                actual={actual401k}
-                target={k401Ceiling}
-                redBelow={0.3}
-                greenAbove={0.7}
+                label="Stage 2 · 401(k) match"
+                hint={`Your own 401(k) election plus your employer's recurring monthly match, combined, as a share of gross salary — green means the two together reach ${pct(RETIREMENT_TARGETS.combinedK401TargetPct, 0)} of ${money(gross)}. The January profit-share lump doesn't count toward this target; it's discretionary employer money, not something to plan an election around. Your own share is pre-tax, so at your ${pct(yourMarginalRate, 0)} federal marginal rate (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}) it saves about ${money(savings401k)}/yr in federal tax.`}
+                actual={actual401kCombined}
+                target={target401kCombined}
+                redBelow={0.5}
+                greenAbove={1}
               />
             )}
-            {hasHsaPlan && (
+            {hasIraPlan && (
               <Gauge
-                label="Your HSA contribution"
-                hint={`What comes out of your own pay for the HSA. Legal ceiling for 2026: ${money(hsaLimit)}/yr ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()}, counting employer money — set by HDHP coverage tier, not filing status. Your employer's ${money(employerHsaAnnualBonus)} one-time bonus reduces your own room to ${money(targetHsa)}, rather than adding on top of it. Also pre-tax, saving about ${money(savingsHsa)}/yr in federal tax at your ${pct(yourMarginalRate, 0)} marginal rate.`}
-                actual={actualHsa}
-                target={targetHsa}
+                label="Stage 3 · Roth IRA"
+                hint={
+                  iraRoom <= 0
+                    ? `At an estimated MAGI of ${money(magi)} (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}), you're above the 2026 phase-out ceiling, so a direct Roth contribution isn't available this year. A backdoor Roth is the usual workaround, but that's outside what this model tracks.`
+                    : `What you put into a Roth IRA each month, post-tax. 2026 limit is ${money(IRA_LIMITS.contribution2026)}/yr, but at an estimated MAGI of ${money(magi)} (${FILING_STATUS_LABEL[filingStatus].toLowerCase()}) your room is phased down to ${money(iraRoom)}/yr. Fund this last — the HSA and the 401(k) match come first.`
+                }
+                actual={actualIra}
+                target={iraRoom}
                 redBelow={0.5}
-                greenAbove={0.9}
+                greenAbove={1}
+                unavailable={
+                  iraRoom <= 0
+                    ? "Not eligible this year — income is above the Roth phase-out ceiling."
+                    : undefined
+                }
               />
             )}
           </div>
@@ -240,20 +322,9 @@ export default function TargetsCard() {
           <div className="rounded-xl bg-slate-50 p-4">
             <SectionTitle>Where the target comes from</SectionTitle>
             <dl className="space-y-2 text-sm">
-              {(hasK401Plan || hasHsaPlan) && (
+              {(hasK401Plan || hasHsaPlan || hasIraPlan) && (
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Out of your pay
-                </div>
-              )}
-              {hasK401Plan && (
-                <div className="flex justify-between gap-4">
-                  <dt className="text-slate-600">
-                    401(k), {pct(RETIREMENT_TARGETS.employeeSharePct, 0)} of{" "}
-                    {money(gross)}
-                  </dt>
-                  <dd className="whitespace-nowrap font-medium tabular-nums">
-                    {money(target401k)}
-                  </dd>
                 </div>
               )}
               {hasHsaPlan && (
@@ -266,6 +337,30 @@ export default function TargetsCard() {
                   </dt>
                   <dd className="whitespace-nowrap font-medium tabular-nums">
                     {money(targetHsa)}
+                  </dd>
+                </div>
+              )}
+              {hasK401Plan && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-600">
+                    401(k), your share of a{" "}
+                    {pct(RETIREMENT_TARGETS.combinedK401TargetPct, 0)} combined
+                    target
+                    <InfoTip text="Netted against the recurring employer match you're actually getting, the same way the HSA line nets off the employer seed above." />
+                  </dt>
+                  <dd className="whitespace-nowrap font-medium tabular-nums">
+                    {money(target401k)}
+                  </dd>
+                </div>
+              )}
+              {hasIraPlan && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate-600">
+                    Roth IRA room
+                    <InfoTip text="Phased down from the IRS limit once MAGI enters the phase-out range; zero above it." />
+                  </dt>
+                  <dd className="whitespace-nowrap font-medium tabular-nums">
+                    {money(iraRoom)}
                   </dd>
                 </div>
               )}
@@ -346,10 +441,14 @@ export default function TargetsCard() {
             </dl>
             <p className="mt-3 border-t border-slate-200 pt-3 text-xs leading-relaxed text-slate-500">
               Well inside the legal ceilings:{" "}
-              {hasK401Plan && `${money(k401Ceiling)} for a 401(k)`}
-              {hasK401Plan && hasHsaPlan && " and "}
-              {hasHsaPlan &&
-                `${money(hsaLimit)} for a ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()} HSA`}{" "}
+              {[
+                hasHsaPlan &&
+                  `${money(hsaLimit)} for a ${HSA_COVERAGE_LABEL[hsaCoverageTier].toLowerCase()} HSA`,
+                hasK401Plan && `${money(k401Ceiling)} for a 401(k)`,
+                hasIraPlan && `${money(IRA_LIMITS.contribution2026)} for a Roth IRA`,
+              ]
+                .filter(Boolean)
+                .join(", ")}{" "}
               in 2026.
             </p>
           </div>
@@ -386,13 +485,14 @@ export default function TargetsCard() {
           {hasK401Plan && (
             <>
               <Field
-                label="401(k) contribution / month"
-                hint="Comes out pre-tax and lands in the retirement balance in this model."
+                label="401(k) contribution"
+                hint="Share of gross salary. Comes out pre-tax and lands in the retirement balance in this model."
               >
-                <MoneyInput
-                  value={assumptions.retirement.k401Monthly}
+                <PercentInputWithMonthly
+                  value={assumptions.retirement.k401Pct}
+                  annualBasis={gross}
                   onChange={(v) =>
-                    setAssumptions({ retirement: { k401Monthly: v } })
+                    setAssumptions({ retirement: { k401Pct: v } })
                   }
                 />
               </Field>
@@ -475,13 +575,26 @@ export default function TargetsCard() {
               </Field>
             </>
           )}
+          {hasIraPlan && (
+            <Field
+              label="Roth IRA contribution / month"
+              hint={`Post-tax. 2026 limit is ${money(IRA_LIMITS.contribution2026)}/yr, phased down to zero above the income threshold -- see the gauge above for your live room.`}
+            >
+              <MoneyInput
+                value={assumptions.retirement.iraMonthly}
+                onChange={(v) =>
+                  setAssumptions({ retirement: { iraMonthly: v } })
+                }
+              />
+            </Field>
+          )}
         </div>
       </Card>
 
       <Callout tone={toneForLeftAfterTargets(leftAfterTargets)}>
         <strong>The trade-off, stated plainly.</strong> Before any contributions
         there is {money(surplusBefore)} a month spare.{" "}
-        {fundedTargetsLabel(hasK401Plan, hasHsaPlan)} takes{" "}
+        {fundedTargetsLabel(hasHsaPlan, hasK401Plan, hasIraPlan)} takes{" "}
         {money(monthlyTarget)} of it, leaving{" "}
         <strong>{money(leftAfterTargets)} a month</strong> towards a deposit.
         {leftAfterTargets < 500 && (
@@ -489,10 +602,14 @@ export default function TargetsCard() {
             {" "}
             At that rate the house is a long way off. The order that usually
             makes sense:{" "}
-            {hasK401Plan &&
-              "capture the full employer match first, because nothing else returns as much; "}
             {hasHsaPlan &&
-              "then fund the HSA to whatever the family will actually spend on healthcare that year; "}
+              "max the HSA first, because nothing else is as tax-efficient; "}
+            {hasK401Plan &&
+              "then capture the full employer 401(k) match, because nothing else returns as much; "}
+            {hasIraPlan &&
+              (iraRoom > 0
+                ? "then fill a Roth IRA if income allows it; "
+                : "a Roth IRA would come next, but income is above this year's phase-out; ")}
             then put the rest towards the deposit.
             {hasHsaPlan &&
               " The HSA is excellent money, but it cannot be spent on a down payment."}

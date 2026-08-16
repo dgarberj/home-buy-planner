@@ -56,7 +56,9 @@ const CASES: { name: string; assumptions: Assumptions }[] = [
     name: "contributions larger than income",
     assumptions: {
       ...base,
-      retirement: { ...base.retirement, k401Monthly: 20_000, hsaMonthly: 0 },
+      // 2.4x of the default 100,000 gross salary runProjection falls back
+      // to below == 20,000/mo, matching this case's old flat-dollar figure.
+      retirement: { ...base.retirement, k401Pct: 2.4, hsaMonthly: 0 },
     },
   },
   {

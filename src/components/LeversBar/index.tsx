@@ -97,9 +97,16 @@ function measure(
   assumptions: Assumptions,
   scenarios: ScenarioConfig[],
   months: number,
+  grossAnnualSalary: number,
   ages: number[],
 ) {
-  const summaries = runAllScenarios(assumptions, scenarios, months, ages);
+  const summaries = runAllScenarios(
+    assumptions,
+    scenarios,
+    months,
+    grossAnnualSalary,
+    ages,
+  );
   if (summaries.length === 0) return { buffer: 0, netWorth: 0 };
   return {
     // The worst case across the scenarios you have switched on -- the buffer is
@@ -134,12 +141,14 @@ export default function LeversBar() {
         { ...assumptions, ...lever.flip(assumptions, true) } as Assumptions,
         scenarios,
         settings.horizonMonths,
+        settings.grossAnnualSalary,
         settings.milestoneAges,
       );
       const withOff = measure(
         { ...assumptions, ...lever.flip(assumptions, false) } as Assumptions,
         scenarios,
         settings.horizonMonths,
+        settings.grossAnnualSalary,
         settings.milestoneAges,
       );
       return {
@@ -149,7 +158,13 @@ export default function LeversBar() {
         netWorthDelta: withOn.netWorth - withOff.netWorth,
       };
     });
-  }, [assumptions, scenarios, settings.horizonMonths, settings.milestoneAges]);
+  }, [
+    assumptions,
+    scenarios,
+    settings.horizonMonths,
+    settings.grossAnnualSalary,
+    settings.milestoneAges,
+  ]);
 
   return (
     <div className="border-t border-slate-200 pt-4">

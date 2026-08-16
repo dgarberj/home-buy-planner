@@ -139,6 +139,50 @@ describe("migrateSaved -- base data (seed + local override) is the source of tru
   });
 });
 
+describe("migrateSaved -- generic-6 to generic-7 (401(k) dollars to a percentage)", () => {
+  it("converts the old flat monthly 401(k) figure into a share of salary", () => {
+    const oldSave = {
+      seedVersion: "generic-6",
+      assumptions: {
+        retirement: { k401Monthly: 400 },
+      },
+      settings: { grossAnnualSalary: 80_000 },
+    };
+    const out = migrateSaved(oldSave);
+    // 400/mo * 12 / 80,000 = 0.06
+    expect(out.assumptions.retirement.k401Pct).toBeCloseTo(0.06, 9);
+    // The salary the percentage was derived from has to survive too, or the
+    // very next render multiplies 0.06 back out against a different salary
+    // and the dollar figure this migration exists to preserve drifts.
+    expect(out.settings.grossAnnualSalary).toBe(80_000);
+    expect(
+      (out.assumptions.retirement.k401Pct * out.settings.grossAnnualSalary) /
+        12,
+    ).toBeCloseTo(400, 9);
+  });
+
+  it("falls back to the base salary when the save carried none", () => {
+    const oldSave = {
+      seedVersion: "generic-6",
+      assumptions: {
+        retirement: { k401Monthly: 400 },
+      },
+    };
+    const out = migrateSaved(oldSave);
+    expect(out.assumptions.retirement.k401Pct).toBeCloseTo(
+      (400 * 12) / baseData().settings.grossAnnualSalary,
+      9,
+    );
+  });
+
+  it("leaves the seed's own k401Pct alone when there is nothing to convert", () => {
+    const out = migrateSaved({ seedVersion: "generic-6" });
+    expect(out.assumptions.retirement.k401Pct).toBe(
+      baseData().assumptions.retirement.k401Pct,
+    );
+  });
+});
+
 describe("migrateSaved -- filling in a same-version payload", () => {
   const out = migrateSaved({ ...V1_SAVE, seedVersion: SEED_VERSION });
 

@@ -22,7 +22,7 @@ import type {
 /**
 Bump when the figures below change; see the store's migration logic.
 */
-export const SEED_VERSION = 'generic-6';
+export const SEED_VERSION = 'generic-7';
 
 export const SEED_ASSUMPTIONS: Assumptions = {
   household: {
@@ -91,7 +91,7 @@ export const SEED_ASSUMPTIONS: Assumptions = {
 
   retirement: {
     currentBalance: 200_000,
-    k401Monthly: 400,
+    k401Pct: 0.06,
     hasK401Plan: true,
     hsaMonthly: 500,
     hasHsaPlan: true,
@@ -108,6 +108,9 @@ export const SEED_ASSUMPTIONS: Assumptions = {
     hsaReimbursement: 3_000,
     hsaReimbursementMonth: 1,
     hsaReimbursementAtPurchase: true,
+
+    iraMonthly: 300,
+    hasIraPlan: true,
 
     returnAnnual: 0.07,
     contributionsGrowWithIncome: true,

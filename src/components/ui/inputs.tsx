@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type ReactNode } from "react";
+import { money } from "../../lib/format";
 import { Label } from "./feedback";
 
 // Mirrors the standard HTML/React `disabled` attribute name used
@@ -151,6 +152,36 @@ export function PercentInput({
       <span className="pointer-events-none absolute right-9 top-1/2 -translate-y-1/2 text-sm text-slate-400">
         %
       </span>
+    </div>
+  );
+}
+
+/**
+ * A `PercentInput` with a computed dollar-per-month figure shown in gray
+ * underneath -- for elections entered as a share of an annual figure (e.g. a
+ * 401(k) contribution as a percent of salary) where the reader still wants
+ * to see the actual dollar amount that implies.
+ */
+export function PercentInputWithMonthly({
+  value,
+  onChange,
+  annualBasis,
+  disabled,
+}: {
+  value: number;
+  onChange: (decimal: number) => void;
+  /**
+  The annual dollar figure this percentage is a share of, e.g. gross salary.
+  */
+  annualBasis: number;
+  disabled?: boolean;
+}) {
+  return (
+    <div>
+      <PercentInput value={value} onChange={onChange} disabled={disabled} />
+      <p className="mt-1 text-xs text-slate-400">
+        {money((value * annualBasis) / 12)}/mo
+      </p>
     </div>
   );
 }

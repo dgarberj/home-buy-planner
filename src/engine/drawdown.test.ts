@@ -61,7 +61,9 @@ const FLAT: Assumptions = {
   },
   retirement: {
     currentBalance: 100_000,
-    k401Monthly: 400,
+    // 400/mo at the default 100,000 gross salary runProjection falls back to
+    // when a test doesn't pass one.
+    k401Pct: 0.048,
     hasK401Plan: true,
     hsaMonthly: 600,
     employerMatchMonthly: 500,
@@ -78,6 +80,8 @@ const FLAT: Assumptions = {
     hsaReimbursement: 0,
     hsaReimbursementMonth: 1,
     hsaReimbursementAtPurchase: false,
+    iraMonthly: 0,
+    hasIraPlan: false,
     contributionsGrowWithIncome: false,
   },
   savings: {
@@ -359,8 +363,9 @@ describe("runDrawdown -- tax on withdrawals", () => {
       retirement: {
         ...FLAT.retirement,
         currentBalance: 0,
-        k401Monthly: 0,
+        k401Pct: 0,
         hsaMonthly: 0,
+        iraMonthly: 0,
         employerMatchMonthly: 0,
         employerAnnualLump: 0,
       },

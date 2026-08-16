@@ -33,6 +33,7 @@ export default function TownExplorer() {
     assumptions,
     reserve,
     creditScore,
+    settings.grossAnnualSalary,
   );
   const relevant = useTownRelevance(rows, RELEVANT_TOWN_COUNT);
 

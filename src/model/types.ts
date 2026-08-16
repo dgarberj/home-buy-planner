@@ -66,11 +66,14 @@ Retirement account assumptions.
 export interface RetirementAssumptions {
   currentBalance: number;
   /**
-   * What YOU put into your 401(k) each month, out of your own pay. Deducted
-   * from cash flow, because it is. Well inside the IRS elective-deferral
-   * limit (`K401_LIMITS.employeeDeferral2026`) for almost every household.
+   * What YOU put into your 401(k), as a share of gross annual salary --
+   * most employers run the election as a percentage of pay, not a flat
+   * dollar amount. Deducted from cash flow as a dollar figure
+   * (`k401Pct * grossAnnualSalary`), because it is. Well inside the IRS
+   * elective-deferral limit (`K401_LIMITS.employeeDeferral2026`) for almost
+   * every household.
    */
-  k401Monthly: number;
+  k401Pct: number;
   /**
    * Whether this household has a 401(k) at all. Off zeroes the employee
    * 401(k) contribution and employer match in the projection and hides the
@@ -166,6 +169,19 @@ export interface RetirementAssumptions {
    * A scenario that never buys never takes it.
    */
   hsaReimbursementAtPurchase: boolean;
+  /**
+   * What YOU put into a Roth IRA each month, out of your own pay. Deducted
+   * from cash flow like the 401(k)/HSA contributions. Capped by the IRS
+   * contribution limit (`IRA_LIMITS.contribution2026`) and, above a MAGI
+   * threshold, phased down to zero (`ROTH_PHASEOUT_2026`, `rothIraRoom()`).
+   */
+  iraMonthly: number;
+  /**
+   * Whether this household is funding an IRA at all. Off zeroes the IRA
+   * contribution in the projection and hides the IRA target/gauge/inputs in
+   * the UI.
+   */
+  hasIraPlan: boolean;
   /**
   Expected annual return, as a decimal.
   */

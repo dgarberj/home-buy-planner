@@ -18,6 +18,7 @@ export default function Gauge({
   target,
   redBelow = 0.6,
   greenAbove = 1,
+  unavailable,
 }: {
   label: string;
   hint: string;
@@ -32,6 +33,13 @@ export default function Gauge({
   Share of target at or above which the bar shows green.
   */
   greenAbove?: number;
+  /**
+   * When set, this account isn't available at all this year (e.g. income is
+   * above a phase-out ceiling) -- the header still renders normally, but the
+   * bar and dollar figures are replaced by this explanation, since there is
+   * no meaningful share-of-target to show.
+   */
+  unavailable?: string;
 }) {
   const share = target > 0 ? actual / target : 0;
   const isMet = actual >= target - 1;
@@ -44,27 +52,35 @@ export default function Gauge({
           {label}
           <InfoTip text={hint} />
         </span>
-        <span className="whitespace-nowrap text-sm font-semibold tabular-nums text-slate-900">
-          {money(actual)}
-          <span className="font-normal text-slate-400">
-            {" "}
-            / {money(target)} a year
+        {!unavailable && (
+          <span className="whitespace-nowrap text-sm font-semibold tabular-nums text-slate-900">
+            {money(actual)}
+            <span className="font-normal text-slate-400">
+              {" "}
+              / {money(target)} a year
+            </span>
           </span>
-        </span>
+        )}
       </div>
-      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
-        <div
-          className={`h-full rounded-full transition-all ${barColour}`}
-          style={{ width: `${Math.min(Math.max(share, 0), 1) * 100}%` }}
-        />
-      </div>
-      <p className="mt-1 text-xs text-slate-500">
-        {isMet
-          ? "On target."
-          : `${money(Math.max(target - actual, 0))} a year short — ${money(
-              Math.max(target - actual, 0) / 12,
-            )} a month.`}
-      </p>
+      {unavailable ? (
+        <p className="mt-2 text-xs text-slate-500">{unavailable}</p>
+      ) : (
+        <>
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+            <div
+              className={`h-full rounded-full transition-all ${barColour}`}
+              style={{ width: `${Math.min(Math.max(share, 0), 1) * 100}%` }}
+            />
+          </div>
+          <p className="mt-1 text-xs text-slate-500">
+            {isMet
+              ? "On target."
+              : `${money(Math.max(target - actual, 0))} a year short — ${money(
+                  Math.max(target - actual, 0) / 12,
+                )} a month.`}
+          </p>
+        </>
+      )}
     </div>
   );
 }
