@@ -1,6 +1,5 @@
 import type {
   Assumptions,
-  JobLossAssumptions,
   MonthlyResult,
   ScenarioConfig,
   ScenarioSummary,
@@ -13,8 +12,28 @@ import {
   monthlyNominal,
   monthlyPayment,
   isPmiRequired,
-  remainingBalance,
 } from "./finance";
+import {
+  applyCashSweep,
+  computeAssistanceOutstanding,
+  computeCoResidentIncome,
+  computeEmploymentIncome,
+  computeHousing,
+  computeHsaFlows,
+  computeRetirementContribution,
+  computeSecondIncome,
+  computeTotalExpenses,
+  isJobLossActive,
+  resolveJobLoss,
+} from "./projection/monthlyCompute";
+import {
+  computeMilestones,
+  computeMinCashBuffer,
+  computeMortgageLifeStats,
+  computeNetWorthAtYear,
+  computeReadiness,
+  wasFundedAtPurchase,
+} from "./projection/summarize";
 
 /**
  * ============================================================================
@@ -88,29 +107,6 @@ import {
  */
 
 /**
-Resolve shared job-loss assumptions against a scenario's overrides.
-*/
-function resolveJobLoss(
-  base: JobLossAssumptions,
-  scenario: ScenarioConfig,
-): JobLossAssumptions {
-  return { ...base, ...scenario.jobLossOverride };
-}
-
-/**
-Is month `m` inside this scenario's job-loss window?
-*/
-function isJobLossActive(
-  m: number,
-  scenario: ScenarioConfig,
-  jl: JobLossAssumptions,
-): boolean {
-  if (!scenario.hasJobLoss) return false;
-  if (jl.durationMonths <= 0) return false;
-  return m >= jl.startMonth && m < jl.startMonth + jl.durationMonths;
-}
-
-/**
 Total fixed obligations due in month `m`. Never inflated, never cut.
 */
 export function obligationsDue(assumptions: Assumptions, m: number): number {
@@ -178,337 +174,6 @@ export function cashRequiredToBuy(assumptions: Assumptions, m: number): number {
   const assistance = computeAssistanceAmount(price, assumptions.home);
 
   return Math.max(0, gross - assistance);
-}
-
-/**
-Take-home pay for month `m`, including any January-style lump bonus, both
-haircut by a job loss the same way (see modelling note 1b).
-*/
-function computeEmploymentIncome(
-  income: Assumptions["income"],
-  incomeGrowth: number,
-  m: number,
-  calendarMonth: number,
-  isJobLossActive: boolean,
-  jl: JobLossAssumptions,
-): { netIncome: number; bonusIncome: number } {
-  const baseIncome = compound(income.monthlyTakeHome, incomeGrowth, m - 1);
-  const bonusDue =
-    income.annualBonusNet > 0 && calendarMonth === income.annualBonusMonth
-      ? compound(income.annualBonusNet, incomeGrowth, m - 1)
-      : 0;
-  const grossThisMonth = baseIncome + bonusDue;
-  return {
-    netIncome: isJobLossActive
-      ? grossThisMonth * jl.incomeReplacementPct
-      : grossThisMonth,
-    bonusIncome: isJobLossActive
-      ? bonusDue * jl.incomeReplacementPct
-      : bonusDue,
-  };
-}
-
-/**
-A partner's income and the childcare costs that come with it (modelling note
-9b), net of anything a Dependent Care FSA shelters.
-*/
-function computeSecondIncome(
-  second: Assumptions["secondIncome"],
-  m: number,
-  incomeGrowth: number,
-  inflation: number,
-  isJobLossActive: boolean,
-  jl: JobLossAssumptions,
-): {
-  secondIncome: number;
-  secondIncomeCosts: number;
-  dependentCareTaxSaving: number;
-} {
-  const secondActive = second.enabled && m >= second.startMonth;
-  const secondGrown = second.growsWithIncome
-    ? compound(second.monthlyTakeHome, incomeGrowth, m - 1)
-    : second.monthlyTakeHome;
-  const secondRaw = secondActive ? secondGrown : 0;
-  const secondIncome =
-    isJobLossActive && secondActive && second.affectedByJobLoss
-      ? secondRaw * jl.incomeReplacementPct
-      : secondRaw;
-
-  const costsRunning =
-    secondActive &&
-    (second.additionalCostsEndMonth === null ||
-      m <= second.additionalCostsEndMonth);
-  const grossCareCosts = costsRunning
-    ? compound(second.additionalCostsMonthly, inflation, m - 1)
-    : 0;
-
-  const fsaMonthlyCap = second.dependentCareFsaAnnual / 12;
-  const dependentCareTaxSaving =
-    grossCareCosts > 0
-      ? Math.min(grossCareCosts, fsaMonthlyCap) * second.dependentCareFsaTaxRate
-      : 0;
-
-  return {
-    secondIncome,
-    secondIncomeCosts: grossCareCosts - dependentCareTaxSaving,
-    dependentCareTaxSaving,
-  };
-}
-
-/**
-A co-resident's contribution, contingent on owning but never on employment
-(modelling note 10).
-*/
-function computeCoResidentIncome(
-  coResident: Assumptions["coResident"],
-  m: number,
-  inflation: number,
-  isOwnsHome: boolean,
-): number {
-  const coResidentActive =
-    coResident.enabled &&
-    (!coResident.requiresHomePurchase || isOwnsHome) &&
-    (coResident.endMonth === null || m <= coResident.endMonth);
-  const coResidentGrown = coResident.growsWithInflation
-    ? compound(coResident.monthlyAmount, inflation, m - 1)
-    : coResident.monthlyAmount;
-  return coResidentActive ? coResidentGrown : 0;
-}
-
-/**
-Living expenses (housing excluded), inflated and then cut during a job loss.
-*/
-function computeTotalExpenses(
-  expenses: Assumptions["expenses"],
-  m: number,
-  inflation: number,
-  isJobLossActive: boolean,
-  jl: JobLossAssumptions,
-): number {
-  const baseExpenses = compound(
-    expenses.fixedMonthly + expenses.variableMonthly,
-    inflation,
-    m - 1,
-  );
-  return isJobLossActive ? baseExpenses * (1 - jl.expenseCutPct) : baseExpenses;
-}
-
-/**
-Rent before buying; PITI + PMI plus upkeep after (modelling note 9).
-*/
-function computeHousing(
-  m: number,
-  isOwnsHome: boolean,
-  buyMonth: number | null,
-  purchasePrice: number,
-  appreciation: number,
-  loanAmount: number,
-  mortgageRate: number,
-  termMonths: number,
-  piPayment: number,
-  pmiFullMonthly: number,
-  home: Assumptions["home"],
-  expenses: Assumptions["expenses"],
-  inflation: number,
-): {
-  housingPayment: number;
-  pmiPayment: number;
-  homeMaintenance: number;
-  homeValue: number;
-  mortgageBalance: number;
-} {
-  if (!isOwnsHome) {
-    return {
-      housingPayment: compound(expenses.currentRentMonthly, inflation, m - 1),
-      pmiPayment: 0,
-      homeMaintenance: 0,
-      homeValue: 0,
-      mortgageBalance: 0,
-    };
-  }
-
-  const paymentsMade = m - (buyMonth as number) + 1;
-  // Once the loan is repaid the payment drops to escrow only. This only
-  // shows up on horizons long enough to outlive the mortgage -- which is
-  // exactly what the retirement-age view is for.
-  const isStillRepaying = paymentsMade <= termMonths;
-  const homeValue = compound(
-    purchasePrice,
-    appreciation,
-    m - (buyMonth as number),
-  );
-  const mortgageBalance = remainingBalance(
-    loanAmount,
-    mortgageRate,
-    termMonths,
-    paymentsMade,
-  );
-
-  // PMI falls away once enough of the house is actually yours. Note this
-  // happens sooner when the home appreciates, not just as you pay down.
-  const ltv = homeValue > 0 ? mortgageBalance / homeValue : 0;
-  const pmiPayment = isPmiRequired(ltv, home.pmiRemovedAtLtv)
-    ? pmiFullMonthly
-    : 0;
-
-  return {
-    housingPayment:
-      (isStillRepaying ? piPayment : 0) +
-      home.taxInsuranceHoaMonthly +
-      pmiPayment,
-    pmiPayment,
-    // Upkeep tracks what the house is worth, so it grows with appreciation.
-    homeMaintenance: (homeValue * home.maintenanceAnnualPct) / 12,
-    homeValue,
-    mortgageBalance,
-  };
-}
-
-/**
-What is still owed on any down-payment assistance -- forgiven assistance
-melts away over its term, deferred assistance sits there until sale
-(modelling note 9d).
-*/
-function computeAssistanceOutstanding(
-  m: number,
-  isOwnsHome: boolean,
-  buyMonth: number | null,
-  assistanceAmount: number,
-  assistanceTermMonths: number,
-  assistanceRepayment: Assumptions["home"]["assistanceRepayment"],
-): number {
-  if (!isOwnsHome || assistanceAmount <= 0) return 0;
-
-  const monthsHeld = m - (buyMonth as number) + 1;
-  if (
-    assistanceRepayment === "forgiven" ||
-    assistanceRepayment === "amortised"
-  ) {
-    return (
-      assistanceAmount * Math.max(0, 1 - monthsHeld / assistanceTermMonths)
-    );
-  }
-  if (assistanceRepayment === "deferred") {
-    return assistanceAmount;
-  }
-  return 0;
-}
-
-/**
-Employee and employer retirement contributions, paused together with the job
-(modelling note 6), scaled with pay rises (modelling note 8), plus any annual
-employer lump (modelling note 8b).
-*/
-function computeRetirementContribution(
-  retirement: Assumptions["retirement"],
-  grossMonthly: number,
-  m: number,
-  calendarMonth: number,
-  incomeGrowth: number,
-  isContributionsPaused: boolean,
-): { employeeContribution: number; employerContribution: number } {
-  const contributionScale = retirement.contributionsGrowWithIncome
-    ? compound(1, incomeGrowth, m - 1)
-    : 1;
-  // Diverting the HSA to the deposit zeroes it out; the 401(k) keeps going.
-  const employeeK401 = retirement.hasK401Plan
-    ? retirement.k401Pct * grossMonthly * contributionScale
-    : 0;
-  const employeeHsa =
-    retirement.pauseHsaMax || !retirement.hasHsaPlan
-      ? 0
-      : retirement.hsaMonthly * contributionScale;
-  const employeeIra = retirement.hasIraPlan
-    ? retirement.iraMonthly * contributionScale
-    : 0;
-  const employeeContribution = isContributionsPaused
-    ? 0
-    : employeeK401 + employeeHsa + employeeIra;
-  const employerMatch =
-    isContributionsPaused || !retirement.hasK401Plan
-      ? 0
-      : retirement.employerMatchMonthly * contributionScale;
-
-  // Employer money that arrives once a year -- profit share, HSA seed. Lands
-  // in one calendar month, not smeared, and stops if you are not there.
-  const employerAnnualLump = retirement.hasK401Plan
-    ? retirement.employerAnnualLump
-    : 0;
-  const employerHsaBonus = retirement.hasHsaPlan
-    ? retirement.employerHsaAnnualBonus
-    : 0;
-  const employerLumpTotal = employerAnnualLump + employerHsaBonus;
-  const employerLump =
-    !isContributionsPaused &&
-    employerLumpTotal > 0 &&
-    calendarMonth === retirement.employerAnnualLumpMonth
-      ? employerLumpTotal * contributionScale
-      : 0;
-
-  return {
-    employeeContribution,
-    employerContribution: employerMatch + employerLump,
-  };
-}
-
-/**
-Money coming back out of the HSA -- a purchase-timed or fixed-month
-reimbursement, plus ongoing medical spend (modelling note 9c).
-*/
-function computeHsaFlows(
-  retirement: Assumptions["retirement"],
-  buyMonth: number | null,
-  m: number,
-): { hsaReimbursed: number; hsaMedicalPaid: number } {
-  const reimbursementMonth = retirement.hsaReimbursementAtPurchase
-    ? buyMonth
-    : retirement.hsaReimbursementMonth;
-  const hsaReimbursed =
-    reimbursementMonth !== null &&
-    m === reimbursementMonth &&
-    retirement.hsaTakeReimbursement &&
-    retirement.hsaReimbursement > 0
-      ? retirement.hsaReimbursement
-      : 0;
-  const hsaMedicalPaid = retirement.hsaPayMedical
-    ? retirement.hsaMedicalMonthly
-    : 0;
-  return { hsaReimbursed, hsaMedicalPaid };
-}
-
-/**
-Apply a month's return, cash flow, and the sweep between the two savings
-pools (modelling note 7): shortfalls drain cash first then sell investments
--- never clamped -- and anything above the buffer target sweeps the other
-way.
-*/
-function applyCashSweep(
-  cash: number,
-  investments: number,
-  cashReturn: number,
-  investmentReturn: number,
-  netCashFlow: number,
-  purchaseOutflow: number,
-  bufferTarget: number,
-): { cash: number; investments: number } {
-  let nextCash = cash * (1 + cashReturn);
-  let nextInvestments = investments * (1 + investmentReturn);
-
-  nextCash += netCashFlow - purchaseOutflow;
-
-  if (nextCash < 0 && nextInvestments > 0) {
-    const sold = Math.min(nextInvestments, -nextCash);
-    nextInvestments -= sold;
-    nextCash += sold;
-  }
-
-  if (nextCash > bufferTarget) {
-    const excess = nextCash - bufferTarget;
-    nextCash -= excess;
-    nextInvestments += excess;
-  }
-
-  return { cash: nextCash, investments: nextInvestments };
 }
 
 /**
@@ -580,7 +245,6 @@ export function runProjection(
   for (let m = 1; m <= months; m++) {
     // Matches the `jobLossActive` field name on the public MonthlyResult
     // type (src/model/types.ts), used via object-shorthand below.
-    // eslint-disable-next-line unicorn/consistent-boolean-name
     const jobLossActive = isJobLossActive(m, scenario, jl);
     const isOwnsHome = buyMonth !== null && m >= buyMonth;
     const isPurchaseMonth = buyMonth !== null && m === buyMonth;
@@ -783,178 +447,6 @@ export function runProjection(
   }
 
   return results;
-}
-
-/**
-The first month a shadow "never buy" run has saved enough to afford the
-house, and what that would cost by then.
-*/
-function computeReadiness(
-  assumptions: Assumptions,
-  neverBuy: MonthlyResult[],
-  months: number,
-): { readinessMonth: number | null; readinessCashRequired: number } {
-  let readinessMonth: number | null = null;
-  for (const row of neverBuy) {
-    if (row.liquidSavings >= cashRequiredToBuy(assumptions, row.month)) {
-      readinessMonth = row.month;
-      break;
-    }
-  }
-  return {
-    readinessMonth,
-    readinessCashRequired: cashRequiredToBuy(
-      assumptions,
-      readinessMonth ?? months,
-    ),
-  };
-}
-
-/**
-Did the cash actually clear on the month we bought?
-*/
-function wasFundedAtPurchase(
-  scenario: ScenarioConfig,
-  monthsResult: MonthlyResult[],
-): boolean {
-  if (scenario.buyMonth === null) return true;
-  const buyRow = monthsResult[scenario.buyMonth - 1];
-  return buyRow !== undefined && buyRow.liquidSavings >= 0;
-}
-
-/**
-The lowest liquid-savings point the plan ever hits, and when.
-*/
-function computeMinCashBuffer(monthsResult: MonthlyResult[]): {
-  minCashBuffer: number;
-  minCashBufferMonth: number;
-} {
-  let minCashBuffer = Infinity;
-  let minCashBufferMonth = 0;
-  for (const row of monthsResult) {
-    if (row.liquidSavings >= minCashBuffer) continue;
-    minCashBuffer = row.liquidSavings;
-    minCashBufferMonth = row.month;
-  }
-  if (!Number.isFinite(minCashBuffer)) {
-    return { minCashBuffer: 0, minCashBufferMonth: 0 };
-  }
-  return { minCashBuffer, minCashBufferMonth };
-}
-
-function computeNetWorthAtYear(
-  monthsResult: MonthlyResult[],
-): Record<number, number> {
-  const netWorthAtYear: Record<number, number> = {};
-  for (const year of [1, 3, 5]) {
-    const row = monthsResult[year * 12 - 1];
-    if (row) netWorthAtYear[year] = row.netWorth;
-  }
-  return netWorthAtYear;
-}
-
-/**
-Where things stand at each retirement milestone age.
-*/
-function computeMilestones(
-  assumptions: Assumptions,
-  monthsResult: MonthlyResult[],
-  months: number,
-  milestoneAges: number[],
-): {
-  netWorthAtAge: Record<number, number>;
-  retirementAtAge: Record<number, number>;
-  homeEquityAtAge: Record<number, number>;
-  investmentsAtAge: Record<number, number>;
-} {
-  const netWorthAtAge: Record<number, number> = {};
-  const retirementAtAge: Record<number, number> = {};
-  const homeEquityAtAge: Record<number, number> = {};
-  const investmentsAtAge: Record<number, number> = {};
-  for (const age of milestoneAges) {
-    const m = monthForAge(assumptions, age, months);
-    if (m === null) continue;
-    const row = monthsResult[m - 1];
-    if (!row) continue;
-    netWorthAtAge[age] = row.netWorth;
-    retirementAtAge[age] = row.retirementBalance;
-    homeEquityAtAge[age] = row.homeEquity;
-    investmentsAtAge[age] = row.investmentBalance;
-  }
-  return { netWorthAtAge, retirementAtAge, homeEquityAtAge, investmentsAtAge };
-}
-
-interface MortgageLifeStats {
-  mortgagePaidOffMonth: number | null;
-  totalInterestPaid: number;
-  totalHousingPaid: number;
-  totalMaintenancePaid: number;
-  totalPmiPaid: number;
-  totalObligationsPaid: number;
-  assistanceReceived: number;
-  totalCoResidentIncome: number;
-  totalSecondIncome: number;
-  totalSecondIncomeCosts: number;
-  pmiEndsMonth: number | null;
-}
-
-/**
-Payoff month, interest paid, and running totals across the plan's life.
-*/
-function computeMortgageLifeStats(
-  assumptions: Assumptions,
-  monthsResult: MonthlyResult[],
-): MortgageLifeStats {
-  const stats: MortgageLifeStats = {
-    mortgagePaidOffMonth: null,
-    totalInterestPaid: 0,
-    totalHousingPaid: 0,
-    totalMaintenancePaid: 0,
-    totalPmiPaid: 0,
-    totalObligationsPaid: 0,
-    assistanceReceived: 0,
-    totalCoResidentIncome: 0,
-    totalSecondIncome: 0,
-    totalSecondIncomeCosts: 0,
-    pmiEndsMonth: null,
-  };
-  let isEverPaidPmi = false;
-  let previousBalance = 0;
-  const loanShare = 1 - assumptions.home.downPaymentPct;
-  const mortgageMonthlyRate = monthlyNominal(
-    assumptions.home.mortgageRateAnnual,
-  );
-
-  for (const row of monthsResult) {
-    stats.totalHousingPaid += row.housingPayment;
-    stats.totalMaintenancePaid += row.homeMaintenance;
-    stats.totalPmiPaid += row.pmiPayment;
-    stats.totalObligationsPaid += row.obligations;
-    stats.assistanceReceived += row.assistanceReceived;
-    stats.totalCoResidentIncome += row.coResidentIncome;
-    stats.totalSecondIncome += row.secondIncome;
-    stats.totalSecondIncomeCosts += row.secondIncomeCosts;
-    if (row.pmiPayment > 0) isEverPaidPmi = true;
-    else if (isEverPaidPmi && stats.pmiEndsMonth === null && row.ownsHome)
-      stats.pmiEndsMonth = row.month;
-    if (!row.ownsHome) continue;
-
-    // On the purchase month the opening balance is the original loan; after
-    // that it is simply last month's closing balance.
-    const opening =
-      row.purchaseOutflow > 0 ? row.homeValue * loanShare : previousBalance;
-    stats.totalInterestPaid += opening * mortgageMonthlyRate;
-    previousBalance = row.mortgageBalance;
-    if (
-      stats.mortgagePaidOffMonth === null &&
-      row.mortgageBalance === 0 &&
-      opening > 0
-    ) {
-      stats.mortgagePaidOffMonth = row.month;
-    }
-  }
-
-  return stats;
 }
 
 /**

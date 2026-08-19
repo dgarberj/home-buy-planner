@@ -3,11 +3,11 @@ import { Trans, useTranslation } from "react-i18next";
 import { COST_DEFAULTS } from "../../costDefaults";
 import { ALL_MUNICIPALITIES, effectiveRate } from "../../data/localMarket";
 import { ratingSummary } from "../../data/schools";
+import { housingBudget } from "../../engine/affordability";
 import {
   affordabilityTimeline,
-  housingBudget,
   waitingVerdict,
-} from "../../engine/affordability";
+} from "../../engine/affordability-timeline";
 import { runProjection } from "../../engine/projection";
 import { money, monthLabel } from "../../lib/format";
 import { useProjections } from "../../store/useProjections";
@@ -167,12 +167,11 @@ export default function WaitingPanel() {
             components={{ b: <strong />, i: <em /> }}
           >
             <b>The deposit is rarely the problem.</b> Saving longer fixes the{" "}
-            <i>cash</i> constraint — deposit, closing costs, cushion — and
-            that improves every month. It does almost nothing for the{" "}
-            <i>monthly</i> constraint, which only moves when your pay rises
-            or a commitment ends, and moves backwards as prices climb. A
-            house that is out of reach on the payment stays out of reach
-            however long you save.
+            <i>cash</i> constraint — deposit, closing costs, cushion — and that
+            improves every month. It does almost nothing for the <i>monthly</i>{" "}
+            constraint, which only moves when your pay rises or a commitment
+            ends, and moves backwards as prices climb. A house that is out of
+            reach on the payment stays out of reach however long you save.
           </Trans>
         </Callout>
       </Card>
@@ -198,7 +197,10 @@ export default function WaitingPanel() {
               </Th>
               <Th className="pb-2 pr-4">
                 <span className="inline-flex items-center">
-                  {t("waitingPanel.columns.paymentWorksFrom", "Payment works from")}
+                  {t(
+                    "waitingPanel.columns.paymentWorksFrom",
+                    "Payment works from",
+                  )}
                   <InfoTip
                     placement="bottom"
                     text={t(
@@ -300,10 +302,10 @@ export default function WaitingPanel() {
             components={{ b: <strong /> }}
           >
             <b>The clock your children are on.</b> If waiting for a better
-            school district means eleven more years of renting, they will
-            have spent most of their schooling in the district you were
-            trying to leave. Waiting for a house is not free even when the
-            arithmetic says you can afford more later.
+            school district means eleven more years of renting, they will have
+            spent most of their schooling in the district you were trying to
+            leave. Waiting for a house is not free even when the arithmetic says
+            you can afford more later.
           </Trans>
         </Callout>
       </Card>
