@@ -14,7 +14,10 @@ export default function HomePurchaseSection() {
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Field
-          label={t("assumptions.home.targetPrice.label", "Target price (today)")}
+          label={t(
+            "assumptions.home.targetPrice.label",
+            "Target price (today)",
+          )}
           hint={t(
             "assumptions.home.targetPrice.hint",
             "What the kind of house you want costs right now. The model grows this by the appreciation rate while you save, so waiting means a bigger down payment.",

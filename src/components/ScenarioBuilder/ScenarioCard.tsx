@@ -100,7 +100,10 @@ export default function ScenarioCard({
             display={t(
               "scenarioCard.monthDisplay",
               "{{date}} · month {{month}}",
-              { date: monthLabel(settings.startDate, buyMonth), month: buyMonth },
+              {
+                date: monthLabel(settings.startDate, buyMonth),
+                month: buyMonth,
+              },
             )}
           />
         )}
@@ -167,7 +170,10 @@ export default function ScenarioCard({
               display={pct(jl.incomeReplacementPct, 0)}
             />
             <Slider
-              label={t("scenarioCard.spendingCutBackBy", "Spending cut back by")}
+              label={t(
+                "scenarioCard.spendingCutBackBy",
+                "Spending cut back by",
+              )}
               hint={t(
                 "scenarioCard.spendingCutBackByHint",
                 "Housing is never cut — rent and the mortgage still have to be paid.",

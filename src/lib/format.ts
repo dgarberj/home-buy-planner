@@ -107,10 +107,16 @@ export function duration(months: number, t: TFunction): string {
   const m = months % 12;
   const parts: string[] = [];
   if (y) {
-    parts.push(t("format.years", `${y} year${y === 1 ? "" : "s"}`, { count: y }));
+    parts.push(
+      t("format.years", `${y} year${y === 1 ? "" : "s"}`, { count: y }),
+    );
   }
   if (m) {
-    parts.push(t("format.months", `${m} month${m === 1 ? "" : "s"}`, { count: m }));
+    parts.push(
+      t("format.months", `${m} month${m === 1 ? "" : "s"}`, { count: m }),
+    );
   }
-  return parts.length > 0 ? parts.join(" ") : t("format.zeroMonths", "0 months");
+  return parts.length > 0
+    ? parts.join(" ")
+    : t("format.zeroMonths", "0 months");
 }

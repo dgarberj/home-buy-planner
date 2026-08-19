@@ -48,9 +48,7 @@ export default function SecondIncomeLeverCard() {
                 settings.startDate,
                 assumptions.secondIncome.startMonth,
               ),
-              childcare: money(
-                assumptions.secondIncome.additionalCostsMonthly,
-              ),
+              childcare: money(assumptions.secondIncome.additionalCostsMonthly),
             },
           )}
         </span>

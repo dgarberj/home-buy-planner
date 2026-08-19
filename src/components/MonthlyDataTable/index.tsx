@@ -36,9 +36,7 @@ function cellEmphasisClass(
   return "text-slate-600";
 }
 
-function columns(
-  t: TFunction,
-): {
+function columns(t: TFunction): {
   key: keyof MonthlyResult;
   label: string;
   hint?: string;
@@ -352,10 +350,14 @@ export default function MonthlyDataTable() {
                     {monthLabel(settings.startDate, row.month)}
                   </span>
                   <span className="ml-2 text-xs text-slate-400">
-                    {t("monthlyDataTable.monthAge", "#{{month}} · age {{age}}", {
-                      month: row.month,
-                      age: Math.floor(row.age),
-                    })}
+                    {t(
+                      "monthlyDataTable.monthAge",
+                      "#{{month}} · age {{age}}",
+                      {
+                        month: row.month,
+                        age: Math.floor(row.age),
+                      },
+                    )}
                   </span>
                   {row.purchaseOutflow > 0 && (
                     <span className="ml-2 rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-blue-700">
@@ -400,7 +402,10 @@ export default function MonthlyDataTable() {
           <span className="font-semibold text-red-600">
             {t("monthlyDataTable.legend.redLabel", "red")}
           </span>{" "}
-          {t("monthlyDataTable.legend.redMeaning", "negative — money you do not have")}
+          {t(
+            "monthlyDataTable.legend.redMeaning",
+            "negative — money you do not have",
+          )}
         </span>
       </div>
     </Card>

@@ -58,7 +58,10 @@ export default function RetirementDialsCard() {
           />
         </Field>
         <Field
-          label={t("drawdownPanel.dials.withdrawalRate.label", "Withdrawal rate")}
+          label={t(
+            "drawdownPanel.dials.withdrawalRate.label",
+            "Withdrawal rate",
+          )}
           hint={t(
             "drawdownPanel.dials.withdrawalRate.hint",
             "The share of the pot you draw each year. 4% is the classic rule of thumb — the rate a portfolio has historically sustained over 30 years.",
@@ -91,7 +94,10 @@ export default function RetirementDialsCard() {
           />
         </Field>
         <Field
-          label={t("drawdownPanel.dials.returnAnnual.label", "Return once retired")}
+          label={t(
+            "drawdownPanel.dials.returnAnnual.label",
+            "Return once retired",
+          )}
           hint={t(
             "drawdownPanel.dials.returnAnnual.hint",
             "Usually lower than while working, since portfolios get more conservative when you are living off them.",

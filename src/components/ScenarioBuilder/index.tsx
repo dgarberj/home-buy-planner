@@ -41,10 +41,7 @@ export default function ScenarioBuilder() {
         </div>
         <label className="block">
           <span className="text-sm font-medium text-slate-700">
-            {t(
-              "scenarioBuilder.incomeStillComingIn",
-              "Income still coming in",
-            )}
+            {t("scenarioBuilder.incomeStillComingIn", "Income still coming in")}
           </span>
           <div className="mt-1.5">
             <PercentInput

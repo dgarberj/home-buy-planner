@@ -224,8 +224,7 @@ export default function LeversBar() {
                     )}
                   >
                     {bufferDelta > 0 ? "+" : ""}
-                    {money(bufferDelta)}{" "}
-                    {t("leversBar.cash", "cash")}
+                    {money(bufferDelta)} {t("leversBar.cash", "cash")}
                   </span>
                 )}
                 {Math.abs(netWorthDelta) >= 5_000 && (
@@ -239,8 +238,7 @@ export default function LeversBar() {
                     )}
                   >
                     {netWorthDelta > 0 ? "+" : ""}
-                    {money(netWorthDelta)}{" "}
-                    {t("leversBar.longRun", "long run")}
+                    {money(netWorthDelta)} {t("leversBar.longRun", "long run")}
                   </span>
                 )}
               </div>

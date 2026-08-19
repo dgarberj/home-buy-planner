@@ -210,9 +210,13 @@ export default function TownExplorer() {
             className="text-sm font-medium text-blue-700 hover:underline"
           >
             {showAllTowns
-              ? t("marketPanel.townExplorer.hideAllTowns", "Hide all {{count}} towns", {
-                  count: 112,
-                })
+              ? t(
+                  "marketPanel.townExplorer.hideAllTowns",
+                  "Hide all {{count}} towns",
+                  {
+                    count: 112,
+                  },
+                )
               : t(
                   "marketPanel.townExplorer.browseAllTowns",
                   "Browse all {{count}} towns",

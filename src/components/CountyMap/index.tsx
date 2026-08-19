@@ -423,10 +423,10 @@ export default function CountyMap({
             unit: t(METRIC_UNIT_KEY[metric.key], metric.unit),
           }}
         >
-          Every tile shows <b>{"{{metricLabel}}"}</b>, labelled “
-          {"{{unit}}"}”. Colour is always the tax rate. Tax figures use each
-          town's own median home, so nothing here is a hypothetical house.
-          Click any township for the full breakdown.
+          Every tile shows <b>{"{{metricLabel}}"}</b>, labelled “{"{{unit}}"}”.
+          Colour is always the tax rate. Tax figures use each town's own median
+          home, so nothing here is a hypothetical house. Click any township for
+          the full breakdown.
         </Trans>{" "}
         {county.geographicLayout
           ? t(

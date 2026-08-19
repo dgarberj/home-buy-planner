@@ -5,3 +5,4 @@ export * from "./inputs";
 export * from "./layout";
 export { default as Section } from "./Section";
 export * from "./table";
+export * from "./tone";

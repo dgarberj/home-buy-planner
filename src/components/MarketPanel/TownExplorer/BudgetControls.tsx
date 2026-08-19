@@ -37,7 +37,10 @@ export default function BudgetControls({
     <div className="rounded-xl bg-slate-50 p-4">
       <div className="grid gap-4 sm:grid-cols-3">
         <Field
-          label={t("marketPanel.budgetControls.reserve.label", "Reserve for saving")}
+          label={t(
+            "marketPanel.budgetControls.reserve.label",
+            "Reserve for saving",
+          )}
           hint={t(
             "marketPanel.budgetControls.reserve.hint",
             "Held back from the housing budget each month so you keep building a buffer after moving in.",
@@ -84,7 +87,10 @@ export default function BudgetControls({
 
       <div className="mt-4 grid gap-4 border-t border-slate-200 pt-4 sm:grid-cols-3">
         <Field
-          label={t("marketPanel.budgetControls.creditScore.label", "Credit score")}
+          label={t(
+            "marketPanel.budgetControls.creditScore.label",
+            "Credit score",
+          )}
           hint={t(
             "marketPanel.budgetControls.creditScore.hint",
             "Sets the mortgage-insurance rate. The gap between 760+ and 680 is enormous on a small deposit.",
@@ -99,7 +105,10 @@ export default function BudgetControls({
           />
         </Field>
         <Field
-          label={t("marketPanel.budgetControls.downPayment.label", "Down payment")}
+          label={t(
+            "marketPanel.budgetControls.downPayment.label",
+            "Down payment",
+          )}
           hint={t(
             "marketPanel.budgetControls.downPayment.hint",
             "3% is the Conventional 97 minimum. 20% avoids mortgage insurance entirely.",

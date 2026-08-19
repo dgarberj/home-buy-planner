@@ -30,7 +30,10 @@ export default function RetirementSection() {
     <Card title={t("assumptions.retirement.title", "Retirement")}>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label={t("assumptions.retirement.currentBalance.label", "Current balance")}
+          label={t(
+            "assumptions.retirement.currentBalance.label",
+            "Current balance",
+          )}
           hint={t(
             "assumptions.retirement.currentBalance.hint",
             "Total across all retirement accounts today: 401(k)s, IRAs, and so on.",
@@ -48,7 +51,10 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label={t("assumptions.retirement.annualReturn.label", "Annual return")}
+          label={t(
+            "assumptions.retirement.annualReturn.label",
+            "Annual return",
+          )}
           hint={t(
             "assumptions.retirement.annualReturn.hint",
             "Long-run average growth. 7% is a common stock-heavy assumption; drop it to 5% for a more cautious view.",
@@ -62,10 +68,7 @@ export default function RetirementSection() {
           />
         </Field>
         <Field
-          label={t(
-            "assumptions.retirement.k401.label",
-            "401(k) contribution",
-          )}
+          label={t("assumptions.retirement.k401.label", "401(k) contribution")}
           hint={t(
             "assumptions.retirement.k401.hint",
             "Share of gross salary you elect into the 401(k) -- most plans run the election as a percentage of pay, not a flat dollar amount. Comes out of take-home cash. Elective-deferral limit for 2026 is {{limit}}/yr.",

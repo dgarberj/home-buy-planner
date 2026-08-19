@@ -128,7 +128,10 @@ export default function AllTownsTable({
             </Th>
             <Th align="right" className="pb-2 pr-4">
               <span className="inline-flex items-center">
-                {t("marketPanel.allTowns.columns.allInPerMonth", "All-in / month")}
+                {t(
+                  "marketPanel.allTowns.columns.allInPerMonth",
+                  "All-in / month",
+                )}
                 <InfoTip
                   placement="bottom"
                   text={t(
@@ -176,10 +179,7 @@ export default function AllTownsTable({
                   )}
                 </Td>
                 <Td className="py-2 pr-4 capitalize text-slate-500">
-                  {t(
-                    COUNTY_KEY_LABEL[row.m.countyKey] ?? "",
-                    row.m.countyKey,
-                  )}
+                  {t(COUNTY_KEY_LABEL[row.m.countyKey] ?? "", row.m.countyKey)}
                 </Td>
                 <Td
                   align="right"

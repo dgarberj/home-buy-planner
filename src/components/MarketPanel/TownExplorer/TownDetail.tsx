@@ -3,7 +3,12 @@ import { Trans, useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { climateRiskFor } from "../../../data/climateRisk";
 import { closingCosts } from "../../../data/closingCosts";
-import { SALE_STALE_LABEL, isSaleStale, medianOf, salesIn } from "../../../data/recentSales";
+import {
+  SALE_STALE_LABEL,
+  isSaleStale,
+  medianOf,
+  salesIn,
+} from "../../../data/recentSales";
 import { districtFor, ratingSummary } from "../../../data/schools";
 import { cashToClose } from "../../../engine/affordability";
 import {
@@ -32,11 +37,7 @@ function saleDateLabel(iso: string): string {
   return monthLabel(`${y}-${String(m).padStart(2, "0")}`, 1);
 }
 
-function bathsLabel(
-  t: TFunction,
-  baths?: number,
-  halfBaths?: number,
-): string {
+function bathsLabel(t: TFunction, baths?: number, halfBaths?: number): string {
   if (!baths && !halfBaths) return "—";
   return halfBaths
     ? t("marketPanel.townDetail.bathsHalf", "{{baths}} + {{half}} half", {
@@ -152,7 +153,7 @@ export default function TownDetail({
           <p className="mt-2 text-xs text-slate-400">
             {t(
               "marketPanel.townDetail.noSourcedPrice",
-              "No sourced median price for {{name}} -- can't price a specific house here without a \"price to test\" override.",
+              'No sourced median price for {{name}} -- can\'t price a specific house here without a "price to test" override.',
               { name: m.name },
             )}
           </p>
@@ -279,8 +280,8 @@ export default function TownDetail({
                 values={{ amount: money(medianOf(freshSales) ?? 0) }}
               >
                 Median of the fresh sales shown: {"{{amount}}"}. A handful of
-                records, not a market statistic — see <b>Sources</b> below
-                for what this is and isn't.
+                records, not a market statistic — see <b>Sources</b> below for
+                what this is and isn't.
               </Trans>
             </p>
           )}

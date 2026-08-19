@@ -123,7 +123,10 @@ export default function CountyMapTooltip({
         </div>
       )}
       <div className="mt-2 text-[11px] text-slate-500">
-        {t("countyMap.tooltip.clickForBreakdown", "Click for the full breakdown")}
+        {t(
+          "countyMap.tooltip.clickForBreakdown",
+          "Click for the full breakdown",
+        )}
       </div>
     </div>
   );

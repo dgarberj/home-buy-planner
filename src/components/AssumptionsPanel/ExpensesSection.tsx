@@ -61,10 +61,7 @@ export default function ExpensesSection() {
           />
         </Field>
         <Field
-          label={t(
-            "assumptions.expenses.inflation.label",
-            "Annual inflation",
-          )}
+          label={t("assumptions.expenses.inflation.label", "Annual inflation")}
           hint={t(
             "assumptions.expenses.inflation.hint",
             "How fast expenses and rent grow each year. Applied to everything except the mortgage payment, which is fixed.",

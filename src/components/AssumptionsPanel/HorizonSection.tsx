@@ -26,10 +26,7 @@ export default function HorizonSection() {
 
   return (
     <Card
-      title={t(
-        "assumptions.horizon.title",
-        "You, and how far ahead to look",
-      )}
+      title={t("assumptions.horizon.title", "You, and how far ahead to look")}
       subtitle={t(
         "assumptions.horizon.subtitle",
         "Retirement milestones are measured from your age, so this is what makes the long view mean anything.",

@@ -110,7 +110,10 @@ export default function BudgetDrawer({
         />
         <BudgetGroup
           dated
-          addLabel={t("budgetPanel.groups.commitments.addLabel", "+ Add commitment")}
+          addLabel={t(
+            "budgetPanel.groups.commitments.addLabel",
+            "+ Add commitment",
+          )}
           title={t(
             "budgetPanel.groups.commitments.title",
             "Commitments with an end date",

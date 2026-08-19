@@ -56,13 +56,15 @@ export default function DrawdownPanel() {
               distributions, no healthcare shocks — and, most importantly, a
               single smooth return every year. Real markets deliver their bad
               years in clumps, and a crash early in retirement does far more
-              damage than the same crash later. Treat the age the money runs
-              out as a rough marker, not a date.
+              damage than the same crash later. Treat the age the money runs out
+              as a rough marker, not a date.
             </Trans>
           </Callout>
         </>
       ) : (
-        <Card title={t("drawdownPanel.emptyState.title", "Will the money last?")}>
+        <Card
+          title={t("drawdownPanel.emptyState.title", "Will the money last?")}
+        >
           <Callout tone="neutral">
             <Trans
               i18nKey="drawdownPanel.emptyState.body"
@@ -70,8 +72,8 @@ export default function DrawdownPanel() {
               values={{ age: d.retirementAge }}
             >
               Age {"{{age}}"} falls outside the projection window, so there is
-              nothing to draw down yet. Stretch the window in Assumptions —
-              the <b>To 70</b> preset covers most retirement ages.
+              nothing to draw down yet. Stretch the window in Assumptions — the{" "}
+              <b>To 70</b> preset covers most retirement ages.
             </Trans>
           </Callout>
         </Card>

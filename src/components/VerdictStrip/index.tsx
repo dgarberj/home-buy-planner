@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { worstVerdict } from "../Dashboard/VerdictsCard";
+import { worstVerdict } from "../Dashboard/verdict";
 import { TONE_CLASSES } from "../ui";
 import { useProjections } from "../../store/useProjections";
 import { useStore } from "../../store/useStore";

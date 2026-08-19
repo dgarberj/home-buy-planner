@@ -31,7 +31,9 @@ export default function Splash({ onEnter }: { onEnter: () => void }) {
             <li>
               <Trans
                 i18nKey="splash.li1"
-                components={{ b: <span className="font-semibold text-slate-900" /> }}
+                components={{
+                  b: <span className="font-semibold text-slate-900" />,
+                }}
               >
                 <b>Start with your budget.</b> Every recurring dollar in and
                 out. Change any number and everything downstream —
@@ -41,31 +43,37 @@ export default function Splash({ onEnter }: { onEnter: () => void }) {
             <li>
               <Trans
                 i18nKey="splash.li2"
-                components={{ b: <span className="font-semibold text-slate-900" /> }}
+                components={{
+                  b: <span className="font-semibold text-slate-900" />,
+                }}
               >
-                <b>Scenarios are versions of the future.</b> Pick a month to
-                buy and whether a job loss happens along the way. Add as many
-                as you like and compare them side by side.
+                <b>Scenarios are versions of the future.</b> Pick a month to buy
+                and whether a job loss happens along the way. Add as many as you
+                like and compare them side by side.
               </Trans>
             </li>
             <li>
               <Trans
                 i18nKey="splash.li3"
-                components={{ b: <span className="font-semibold text-slate-900" /> }}
+                components={{
+                  b: <span className="font-semibold text-slate-900" />,
+                }}
               >
                 <b>
                   "House ready" and "thinnest cash" are the two numbers that
                   matter.
                 </b>{" "}
-                The first month you could afford it, and the lowest your
-                savings ever get along the way. Below zero, in red, means the
-                plan doesn't fund itself.
+                The first month you could afford it, and the lowest your savings
+                ever get along the way. Below zero, in red, means the plan
+                doesn't fund itself.
               </Trans>
             </li>
             <li>
               <Trans
                 i18nKey="splash.li4"
-                components={{ b: <span className="font-semibold text-slate-900" /> }}
+                components={{
+                  b: <span className="font-semibold text-slate-900" />,
+                }}
               >
                 <b>Nothing here is a prediction.</b> It's arithmetic on the
                 assumptions you type in — which is exactly why it's worth

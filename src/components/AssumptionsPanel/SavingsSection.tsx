@@ -117,7 +117,10 @@ export default function SavingsSection() {
         </Field>
         <div className="flex items-end">
           <p className="text-xs text-slate-500">
-            {t("assumptions.savings.bufferTarget.pre", "Today that buffer target is about")}{" "}
+            {t(
+              "assumptions.savings.bufferTarget.pre",
+              "Today that buffer target is about",
+            )}{" "}
             <strong className="text-slate-700">
               {money(
                 a.savings.cashBufferMonths *

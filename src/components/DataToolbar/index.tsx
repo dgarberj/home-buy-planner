@@ -117,10 +117,7 @@ export default function DataToolbar() {
             onClick={() => {
               downloadText("household.json", exportData(), "application/json");
               flash(
-                t(
-                  "dataToolbar.saved",
-                  "Saved. Keep it in the data/ folder.",
-                ),
+                t("dataToolbar.saved", "Saved. Keep it in the data/ folder."),
               );
             }}
           >

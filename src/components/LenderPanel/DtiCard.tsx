@@ -221,9 +221,7 @@ export default function DtiCard({
               components={{ b: <strong /> }}
               values={{ share: pct(dti.supportShare, 1) }}
             >
-              <b>
-                Support payments alone use {"{{share}}"} of your ratio
-              </b>{" "}
+              <b>Support payments alone use {"{{share}}"} of your ratio</b>{" "}
               before a mortgage is even considered.{" "}
             </Trans>
           </>

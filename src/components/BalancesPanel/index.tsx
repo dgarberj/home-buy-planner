@@ -42,10 +42,7 @@ export default function BalancesPanel() {
           variant="primary"
           onClick={() => setIsDrawerOpen(true)}
         >
-          {t(
-            "balancesPanel.startHere",
-            "Start here — edit your balances →",
-          )}
+          {t("balancesPanel.startHere", "Start here — edit your balances →")}
         </Button>
       </div>
       <BalancesDrawer

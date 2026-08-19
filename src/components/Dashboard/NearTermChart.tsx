@@ -45,8 +45,14 @@ export default function NearTermChart() {
   const [xAxis, setXAxis] = useState<"date" | "age">("date");
 
   const active = METRICS.find((m) => m.key === metric)!;
-  const activeLabel = t(`dashboard.nearTerm.metrics.${active.key}.label`, active.label);
-  const activeHint = t(`dashboard.nearTerm.metrics.${active.key}.hint`, active.hint);
+  const activeLabel = t(
+    `dashboard.nearTerm.metrics.${active.key}.label`,
+    active.label,
+  );
+  const activeHint = t(
+    `dashboard.nearTerm.metrics.${active.key}.hint`,
+    active.hint,
+  );
   const primaryAge = assumptions.household.primaryAge;
   const ageWord = t("dashboard.nearTerm.age", "age");
 

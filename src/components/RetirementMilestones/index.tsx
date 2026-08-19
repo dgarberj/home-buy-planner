@@ -211,12 +211,12 @@ export default function RetirementMilestones() {
             {{ finalAge }} the retirement accounts differ by only{" "}
             {{ retirementGapMoney: money(retirementGap) }} across these
             scenarios, and that difference comes entirely from contributions
-            pausing during a job loss. The real effect of buy timing lands
-            in <b>home equity and investments</b>: a mortgage payment is
-            fixed for thirty years while rent keeps inflating, so an owner's
-            monthly surplus grows over time and compounds. At age{" "}
-            {{ finalAge }} that adds up to a {{ gapMoney: money(gap) }}{" "}
-            spread in {{ metricLabel: activeLabel.toLowerCase() }}.
+            pausing during a job loss. The real effect of buy timing lands in{" "}
+            <b>home equity and investments</b>: a mortgage payment is fixed for
+            thirty years while rent keeps inflating, so an owner's monthly
+            surplus grows over time and compounds. At age {{ finalAge }} that
+            adds up to a {{ gapMoney: money(gap) }} spread in{" "}
+            {{ metricLabel: activeLabel.toLowerCase() }}.
           </Trans>
         </Callout>
 

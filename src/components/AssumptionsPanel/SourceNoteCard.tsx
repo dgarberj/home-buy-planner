@@ -11,12 +11,17 @@ import { Card } from "../ui";
 export default function SourceNoteCard() {
   const { t } = useTranslation();
   return (
-    <Card title={t("assumptions.sourceNote.title", "Where these numbers come from")}>
+    <Card
+      title={t("assumptions.sourceNote.title", "Where these numbers come from")}
+    >
       <p className="text-sm text-slate-600">
-        <Trans i18nKey="assumptions.sourceNote.body" components={{ b: <strong /> }}>
-          Income, expenses, rent and starting balances below are added up
-          from your <b>Budget</b> and <b>Balances</b> tabs, and can&rsquo;t be
-          edited here — edit them there instead.
+        <Trans
+          i18nKey="assumptions.sourceNote.body"
+          components={{ b: <strong /> }}
+        >
+          Income, expenses, rent and starting balances below are added up from
+          your <b>Budget</b> and <b>Balances</b> tabs, and can&rsquo;t be edited
+          here — edit them there instead.
         </Trans>
       </p>
     </Card>

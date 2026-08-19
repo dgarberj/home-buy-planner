@@ -24,15 +24,15 @@ export default function MarketPanel() {
           components={{ b: <strong />, i: <em /> }}
           values={{ clrFactor: DELCO_CLR_FACTOR }}
         >
-          <b>Read this before trusting any number above.</b> Pennsylvania
-          taxes the <i>assessed</i> value, not what you pay. Delaware County
-          last reassessed for 2021 using 2020 values, and{" "}
+          <b>Read this before trusting any number above.</b> Pennsylvania taxes
+          the <i>assessed</i> value, not what you pay. Delaware County last
+          reassessed for 2021 using 2020 values, and{" "}
           <b>buying does not trigger a reassessment</b> — so two identical
           houses next door to each other can carry very different bills,
           permanently. These estimates divide the sale price by the state's
-          common level ratio factor ({"{{clrFactor}}"}), which is a
-          county-wide average. Use this table to rank places; look up the
-          actual assessment before making an offer on an actual house.
+          common level ratio factor ({"{{clrFactor}}"}), which is a county-wide
+          average. Use this table to rank places; look up the actual assessment
+          before making an offer on an actual house.
         </Trans>
       </Callout>
     </div>

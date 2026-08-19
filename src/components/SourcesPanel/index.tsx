@@ -114,7 +114,9 @@ function SourceCard({ id }: { id: string }) {
         </div>
         {source.staleAfterDays !== undefined && (
           <div className="flex gap-1.5">
-            <dt>{t("sourcesPanel.stalenessThreshold", "Staleness threshold")}</dt>
+            <dt>
+              {t("sourcesPanel.stalenessThreshold", "Staleness threshold")}
+            </dt>
             <dd className="text-slate-700">
               {formatMaxAge(source.staleAfterDays)}
             </dd>

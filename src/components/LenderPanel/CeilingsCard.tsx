@@ -104,7 +104,10 @@ export default function CeilingsCard({
 
       <Callout tone="neutral">
         <strong>
-          {t("lenderPanel.ceilings.notPreapproval.headline", "This is not a pre-approval.")}
+          {t(
+            "lenderPanel.ceilings.notPreapproval.headline",
+            "This is not a pre-approval.",
+          )}
         </strong>{" "}
         {t(
           "lenderPanel.ceilings.notPreapproval.body",

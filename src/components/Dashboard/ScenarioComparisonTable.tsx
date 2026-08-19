@@ -26,7 +26,11 @@ export default function ScenarioComparisonTable() {
             </Th>
             {years.map((y) => (
               <Th key={y} align="right" className="pb-2 pr-4">
-                {t("dashboard.comparison.netWorthAtYear", "Net worth · year {{y}}", { y })}
+                {t(
+                  "dashboard.comparison.netWorthAtYear",
+                  "Net worth · year {{y}}",
+                  { y },
+                )}
               </Th>
             ))}
             <Th align="right" className="pb-2 pr-4">

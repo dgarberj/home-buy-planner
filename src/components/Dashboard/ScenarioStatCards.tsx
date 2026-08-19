@@ -50,7 +50,10 @@ export default function ScenarioStatCards() {
                 value={
                   s.readinessMonth
                     ? monthLabel(settings.startDate, s.readinessMonth)
-                    : t("dashboard.statCards.houseReady.notOnTrack", "Not on track")
+                    : t(
+                        "dashboard.statCards.houseReady.notOnTrack",
+                        "Not on track",
+                      )
                 }
                 tone={s.readinessMonth ? "good" : "bad"}
                 sub={
@@ -71,7 +74,10 @@ export default function ScenarioStatCards() {
                 }
               />
               <Stat
-                label={t("dashboard.statCards.thinnestCash.label", "Thinnest cash")}
+                label={t(
+                  "dashboard.statCards.thinnestCash.label",
+                  "Thinnest cash",
+                )}
                 hint={t(
                   "dashboard.statCards.thinnestCash.hint",
                   "The lowest your spendable savings ever get across the whole projection. This is the resilience number — if it goes below zero, the plan does not fund itself.",
@@ -81,7 +87,9 @@ export default function ScenarioStatCards() {
                 sub={t(
                   "dashboard.statCards.thinnestCash.sub",
                   "lowest point: {{date}}",
-                  { date: monthLabel(settings.startDate, s.minCashBufferMonth) },
+                  {
+                    date: monthLabel(settings.startDate, s.minCashBufferMonth),
+                  },
                 )}
               />
               <div className="border-t border-slate-100 pt-3 text-xs text-slate-500">
