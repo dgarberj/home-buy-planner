@@ -1,321 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-import { Trans, useTranslation } from "react-i18next";
 import {
-  CLUSTERS,
   clusterForHash,
   clusterOfSection,
   sectionIdFromHash,
   type ClusterId,
 } from "./clusters";
-import AppSidebar from "./components/AppSidebar";
+import AppLayout from "./components/AppLayout";
 import AssumptionsPanel from "./components/AssumptionsPanel";
 import BalancesPanel from "./components/BalancesPanel";
 import BudgetPanel from "./components/BudgetPanel";
-import Dashboard from "./components/Dashboard";
-import DataToolbar from "./components/DataToolbar";
+import ClusterSections from "./components/ClusterSections";
+import ClusterTabs from "./components/ClusterTabs";
 import ContributionGauges from "./components/ContributionGauges";
+import Dashboard from "./components/Dashboard";
 import DrawdownPanel from "./components/DrawdownPanel";
-import LanguageSwitcher from "./components/LanguageSwitcher";
+import HowToRead from "./components/HowToRead";
 import LenderPanel from "./components/LenderPanel";
-import LeversBar from "./components/LeversBar";
 import MarketPanel from "./components/MarketPanel";
-import SegmentedTabs from "./components/ui/SegmentedTabs";
-import WaitingPanel from "./components/WaitingPanel";
 import MonthlyDataTable from "./components/MonthlyDataTable";
-import NavLinks from "./components/NavLinks";
-import RetirementMilestones from "./components/RetirementMilestones";
-import RetirementOutlookChart from "./components/Dashboard/RetirementOutlookChart";
+import RetirementImpactSection from "./components/RetirementImpactSection";
 import ScenarioBuilder from "./components/ScenarioBuilder";
 import Splash from "./components/Splash";
 import SourcesPanel from "./components/SourcesPanel";
-import { Button, Modal, Section } from "./components/ui";
 import VerdictStrip from "./components/VerdictStrip";
-import { SEED_VERSION } from "./data/seed";
-import { decodeShareHash, isShareHash } from "./lib/share";
+import WaitingPanel from "./components/WaitingPanel";
 import { useStore } from "./store/useStore";
 
-/**
-A compact, always-in-flow nav + levers strip for below `md:`, where
-`AppSidebar` renders nothing. Mirrors the pre-redesign horizontal layout so
-narrow screens keep the same reachable controls without a second component
-tree or any fixed/absolute overlay.
-*/
-function MobileNav({ onNavigate }: { onNavigate: (id: string) => void }) {
-  const { t } = useTranslation();
-  const [leversOpen, setLeversOpen] = useState(false);
-  return (
-    <div className="border-b border-slate-200 bg-slate-50 md:hidden">
-      <nav className="flex flex-wrap items-center justify-between gap-1 px-6 py-2">
-        <div className="flex flex-wrap gap-1">
-          <NavLinks
-            onNavigate={onNavigate}
-            linkClassName="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-          />
-        </div>
-        <LanguageSwitcher />
-      </nav>
-      <button
-        type="button"
-        onClick={() => setLeversOpen((v) => !v)}
-        className="w-full border-t border-slate-200 px-6 py-2 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-      >
-        {leversOpen
-          ? t("app.mobileNav.hideLevers", "Hide levers")
-          : t("app.mobileNav.showLevers", "Show levers")}
-      </button>
-      {leversOpen && (
-        <div className="border-t border-slate-200 px-6 py-3">
-          <LeversBar />
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
-A short, non-technical explainer, folded away until someone wants it.
-*/
-function HowToRead() {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-      >
-        <span>
-          <span className="text-base font-semibold text-slate-900">
-            {t("app.howToRead.title", "How to read this")}
-          </span>
-          <span className="ml-2 text-sm text-slate-500">
-            {t("app.howToRead.subtitle", "60 seconds on what the numbers mean")}
-          </span>
-        </span>
-        <span className="text-slate-400">{open ? "−" : "+"}</span>
-      </button>
-      {open && (
-        <div className="border-t border-slate-100 px-5 py-4 text-sm leading-relaxed text-slate-600">
-          <p>
-            <Trans
-              i18nKey="app.howToRead.intro"
-              components={{ b: <strong className="text-slate-900" /> }}
-            >
-              This tool answers one question:{" "}
-              <b>
-                when can we buy a house, and would we be okay if one of us
-                lost a job?
-              </b>
-            </Trans>
-          </p>
-          <ul className="mt-3 space-y-2">
-            <li>
-              <Trans
-                i18nKey="app.howToRead.li1"
-                components={{ b: <strong className="text-slate-900" /> }}
-              >
-                <b>Start at the top.</b> The budget is every recurring dollar
-                in and out. Change any number and everything below updates
-                instantly.
-              </Trans>
-            </li>
-            <li>
-              <Trans
-                i18nKey="app.howToRead.li2"
-                components={{ b: <strong className="text-slate-900" /> }}
-              >
-                <b>Scenarios are versions of the future.</b> Each one picks a
-                month to buy and whether a job loss happens. Drag the sliders
-                — that is what they are for.
-              </Trans>
-            </li>
-            <li>
-              <Trans
-                i18nKey="app.howToRead.li3"
-                components={{ b: <strong className="text-slate-900" /> }}
-              >
-                <b>"House ready"</b> is the first month our savings would
-                cover the down payment and closing costs. The house gets more
-                expensive while we save, so waiting is not free.
-              </Trans>
-            </li>
-            <li>
-              <Trans
-                i18nKey="app.howToRead.li4"
-                components={{ b: <strong className="text-slate-900" /> }}
-              >
-                <b>"Thinnest cash"</b> is the lowest our spendable savings
-                ever get. It is the resilience number. Below zero, in red,
-                means the plan does not fund itself.
-              </Trans>
-            </li>
-            <li>
-              <Trans
-                i18nKey="app.howToRead.li5"
-                components={{ b: <strong className="text-slate-900" /> }}
-              >
-                <b>Commitments are different from expenses.</b> A fixed
-                obligation with a known end date never inflates and never
-                gets cut in a crisis — and the month it ends, money frees up
-                for good.
-              </Trans>
-            </li>
-            <li>
-              <Trans
-                i18nKey="app.howToRead.li6"
-                components={{ b: <strong className="text-slate-900" /> }}
-              >
-                <b>Nothing here is a prediction.</b> It is arithmetic on the
-                assumptions we typed in. Change an assumption and you get a
-                different, equally confident-looking answer — which is
-                exactly why it is worth playing with the extremes.
-              </Trans>
-            </li>
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ClusterTabs({
-  cluster,
-  onSelect,
-}: {
-  cluster: ClusterId;
-  onSelect: (id: ClusterId) => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <SegmentedTabs
-      items={CLUSTERS.map((c) => ({
-        id: c.id,
-        label: t(`app.clusters.${c.id}`, c.label),
-      }))}
-      active={cluster}
-      onSelect={onSelect}
-    />
-  );
-}
-
-function parseSeedVersion(json: string): unknown {
-  try {
-    return (JSON.parse(json) as { seedVersion?: unknown }).seedVersion;
-  } catch {
-    return undefined;
-  }
-}
-
-/**
-Loads a #share=... link on landing. Strips the hash immediately after
-decoding either way, so the payload never lingers in the address bar and a
-reload can't re-trigger the import.
-*/
-type ShareImportState =
-  { kind: "confirm"; json: string } | { kind: "error"; message: string };
-
-function ShareImportHandler() {
-  const { t } = useTranslation();
-  const importData = useStore((s) => s.importData);
-  const [state, setState] = useState<ShareImportState | null>(null);
-
-  useEffect(() => {
-    const hash = location.hash;
-    if (!isShareHash(hash)) return;
-    void (async () => {
-      const json = await decodeShareHash(hash);
-      const seedVersion = json ? parseSeedVersion(json) : undefined;
-      if (!json) {
-        setState({
-          kind: "error",
-          message: t(
-            "app.share.brokenLink",
-            "That share link is broken or incomplete.",
-          ),
-        });
-      } else if (seedVersion === SEED_VERSION) {
-        setState({ kind: "confirm", json });
-      } else {
-        // Not a decode failure -- a real payload built against a different
-        // app version. Loading it anyway would hit migrateSaved's own
-        // version check and silently discard everything, so catch it here
-        // with a message instead of a false "Load shared data" success.
-        setState({
-          kind: "error",
-          message: t(
-            "app.share.versionMismatch",
-            "This link was made with a different version of the app and can't be loaded here.",
-          ),
-        });
-      }
-      history.replaceState(null, "", location.pathname + location.search);
-    })();
-    // Runs once on landing only; the hash is stripped immediately, so a
-    // later `t` reference change (e.g. switching language) must not
-    // re-trigger this.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  if (state === null) return null;
-
-  if (state.kind === "error") {
-    return (
-      <Modal
-        open
-        onClose={() => setState(null)}
-        title={t("app.share.errorTitle", "Couldn't load share link")}
-        footer={
-          <Button variant="primary" onClick={() => setState(null)}>
-            {t("app.share.close", "Close")}
-          </Button>
-        }
-      >
-        <p className="text-sm text-slate-600">{state.message}</p>
-      </Modal>
-    );
-  }
-
-  return (
-    <Modal
-      open
-      onClose={() => setState(null)}
-      title={t("app.share.confirmTitle", "Load shared scenario?")}
-      subtitle={t(
-        "app.share.confirmSubtitle",
-        "This replaces all budget, balance, and scenario data currently saved in this browser.",
-      )}
-      footer={
-        <>
-          <Button onClick={() => setState(null)}>
-            {t("app.share.cancel", "Cancel")}
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => {
-              const importError = importData(state.json);
-              setState(
-                importError ? { kind: "error", message: importError } : null,
-              );
-            }}
-          >
-            {t("app.share.loadButton", "Load shared data")}
-          </Button>
-        </>
-      }
-    >
-      <p className="text-sm text-slate-600">
-        {t(
-          "app.share.confirmBody",
-          "Someone shared a link with their full numbers baked in. Loading it overwrites what's currently saved in this browser — export a backup first if you want to keep it.",
-        )}
-      </p>
-    </Modal>
-  );
-}
-
 export default function App() {
-  const { t } = useTranslation();
   const [cluster, setCluster] = useState<ClusterId>(() =>
     clusterForHash(location.hash),
   );
@@ -373,240 +84,34 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <ShareImportHandler />
-      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
-          <div className="mr-auto">
-            <h1 className="text-base font-semibold tracking-tight">
-              {t("app.header.title", "Home Buy Planner")}
-            </h1>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => setSplashOpen(true)}>
-            {t("app.header.about", "About this tool")}
-          </Button>
-          <DataToolbar />
-        </div>
-      </header>
-      <MobileNav onNavigate={handleNavigate} />
+    <AppLayout
+      onNavigate={handleNavigate}
+      onReopenSplash={() => setSplashOpen(true)}
+    >
+      <VerdictStrip />
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-6 py-8 md:grid-cols-[280px_1fr]">
-        <AppSidebar onNavigate={handleNavigate} />
-        <main className="min-w-0 space-y-12">
-          <VerdictStrip />
+      <HowToRead />
 
-          <HowToRead />
+      <ClusterTabs cluster={cluster} onSelect={setCluster} />
 
-          <ClusterTabs cluster={cluster} onSelect={setCluster} />
-
-          {cluster === "setup" && (
-            <>
-              <Section
-                id="balances"
-                eyebrow={t("app.sections.balances.eyebrow", "Step 1")}
-                title={t(
-                  "app.sections.balances.title",
-                  "What we actually have",
-                )}
-                description={t(
-                  "app.sections.balances.description",
-                  "A snapshot of real balances, logged every month or quarter. The newest one is where the projection starts.",
-                )}
-              >
-                <BalancesPanel />
-              </Section>
-
-              <Section
-                id="budget"
-                eyebrow={t("app.sections.budget.eyebrow", "Step 2")}
-                title={t(
-                  "app.sections.budget.title",
-                  "What comes in and what goes out",
-                )}
-                description={t(
-                  "app.sections.budget.description",
-                  "Your actual budget. Anything marked ESTIMATE is still a guess — fixing those, starting with take-home, makes everything downstream more honest.",
-                )}
-                defaultOpen={false}
-              >
-                <BudgetPanel />
-              </Section>
-
-              <Section
-                id="contributions"
-                eyebrow={t("app.sections.contributions.eyebrow", "Step 3")}
-                title={t(
-                  "app.sections.contributions.title",
-                  "Retirement contributions",
-                )}
-                description={t(
-                  "app.sections.contributions.description",
-                  "What you are putting away each year, against the targets — and what that leaves for a deposit.",
-                )}
-                defaultOpen={false}
-              >
-                <ContributionGauges />
-              </Section>
-
-              <Section
-                id="assumptions"
-                eyebrow={t("app.sections.assumptions.eyebrow", "Step 4")}
-                title={t("app.sections.assumptions.title", "Assumptions")}
-                description={t(
-                  "app.sections.assumptions.description",
-                  "The rates and terms behind the projection: raises, inflation, investment returns, and the house we're aiming at. Hover any ? for what it means.",
-                )}
-                defaultOpen={false}
-              >
-                <AssumptionsPanel />
-              </Section>
-            </>
-          )}
-
-          {cluster === "where" && (
-            <>
-              <Section
-                id="market"
-                eyebrow={t("app.sections.market.eyebrow", "Step 5")}
-                title={t("app.sections.market.title", "Where to buy")}
-                description={t(
-                  "app.sections.market.description",
-                  "Real 2026 Delaware County tax rates. The same house can cost several hundred a month more depending only on which township line it sits behind.",
-                )}
-              >
-                <MarketPanel />
-              </Section>
-
-              <Section
-                id="lender"
-                eyebrow={t("app.sections.lender.eyebrow", "The hard gate")}
-                title={t(
-                  "app.sections.lender.title",
-                  "What a lender will allow",
-                )}
-                description={t(
-                  "app.sections.lender.description",
-                  "A different calculation from yours — gross income, fixed obligations counted as debt, upkeep ignored. The smaller of the two ceilings is the one that governs.",
-                )}
-              >
-                <LenderPanel />
-              </Section>
-
-              <Section
-                id="waiting"
-                eyebrow={t("app.sections.waiting.eyebrow", "The trade-off")}
-                title={t("app.sections.waiting.title", "Is it worth waiting?")}
-                description={t(
-                  "app.sections.waiting.description",
-                  "Whether saving longer actually puts a better house in reach — and which of the two constraints is really holding you back.",
-                )}
-              >
-                <WaitingPanel />
-              </Section>
-            </>
-          )}
-
-          {cluster === "results" && (
-            <>
-              <Section
-                id="scenarios"
-                eyebrow={t("app.sections.scenarios.eyebrow", "Step 6")}
-                title={t(
-                  "app.sections.scenarios.title",
-                  "Scenarios to compare",
-                )}
-                description={t(
-                  "app.sections.scenarios.description",
-                  "Buy early or buy later, with or without a job loss. Add as many as you like.",
-                )}
-              >
-                <ScenarioBuilder />
-              </Section>
-
-              <Section
-                id="dashboard"
-                eyebrow={t("app.sections.dashboard.eyebrow", "The answer")}
-                title={t("app.sections.dashboard.title", "Dashboard")}
-                description={t(
-                  "app.sections.dashboard.description",
-                  "How the scenarios diverge over the next few years, and whether each one holds up.",
-                )}
-              >
-                <Dashboard />
-              </Section>
-
-              <Section
-                id="retirement"
-                eyebrow={t("app.sections.retirement.eyebrow", "The long view")}
-                title={t(
-                  "app.sections.retirement.title",
-                  "Impact at retirement",
-                )}
-                description={t(
-                  "app.sections.retirement.description",
-                  "How the buy-early decision compounds by the time you stop working — and, just as importantly, where it doesn't.",
-                )}
-              >
-                <div className="space-y-5">
-                  <RetirementOutlookChart />
-                  <RetirementMilestones />
-                </div>
-              </Section>
-
-              <Section
-                id="drawdown"
-                eyebrow={t(
-                  "app.sections.drawdown.eyebrow",
-                  "The real question",
-                )}
-                title={t("app.sections.drawdown.title", "Will the money last?")}
-                description={t(
-                  "app.sections.drawdown.description",
-                  "A pot of money at 65 means nothing on its own. This is what it actually supports, and when it runs out.",
-                )}
-              >
-                <DrawdownPanel />
-              </Section>
-
-              <Section
-                id="detail"
-                eyebrow={t("app.sections.detail.eyebrow", "The receipts")}
-                title={t("app.sections.detail.title", "Month by month")}
-                description={t(
-                  "app.sections.detail.description",
-                  "The raw output of the projection, one row per month, for checking the model's working.",
-                )}
-                defaultOpen={false}
-              >
-                <MonthlyDataTable />
-              </Section>
-
-              <Section
-                id="sources"
-                eyebrow={t("app.sections.sources.eyebrow", "The receipts")}
-                title={t(
-                  "app.sections.sources.title",
-                  "Where the numbers came from",
-                )}
-                description={t(
-                  "app.sections.sources.description",
-                  "Every external figure in this app, with a link, what it covers, and how far to trust it.",
-                )}
-                defaultOpen={false}
-              >
-                <SourcesPanel />
-              </Section>
-            </>
-          )}
-
-          <footer className="border-t border-slate-200 pt-6 text-xs text-slate-400">
-            {t(
-              "app.footer",
-              "Your numbers are saved in this browser only. Use Export to keep a backup.",
-            )}
-          </footer>
-        </main>
-      </div>
-    </div>
+      <ClusterSections
+        cluster={cluster}
+        content={{
+          balances: <BalancesPanel />,
+          budget: <BudgetPanel />,
+          contributions: <ContributionGauges />,
+          assumptions: <AssumptionsPanel />,
+          market: <MarketPanel />,
+          lender: <LenderPanel />,
+          waiting: <WaitingPanel />,
+          scenarios: <ScenarioBuilder />,
+          dashboard: <Dashboard />,
+          retirement: <RetirementImpactSection />,
+          drawdown: <DrawdownPanel />,
+          detail: <MonthlyDataTable />,
+          sources: <SourcesPanel />,
+        }}
+      />
+    </AppLayout>
   );
 }
