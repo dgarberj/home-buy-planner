@@ -126,6 +126,36 @@ const isPlainObject = (v: unknown): v is Plain =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
 /**
+ * Resolve a single scalar (non-object, non-array) field: the default value
+ * unless `savedValue` is a legitimate replacement for it.
+ *
+ * null always passes through. Several fields are nullable in the schema
+ * (e.g. `endMonth: number | null`), and their *default* is not reliably
+ * null itself -- a local override file, or an earlier edit, can leave a
+ * concrete value sitting in the default a saved state is diffed against. So
+ * "the default is null" cannot be used as a signal for "this field accepts
+ * null" without also rejecting the legitimate edit of clearing a
+ * non-null-default nullable field back to null. Anything else that isn't
+ * the same primitive type as the default -- an object, an array, a string
+ * where a number was expected -- is exactly the shape of corruption this
+ * module exists to catch, so it falls back to the default rather than
+ * passing through unchecked.
+ */
+function resolveScalar(defaultValue: unknown, savedValue: unknown): unknown {
+  if (isPlainObject(savedValue) || Array.isArray(savedValue)) {
+    return defaultValue;
+  }
+  if (
+    savedValue !== null &&
+    defaultValue !== null &&
+    typeof savedValue !== typeof defaultValue
+  ) {
+    return defaultValue;
+  }
+  return savedValue;
+}
+
+/**
  * Deep-merge saved data over the current defaults.
  *
  * This is what stops an old localStorage payload from blanking the app. Zustand's
@@ -154,11 +184,11 @@ export function deepMerge<T>(defaults: T, saved: unknown): T {
       out[key] = isPlainObject(savedValue)
         ? deepMerge(defaultValue, savedValue)
         : defaultValue;
-    } else if (Array.isArray(defaultValue) && !Array.isArray(savedValue)) {
+    } else if (Array.isArray(defaultValue)) {
       // Likewise: a list has to stay a list.
-      out[key] = defaultValue;
+      out[key] = Array.isArray(savedValue) ? savedValue : defaultValue;
     } else {
-      out[key] = savedValue;
+      out[key] = resolveScalar(defaultValue, savedValue);
     }
   }
   return out as T;
@@ -228,7 +258,9 @@ function migrateGeneric6K401(saved: Plain, base: HouseholdData): void {
     : undefined;
   if (!oldRetirement || typeof oldRetirement.k401Monthly !== "number") return;
 
-  const oldSettings = isPlainObject(saved.settings) ? saved.settings : undefined;
+  const oldSettings = isPlainObject(saved.settings)
+    ? saved.settings
+    : undefined;
   const gross =
     typeof oldSettings?.grossAnnualSalary === "number"
       ? oldSettings.grossAnnualSalary

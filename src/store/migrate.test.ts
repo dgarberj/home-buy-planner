@@ -7,6 +7,9 @@ import { SEED_VERSION } from "../data/seed";
  * against an older shape replaced the whole assumptions tree, every
  * `assumptions.household.primaryAge` in the UI threw, and the app rendered a
  * blank white page. Anything that reads old saved data gets tested.
+ *
+ * See `migrate.roundtrip.test.ts` for `diffFromBase` -- the other half of
+ * the persistence contract -- and the whole-schema round-trip/fuzz tests.
  */
 
 /**

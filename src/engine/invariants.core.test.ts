@@ -1,196 +1,25 @@
 import { describe, expect, it } from "vitest";
-import type {
-  Assumptions,
-  MonthlyResult,
-  ScenarioConfig,
-} from "../model/types";
+import type { Assumptions } from "../model/types";
 import { monthlyPayment, monthlyNominal } from "./finance";
-import { obligationsDue, runProjection, summarizeScenario } from "./projection";
-import { SEED_ASSUMPTIONS } from "../data/seed";
+import { obligationsDue, runProjection } from "./projection";
+import {
+  base,
+  CASES,
+  HORIZON,
+  SCENARIOS,
+  forEachCase,
+} from "./invariants.fixtures";
 
 /**
  * ============================================================================
  *  Invariants -- properties that must hold for ANY inputs.
  * ============================================================================
  *
- * The hand-computed tests elsewhere check that specific numbers come out right.
- * These check the model is internally coherent no matter what you feed it,
- * which is what catches the class of bug where two parts of the engine quietly
- * stop agreeing with each other.
- *
- * Every case below runs across a matrix of deliberately awkward inputs:
- * zero income, enormous contributions, negative cash, 100% down payments,
- * job losses that overlap the purchase, and so on.
+ * See `invariants.fixtures.ts` for the shared cases/scenarios these run
+ * across, and `invariants.summary.test.ts` for the rest of this suite
+ * (summary totals, down-payment assistance, the gated co-resident, mortgage
+ * payoff, and purity).
  */
-
-const base: Assumptions = structuredClone(SEED_ASSUMPTIONS);
-
-/**
-A spread of assumption sets designed to poke at the edges.
-*/
-const CASES: { name: string; assumptions: Assumptions }[] = [
-  { name: "seed defaults", assumptions: base },
-  {
-    name: "no growth anywhere",
-    assumptions: {
-      ...base,
-      income: { ...base.income, growthAnnual: 0 },
-      expenses: { ...base.expenses, inflationAnnual: 0 },
-      retirement: { ...base.retirement, returnAnnual: 0 },
-      savings: {
-        ...base.savings,
-        cashReturnAnnual: 0,
-        investmentReturnAnnual: 0,
-      },
-      home: { ...base.home, appreciationAnnual: 0 },
-    },
-  },
-  {
-    name: "broke -- no cash, no investments",
-    assumptions: {
-      ...base,
-      savings: { ...base.savings, cashBalance: 0, investmentBalance: 0 },
-    },
-  },
-  {
-    name: "contributions larger than income",
-    assumptions: {
-      ...base,
-      // 2.4x of the default 100,000 gross salary runProjection falls back
-      // to below == 20,000/mo, matching this case's old flat-dollar figure.
-      retirement: { ...base.retirement, k401Pct: 2.4, hsaMonthly: 0 },
-    },
-  },
-  {
-    name: "no income at all",
-    assumptions: {
-      ...base,
-      income: { ...base.income, monthlyTakeHome: 0, annualBonusNet: 0 },
-    },
-  },
-  {
-    name: "full cash purchase (100% down)",
-    assumptions: {
-      ...base,
-      home: { ...base.home, downPaymentPct: 1, pmiAnnualPct: 0 },
-    },
-  },
-  {
-    name: "tiny deposit with expensive PMI",
-    assumptions: {
-      ...base,
-      home: {
-        ...base.home,
-        downPaymentPct: 0.03,
-        pmiAnnualPct: 0.02,
-        pmiUpfrontPct: 0.0175,
-      },
-    },
-  },
-  {
-    name: "zero-interest mortgage",
-    assumptions: { ...base, home: { ...base.home, mortgageRateAnnual: 0 } },
-  },
-  {
-    name: "huge employer lump, no match",
-    assumptions: {
-      ...base,
-      retirement: {
-        ...base.retirement,
-        employerMatchMonthly: 0,
-        employerAnnualLump: 40_000,
-      },
-    },
-  },
-  {
-    name: "no emergency buffer at all",
-    assumptions: { ...base, savings: { ...base.savings, cashBufferMonths: 0 } },
-  },
-  {
-    name: "co-resident from day one, no premium",
-    assumptions: {
-      ...base,
-      coResident: {
-        ...base.coResident,
-        requiresHomePurchase: false,
-        homePricePremium: 0,
-      },
-    },
-  },
-  {
-    name: "severe permanent job loss",
-    assumptions: {
-      ...base,
-      jobLoss: {
-        startMonth: 2,
-        durationMonths: 200,
-        incomeReplacementPct: 0,
-        expenseCutPct: 0,
-        pauseRetirementContributions: true,
-      },
-    },
-  },
-];
-
-const SCENARIOS: ScenarioConfig[] = [
-  {
-    id: "rent",
-    name: "Rent",
-    buyMonth: null,
-    hasJobLoss: false,
-    enabled: true,
-    color: "#000",
-  },
-  {
-    id: "buy1",
-    name: "Buy month 1",
-    buyMonth: 1,
-    hasJobLoss: false,
-    enabled: true,
-    color: "#000",
-  },
-  {
-    id: "buy24",
-    name: "Buy month 24",
-    buyMonth: 24,
-    hasJobLoss: false,
-    enabled: true,
-    color: "#000",
-  },
-  {
-    id: "buyjl",
-    name: "Buy + job loss",
-    buyMonth: 18,
-    hasJobLoss: true,
-    enabled: true,
-    color: "#000",
-  },
-];
-
-const HORIZON = 120;
-
-/**
-Run every assumption set against every scenario.
-*/
-function forEachCase(
-  function_: (a: Assumptions, s: ScenarioConfig, label: string) => void,
-) {
-  for (const c of CASES) {
-    for (const s of SCENARIOS) {
-      function_(c.assumptions, s, `${c.name} / ${s.name}`);
-    }
-  }
-}
-
-function expectFiniteNumericFields(row: MonthlyResult, label: string) {
-  for (const [key, value] of Object.entries(row)) {
-    if (typeof value !== "number") continue;
-    expect(
-      Number.isFinite(value),
-      `${label} month ${row.month} field ${key}`,
-    ).toBe(true);
-  }
-}
 
 describe("balance-sheet identities", () => {
   it("always reports liquid savings as cash plus investments", () => {
@@ -219,10 +48,12 @@ describe("balance-sheet identities", () => {
     });
   });
 
-  it("always reports home equity as value minus what is owed", () => {
+  it("always reports home equity as value minus mortgage minus any assistance lien", () => {
     forEachCase((a, s, label) => {
       for (const row of runProjection(a, s, HORIZON)) {
-        const expected = row.ownsHome ? row.homeValue - row.mortgageBalance : 0;
+        const expected = row.ownsHome
+          ? row.homeValue - row.mortgageBalance - row.assistanceOutstanding
+          : 0;
         expect(
           Math.abs(row.homeEquity - expected),
           `${label} month ${row.month}`,
@@ -405,7 +236,7 @@ describe("the mortgage behaves like a mortgage", () => {
     });
   });
 
-  it("charges the scheduled payment, plus escrow, plus PMI -- and nothing else", () => {
+  it("charges the scheduled payment, plus escrow, plus PMI -- and nothing else, until paid off", () => {
     forEachCase((a, s, label) => {
       const rows = runProjection(a, s, HORIZON);
       const purchase = rows.find((r) => r.purchaseOutflow > 0);
@@ -416,9 +247,15 @@ describe("the mortgage behaves like a mortgage", () => {
         monthlyNominal(a.home.mortgageRateAnnual),
         a.home.mortgageTermYears * 12,
       );
+      const termMonths = Math.round(a.home.mortgageTermYears * 12);
       const ownedRows = rows.filter((r) => r.ownsHome);
       for (const row of ownedRows) {
-        const expected = pi + a.home.taxInsuranceHoaMonthly + row.pmiPayment;
+        const paymentsMade = row.month - purchase.month + 1;
+        const isStillRepaying = paymentsMade <= termMonths;
+        const expected =
+          (isStillRepaying ? pi : 0) +
+          a.home.taxInsuranceHoaMonthly +
+          row.pmiPayment;
         expect(
           Math.abs(row.housingPayment - expected),
           `${label} month ${row.month}`,
@@ -518,96 +355,5 @@ describe("obligations are fixed, not inflated or cut", () => {
     for (const row of rows) {
       expect(row.obligations).toBe(obligationsDue(inflating, row.month));
     }
-  });
-});
-
-describe("summary totals agree with the month-by-month rows", () => {
-  it("reconciles every total it reports", () => {
-    forEachCase((a, s, label) => {
-      const summary = summarizeScenario(a, s, HORIZON);
-      const rows = summary.months;
-      const sum = (pick: (r: (typeof rows)[number]) => number) =>
-        rows.reduce((accumulator, r) => accumulator + pick(r), 0);
-
-      expect(
-        Math.abs(summary.totalHousingPaid - sum((r) => r.housingPayment)),
-        label,
-      ).toBeLessThan(1e-6);
-      expect(
-        Math.abs(summary.totalMaintenancePaid - sum((r) => r.homeMaintenance)),
-        label,
-      ).toBeLessThan(1e-6);
-      expect(
-        Math.abs(summary.totalPmiPaid - sum((r) => r.pmiPayment)),
-        label,
-      ).toBeLessThan(1e-6);
-      expect(
-        Math.abs(summary.totalObligationsPaid - sum((r) => r.obligations)),
-        label,
-      ).toBeLessThan(1e-6);
-      expect(
-        Math.abs(
-          summary.totalCoResidentIncome - sum((r) => r.coResidentIncome),
-        ),
-        label,
-      ).toBeLessThan(1e-6);
-      expect(summary.endingNetWorth, label).toBe(rows.at(-1)!.netWorth);
-    });
-  });
-
-  it("reports a minimum buffer that actually occurs in the data", () => {
-    forEachCase((a, s, label) => {
-      const summary = summarizeScenario(a, s, HORIZON);
-      const actualMin = Math.min(...summary.months.map((r) => r.liquidSavings));
-      expect(Math.abs(summary.minCashBuffer - actualMin), label).toBeLessThan(
-        1e-6,
-      );
-      expect(
-        summary.months[summary.minCashBufferMonth - 1]?.liquidSavings,
-        label,
-      ).toBeCloseTo(summary.minCashBuffer, 6);
-    });
-  });
-
-  it("flags going negative exactly when it happens", () => {
-    forEachCase((a, s, label) => {
-      const summary = summarizeScenario(a, s, HORIZON);
-      const anyNegative = summary.months.some((r) => r.liquidSavings < 0);
-      expect(summary.goesNegative, label).toBe(anyNegative);
-    });
-  });
-});
-
-describe("purity", () => {
-  it("never mutates the assumptions it is given", () => {
-    for (const c of CASES) {
-      const before = JSON.stringify(c.assumptions);
-      for (const s of SCENARIOS) summarizeScenario(c.assumptions, s, HORIZON);
-      expect(JSON.stringify(c.assumptions), c.name).toBe(before);
-    }
-  });
-
-  it("gives identical results on repeated runs", () => {
-    forEachCase((a, s, label) => {
-      const first = JSON.stringify(runProjection(a, s, 60));
-      const second = JSON.stringify(runProjection(a, s, 60));
-      expect(first === second, label).toBe(true);
-    });
-  });
-
-  it("produces a finite number for every field, in every month", () => {
-    forEachCase((a, s, label) => {
-      for (const row of runProjection(a, s, HORIZON)) {
-        expectFiniteNumericFields(row, label);
-      }
-    });
-  });
-
-  it("returns exactly the number of months asked for", () => {
-    forEachCase((a, s, label) => {
-      for (const n of [1, 12, 61, 200]) {
-        expect(runProjection(a, s, n).length, label).toBe(n);
-      }
-    });
   });
 });
