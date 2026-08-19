@@ -2,13 +2,13 @@
  * Staleness policy for fetched data. See docs/adr/0001-stale-data-threshold.md
  * for the principle (data has a shelf life; stale data must not be presented
  * as trustworthy) and its "Update" note for how the mechanism works today:
- * each source in src/config.ts's `CONFIG.dataSources` carries its own
+ * each source in data/dataSources.ts's `DATA_SOURCES` carries its own
  * `staleAfterDays` threshold rather than sharing one of a few fixed
  * categories. This file is just the pure date-math underneath that -- it
  * doesn't know what a "source" or a "category" is.
  *
  * Every module that carries a fetched date -- a source's `fetchedAt` in
- * config.ts, a sale's `saleDate` in recentSales.ts -- should compare it
+ * dataSources.ts, a sale's `saleDate` in recentSales.ts -- should compare it
  * against its own threshold via `isStale()` rather than presenting it as
  * trustworthy indefinitely.
  */

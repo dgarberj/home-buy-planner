@@ -92,7 +92,7 @@ downstream anyway.
 The per-source override anticipated above turned out to be the better
 default, not just a future exception. The four shared categories
 (`homeSales`/`crime`/`schools`/`climate`) are gone; every source in
-`src/config.ts`'s `CONFIG.dataSources` now carries its own optional
+`src/data/dataSources.ts`'s `DATA_SOURCES` now carries its own optional
 `staleAfterDays` instead of borrowing one of four buckets. This grew
 coverage well beyond the original three enforced sources (home sales,
 schools, climate) to roughly a dozen — millage, PMI tables, IRS
@@ -100,7 +100,7 @@ contribution limits, Fannie Mae DTI limits, and more, wherever a genuine
 active refresh cadence exists. Sources with no real cadence (a deliberately
 frozen secondary cross-check, "confirm before relying on it") simply omit
 `staleAfterDays` and are never flagged — same opt-in shape as the old
-`category` field, just per-source. The *principle* from the Decision above
+`category` field, just per-source. The _principle_ from the Decision above
 is unchanged: `isStale()` is still the one function every module calls,
 `sources.test.ts` still fails the build on any stale source, and
 `SourcesPanel` still shows a STALE badge. Home sales' per-record enforcement

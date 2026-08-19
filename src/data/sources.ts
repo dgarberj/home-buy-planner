@@ -7,19 +7,19 @@
  * rather than dressed up.
  *
  * The registry entries themselves (id, title, publisher, url, staleAfterDays,
- * fetchedAt, ...) live in src/config.ts's `CONFIG.dataSources`, Zod-validated
+ * fetchedAt, ...) live in dataSources.ts's `DATA_SOURCES`, Zod-validated
  * there. This file is the domain layer on top: grouping sources into topics
  * for the UI, and the staleness check -- every source that declares a
  * `staleAfterDays` gets checked, per docs/adr/0001-stale-data-threshold.md.
  */
 
-import { CONFIG, type DataSource, type Reliability } from '../config';
+import { DATA_SOURCES, type DataSource, type Reliability } from './dataSources';
 import { daysSince, formatMaxAge } from './freshness';
 
-export type { DataSource, Reliability } from '../config';
+export type { DataSource, Reliability } from './dataSources';
 export type Source = DataSource;
 
-export const SOURCES: DataSource[] = CONFIG.dataSources;
+export const SOURCES: DataSource[] = DATA_SOURCES;
 
 export const RELIABILITY_LABEL: Record<Reliability, string> = {
   official: 'Official',
@@ -153,7 +153,7 @@ export function sourcesFor(topicKey: string): DataSource[] {
  * Whether a source's `fetchedAt` date has passed its own `staleAfterDays`
  * threshold (docs/adr/0001-stale-data-threshold.md). Sources with no
  * `staleAfterDays` are never stale by this check -- that policy doesn't
- * apply to them (see the field's doc comment on `DataSource` in config.ts).
+ * apply to them (see the field's doc comment on `DataSource` in dataSources.ts).
  */
 export function isSourceStale(source: DataSource, asOf: Date = new Date()): boolean {
   if (source.staleAfterDays === undefined) return false;

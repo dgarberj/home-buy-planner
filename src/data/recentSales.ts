@@ -44,7 +44,7 @@
  * ---------------------------------------------------------------------------
  *
  * Per docs/adr/0001-stale-data-threshold.md, a home sale older than the
- * `montco-parcels` source's staleAfterDays (src/config.ts, currently 1 year)
+ * `montco-parcels` source's staleAfterDays (data/dataSources.ts, currently 1 year)
  * is stale and not trustworthy as a market signal. Because this sample was
  * pulled with a 12-month window in the first place, essentially everything
  * below is fresh as of the retrieval date above -- that will stop being true

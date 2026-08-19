@@ -2,31 +2,29 @@ import { z } from "zod";
 
 /**
  * ============================================================================
- *  Centralized, validated APPLICATION policy.
+ *  The registry of every external number in the app.
  * ============================================================================
  *
- * This file is for numbers and metadata the application itself is
- * opinionated about -- not something a user should be able to dial in from a
- * settings panel.
- *
- * `dataSources` is the registry of every external number in the app: what
- * it is, who publishes it, how stale it's allowed to get before the app
+ * What it is, who publishes it, how stale it's allowed to get before the app
  * should stop presenting it as trustworthy (`staleAfterDays`, optional --
  * see the field's doc comment), and, where one exists, a machine-fetchable
  * `fetchUrl` for a future build-time fetch-if-stale step (not built yet;
- * tracked as a follow-up in the repo's task list). This is still NOT the
- * place for the reference numbers
- * themselves -- IRS contribution limits (contributionLimits.ts), Fannie Mae
- * DTI limits (engine/lending.ts), county millage (localMarket.ts) and the
- * like stay in their own files, each with the provenance comment that
- * belongs next to it. What lives here is the registry ENTRY describing that
- * data: where it came from and how stale it's allowed to get, not the dollar
- * figures/rates/brackets themselves.
+ * tracked as a follow-up in the repo's task list). This is NOT the place for
+ * the reference numbers themselves -- IRS contribution limits
+ * (contributionLimits.ts), Fannie Mae DTI limits (engine/lending.ts), county
+ * millage (localMarket.ts) and the like stay in their own files, each with
+ * the provenance comment that belongs next to it. What lives here is the
+ * registry ENTRY describing that data: where it came from and how stale it's
+ * allowed to get, not the dollar figures/rates/brackets themselves.
+ *
+ * This is reference data, not application configuration -- nothing here is a
+ * knob anyone turns. See `sources.ts` for the domain layer built on top
+ * (topic grouping, staleness checks) that the UI and tests actually use.
  *
  * Cost-estimate defaults (a flat insurance guess, a default savings reserve,
  * the "typical" tax rate used before a specific town is known) live in
  * costDefaults.ts -- plain, unvalidated constants, not locked behind Zod the
- * way policy is here, because they are exactly the kind of number a user
+ * way this registry is, because they are exactly the kind of number a user
  * might reasonably want to override. See that file's header for the
  * distinction.
  *
@@ -95,14 +93,9 @@ export const DataSourceSchema = z.object({
 
 export type DataSource = z.infer<typeof DataSourceSchema>;
 
-export const ConfigSchema = z.object({
-  dataSources: z.array(DataSourceSchema),
-});
+export const DataSourcesSchema = z.array(DataSourceSchema);
 
-export type AppConfig = z.infer<typeof ConfigSchema>;
-
-const rawConfig: AppConfig = {
-  dataSources: [
+const rawDataSources: DataSource[] = [
     // ---- Property tax ----------------------------------------------------
     {
       id: "delco-millage",
@@ -520,12 +513,12 @@ const rawConfig: AppConfig = {
       note: "County level only -- the NRI does not publish at municipality/township granularity, so every town in a county shares the same figures. Scores are NATIONAL PERCENTILES, not probabilities: a dense, built-up county scores high partly because more people and property are exposed, not necessarily because a disaster is more likely per acre.",
       staleAfterDays: 3650,
     },
-  ],
-};
+];
 
 /**
  * Parsed and validated at import time -- if this throws, the app should not
- * start. `parse` (not `safeParse`) is intentional: an invalid config is a
- * programming error to fix, not a runtime condition to handle gracefully.
+ * start. `parse` (not `safeParse`) is intentional: an invalid registry entry
+ * is a programming error to fix, not a runtime condition to handle
+ * gracefully.
  */
-export const CONFIG: AppConfig = ConfigSchema.parse(rawConfig);
+export const DATA_SOURCES: DataSource[] = DataSourcesSchema.parse(rawDataSources);

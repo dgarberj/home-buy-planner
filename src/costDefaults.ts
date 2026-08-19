@@ -3,20 +3,21 @@
  *  User-adjustable cost defaults.
  * ============================================================================
  *
- * Unlike config.ts (fixed, Zod-validated application policy this codebase is
- * opinionated about), these are starting values for numbers a PERSON using
- * the app might reasonably want to change -- what insurance costs, how much
- * to hold back in savings each month, what "typical" tax rate to assume
- * before picking a town, what reference price to compare school value at.
+ * Unlike data/dataSources.ts (fixed, Zod-validated provenance data this
+ * codebase treats as ground truth), these are starting values for numbers a
+ * PERSON using the app might reasonably want to change -- what insurance
+ * costs, how much to hold back in savings each month, what "typical" tax
+ * rate to assume before picking a town, what reference price to compare
+ * school value at.
  *
  * They're plain constants today because no settings panel exposes them yet
  * -- every call site just uses the default. They live in their own,
- * unvalidated file rather than inside config.ts specifically so that when a
- * "customize these" UI does get built, it's editing user preferences, not
- * reaching into application policy to do it. Nothing here should grow a Zod
- * schema; if these need validation later, it belongs at the settings-form
- * boundary (the same place `assumptions`/`settings` in the Zustand store
- * would validate user input), not here.
+ * unvalidated file rather than a Zod-validated registry specifically so
+ * that when a "customize these" UI does get built, it's editing user
+ * preferences, not reaching into fixed reference data to do it. Nothing
+ * here should grow a Zod schema; if these need validation later, it belongs
+ * at the settings-form boundary (the same place `assumptions`/`settings` in
+ * the Zustand store would validate user input), not here.
  */
 
 export const COST_DEFAULTS = {
